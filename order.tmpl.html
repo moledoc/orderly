@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<script src="https://unpkg.com/htmx.org@1.9.5"></script>
+		<meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <style>
+            .content {
+                counter-reset: h2;
+            }
+
+            .content h2 {
+                counter-reset: h3;
+                counter-increment: h2;
+            }
+
+            .content h2::before {
+                content: counter(h2) ". ";
+                font-weight: bold;
+            }
+
+            .content h3 {
+                counter-increment: h3;
+            }
+
+            .content h3::before {
+                content: counter(h2) "." counter(h3) " ";
+            }
+
+            .content {
+                padding-bottom: 3%; 
+            }
+
+            .unsaved {
+                border: 2px solid orange;
+                background-color: #fff8e1;
+                transition: border-color 0.3s, background-color 0.3s;
+            }
+
+            footer {
+                background: #f0f0f0;
+                padding-right: 1em;
+                box-sizing: border-box;
+                text-align: center;
+                font-family: Arial, sans-serif;
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+                height: 3%;
+                box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+                display: flex; 
+                justify-content: space-between;
+            }
+        </style>
+	</head>
+	<body>
+		<div class="content">
+			<h1>{{.OrderNr}}: {{.MainTask}}</h1>
+			<div>
+				<form id="infoForm"
+				hx-post="/save" 
+				hx-target="#infoForm" 
+				hx-swap="outerHTML"
+			  >
+					<fieldset id="orderInfo">
+						<legend>Info</legend>
+						<div>
+							<label>Main task:<input type="text" id="main-task" style="border: none;" name="order-info-main-task" value="{{.MainTask}}" required></label>
+						</div>
+		
+						<div>
+							<label>Responsible:<input type="text" id="responsible" style="border: none;" name="order-info-responsible" value="{{.Responsible}}" required></label>
+						</div>
+						
+						<div>
+							<label>Parent order:<input type="number" id="parent-order" style="border: none;" name="order-info-parent-order" value="{{.ParentOrder}}" required></label>
+						</div>
+						
+						<div>
+							<label>Deadline:<input type="date" id="deadline" style="border: none;"  name="order-info-deadline" value="{{.Deadline | formatToDate}}" min="2020-01-01" max="2100-12-31" required /></label>
+						</div>
+
+						<div>
+							<label>State:<select id="states" name="order-info-state" style="border: none;" required>
+								{{range .States}}
+									<option value="{{.}}" {{if eq . $.State}}selected{{end}}>{{.}}</option>
+								{{end}}
+							</select></label>
+						</div>
+		
+						<div>
+							<button type="submit" hx-post="/save" hx-target="#result" hx-swap="innerHTML">Save</button>
+						</div>
+						<div id="result"></div>
+						  
+					</fieldset>
+	
+				  </form>
+			</div>
+
+		<!-- <h1>HTMX + Go Demo</h1>
+		<button hx-get="/hello" hx-target="#result" hx-swap="innerHTML">
+			Say Hello
+		</button>
+
+		<div id="result"></div> -->
+	</body>
+
+    <script>
+        const names = ["order-info-main-task", "order-info-responsible", "order-info-parent-order", "order-info-deadline", "order-info-state"]
+
+        for (var n = 0; n < names.length; n++) { 
+            const elems = document.getElementsByName(names[n]);
+            for (var i = 0; i<elems.length; i++) {
+                const name_i = elems[i];
+                if (name_i == null) {
+                    continue
+                }
+                const originalValueInfo = name_i.value;
+                console.log(name_i)
+                name_i.addEventListener('input', function () {
+                    if (this.value !== originalValueInfo) {
+                        name_i.classList.add('unsaved');
+                    } else {
+                        name_i.classList.remove('unsaved');
+                    }
+                });
+            }
+        }
+		document.body.addEventListener("htmx:afterRequest", function (evt) {
+		if (evt.detail.requestConfig && evt.detail.requestConfig.path === "/save") {
+			// TODO: don't rm if empty field
+			document.querySelectorAll(".unsaved").forEach(el => el.classList.remove("unsaved"));
+		}
+		});
+    </script>
+</html>
+
+
