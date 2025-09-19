@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <style>
+            .content {
+                counter-reset: h2;
+            }
+
+            .content h2 {
+                counter-reset: h3;
+                counter-increment: h2;
+            }
+
+            .content h2::before {
+                content: counter(h2) ". ";
+                font-weight: bold;
+            }
+
+            .content h3 {
+                counter-increment: h3;
+            }
+
+            .content h3::before {
+                content: counter(h2) "." counter(h3) " ";
+            }
+
+            .content {
+                padding-bottom: 3%; /* match footer height */
+            }
+
+            .unsaved {
+                border: 2px solid orange;
+                background-color: #fff8e1;
+                transition: border-color 0.3s, background-color 0.3s;
+            }
+
+            /* nav[aria-label="higher-orders"] ol {
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                display: flex;
+                gap: 0.5em;
+                font-family: Arial, sans-serif;
+            }
+
+            nav[aria-label="higher-orders"] li:first-child::before {
+                content: "higher-orders: ";
+            }
+
+            nav[aria-label="higher-orders"] li::after {
+                content: "/";
+                margin-left: 0.5em;
+            }
+
+            nav[aria-label="higher-orders"] li:last-child::after {
+                content: "";
+            }
+
+            nav[aria-label="higher-orders"] a {
+                text-decoration: none;
+                color: blue;
+            }
+
+            nav[aria-label="higher-orders"] li[aria-current="page"] {
+                font-weight: bold;
+                color: black;
+            } */
+
+            footer {
+                background: #f0f0f0;
+                /* padding: 1em; */
+                /* padding-left: 1em; */
+                padding-right: 1em;
+                box-sizing: border-box;
+                text-align: center;
+                font-family: Arial, sans-serif;
+                position: fixed;
+                bottom: 0;
+                width: 100%;
+                height: 3%;
+                box-shadow: 0 -2px 5px rgba(0,0,0,0.1);
+                display: flex; 
+                justify-content: space-between;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="content">
+
+        <h1>{Order Nr}: {Main task/goal}</h1>
+
+        <div>
+            <form>
+                <fieldset id="orderInfo">
+                    <legend>Info</legend>
+                    <div>
+                        <label for="main-task">Main task:</label>
+                        <input type="text" id="main-task" style="border: none;" name="order-info" value="{Main task/goal}" required>
+                    </div>
+    
+                    <div>
+                        <label for="responsible">Responsible:</label>
+                        <input type="text" id="responsible" style="border: none;" name="order-info" value="{person}" required>
+                    </div>
+                    
+                    <div>
+                        <label for="parent-order">Parent order:</label>
+                        <input type="text" id="parent-order" style="border: none;" name="order-info" value="o2" required>
+                    </div>
+                    
+                    <div>
+                        <label for="deadline">Deadline:</label>
+                        <input type="date" id="deadline" style="border: none;"  name="order-info" value="2018-07-22" min="2018-01-01" max="2018-12-31" required />
+                    </div>
+                    
+                    <div>
+                        <label for="state">State:</label>
+                        <select id="states" name="order-info" style="border: none;" required>
+                            <option value="Not Started" selected>Not Started</option>
+                            <option value="In Progress">In Progress</option>
+                            <option value="Blocked">Blocked</option>
+                            <option value="Completed">Completed</option>
+                        </select>
+                    </div>
+    
+                    <div>
+                        <button type="submit">Save</button>
+                    </div>
+                </fieldset>
+
+              </form>
+        </div>
+
+        <h2>Execution</h2>
+
+        <div>
+            <form>
+                <fieldset id="taskGroup">
+                    <legend>Tasks</legend>
+                    <label style="display: flex; gap: 10px; align-items: flex-start;">
+                        <input type="checkbox" name="task"> 
+                        <!-- <label>Responsible: <input type="text" name="task" value="{person}" style="border: none; width: 7ch;" required> -</label> -->
+                        <textarea name="task" rows="1" cols="15" style="border: none;" required>Person</textarea>
+                        <textarea name="task" rows="1" cols="40" style="border: none;" required>Task description</textarea>
+                    </label><br>
+                    <label style="display: flex; gap: 10px; align-items: flex-start;">
+                        <input type="checkbox" name="task"> 
+                        <textarea name="task" rows="1" cols="15" style="border: none;" required>Person</textarea>
+                        <textarea name="task" rows="1" cols="40" style="border: none;" required>Task description</textarea>
+                    </label><br>
+
+                    <button type="submit">Save</button><br>
+                </fieldset>
+            </form>
+
+            <form id="taskForm" style="margin-top: 1em; display: flex; gap: 10px; align-items: flex-start;">
+                <input type="text" id="new-task-responsible" placeholder="Responsible: " required>
+                <textarea id="new-task-desc" rows="1" cols="40" placeholder="Write your task here..." required></textarea>
+                <button type="submit">Add</button>
+            </form>
+        </div>
+        
+        <h2>Related orders</h2>
+        <h3>Higher</h3>
+        <div>
+            <nav aria-label="higher-orders">
+                <ol>
+                    <li><a href="/o1">o1: this is order 1</a></li>
+                    <li><a href="/o2">o2: this is order 2</a></li>
+                    <li aria-current="page">o3: this is order 3</li>
+                </ol>
+            </nav>
+        </div>
+        <h3>Lower</h3>
+        <div>
+            <nav aria-label="lower-orders">
+                <ul>
+                    <li><a href="/o4">o4: this is order 4</a></li>
+                    <li><a href="/o5">o5: this is order 5</a></li>
+                </ul>
+            </nav>
+        </div>
+
+        <h2>Comments</h2>
+        <ul>
+            <li>
+                <p>This is the first comment.</p>
+                <small>{person} at <time datetime="2025-09-19T14:30:00Z">September 19, 2025, 2:30 PM UTC</time></small>
+            </li>
+            <li>
+                <p>Another comment here.</p>
+                <small>{person} at <time datetime="2025-09-19T14:30:00Z">September 19, 2025, 2:30 PM UTC</time></small>
+            </li>
+            <li>
+                <p>Last comment in the list.</p>
+                <small>{person} at <time datetime="2025-09-19T14:30:00Z">September 19, 2025, 2:30 PM UTC</time></small>
+            </li>
+            <li>
+                <p>This is the first comment.</p>
+                <small>{person} at <time datetime="2025-09-19T14:30:00Z">September 19, 2025, 2:30 PM UTC</time></small>
+            </li>
+            <li>
+                <p>Another comment here.</p>
+                <small>{person} at <time datetime="2025-09-19T14:30:00Z">September 19, 2025, 2:30 PM UTC</time></small>
+            </li>
+            <li>
+                <p>Last comment in the list.</p>
+                <small>{person} at <time datetime="2025-09-19T14:30:00Z">September 19, 2025, 2:30 PM UTC</time></small>
+            </li>
+        </ul>
+        <form id="commentForm">
+            <textarea id="comment" name="comment" rows="5" cols="40" placeholder="Write your comment here..."></textarea><br>
+            <button type="submit">Add</button>
+        </form>
+
+
+        <footer>
+            <div>Created: <time datetime="2025-09-19T14:30:00Z">September 19, 2025, 2:30 PM UTC</time></div>
+            <button type="button">New Order</button>
+            <div>Updated: <time datetime="2025-09-19T14:30:00Z">September 19, 2025, 2:30 PM UTC</time></div>
+        </footer>
+        </div>
+    </body>
+
+    <script>
+        const names = ["order-info", "task"]
+
+        for (var n = 0; n < names.length; n++) { 
+            const elems = document.getElementsByName(names[n]);
+            for (var i = 0; i<elems.length; i++) {
+                const name_i = elems[i];
+                if (name_i == null) {
+                    continue
+                }
+                const originalValueInfo = name_i.value;
+                console.log(name_i)
+                name_i.addEventListener('input', function () {
+                    if (this.value !== originalValueInfo) {
+                        name_i.classList.add('unsaved');
+                    } else {
+                        name_i.classList.remove('unsaved');
+                    }
+                });
+            }
+        }
+        
+    </script>
+</html>
