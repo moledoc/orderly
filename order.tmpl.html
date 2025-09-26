@@ -73,7 +73,7 @@
 						</div>
 						
 						<div>
-							<label>Parent order:<input type="number" id="parent-order" style="border: none;" name="order-info-parent-order" value="{{.ParentOrder}}" required></label>
+							<label>Parent order:<input type="number" id="parent-order" style="border: none;" name="order-info-parent-order" value="{{.ParentOrder}}" min=1 required></label>
 						</div>
 						
 						<div>
@@ -97,40 +97,30 @@
 	
 				  </form>
 			</div>
-
-		<!-- <h1>HTMX + Go Demo</h1>
-		<button hx-get="/hello" hx-target="#result" hx-swap="innerHTML">
-			Say Hello
-		</button>
-
-		<div id="result"></div> -->
 	</body>
 
     <script>
-        const names = ["order-info-main-task", "order-info-responsible", "order-info-parent-order", "order-info-deadline", "order-info-state"]
-
-        for (var n = 0; n < names.length; n++) { 
-            const elems = document.getElementsByName(names[n]);
-            for (var i = 0; i<elems.length; i++) {
-                const name_i = elems[i];
-                if (name_i == null) {
-                    continue
-                }
-                const originalValueInfo = name_i.value;
-                console.log(name_i)
-                name_i.addEventListener('input', function () {
-                    if (this.value !== originalValueInfo) {
-                        name_i.classList.add('unsaved');
-                    } else {
-                        name_i.classList.remove('unsaved');
-                    }
-                });
+        const namedElements = document.querySelectorAll('[name]');
+        for (var i=0; i < namedElements.length; i++) {
+            const elem = document.getElementById(namedElements[i].id)
+            if (elem == undefined) {
+                continue
             }
+            const originalValueInfo = elem.value;
+            elem.addEventListener('input', function () {
+                if (this.value !== originalValueInfo) {
+                    elem.classList.add('unsaved');
+                } else {
+                    elem.classList.remove('unsaved');
+                }
+            })
         }
+
 		document.body.addEventListener("htmx:afterRequest", function (evt) {
 		if (evt.detail.requestConfig && evt.detail.requestConfig.path === "/save") {
-			// TODO: don't rm if empty field
-			document.querySelectorAll(".unsaved").forEach(el => el.classList.remove("unsaved"));
+            if (evt.detail.xhr.status == 200) {
+                document.querySelectorAll(".unsaved").forEach(el => el.classList.remove("unsaved"));
+            }
 		}
 		});
     </script>
