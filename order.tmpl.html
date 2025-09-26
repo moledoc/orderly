@@ -55,48 +55,73 @@
 	</head>
 	<body>
 		<div class="content">
-			<h1>{{.OrderNr}}: {{.MainTask}}</h1>
+			<h1>{{.Info.OrderNr}}: {{.Info.MainTask}}</h1>
 			<div>
 				<form id="infoForm"
-				hx-post="/save" 
+				hx-post="/save-info" 
 				hx-target="#infoForm" 
 				hx-swap="outerHTML"
 			  >
 					<fieldset id="orderInfo">
 						<legend>Info</legend>
 						<div>
-							<label>Main task:<input type="text" id="main-task" style="border: none;" name="order-info-main-task" value="{{.MainTask}}" required></label>
+							<label>Main task:<input type="text" id="main-task" style="border: none;" name="order-info-main-task" value="{{.Info.MainTask}}" required></label>
 						</div>
 		
 						<div>
-							<label>Responsible:<input type="text" id="responsible" style="border: none;" name="order-info-responsible" value="{{.Responsible}}" required></label>
+							<label>Responsible:<input type="text" id="responsible" style="border: none;" name="order-info-responsible" value="{{.Info.Responsible}}" required></label>
 						</div>
 						
 						<div>
-							<label>Parent order:<input type="number" id="parent-order" style="border: none;" name="order-info-parent-order" value="{{.ParentOrder}}" min=1 required></label>
+							<label>Parent order:<input type="number" id="parent-order" style="border: none;" name="order-info-parent-order" value="{{.Info.ParentOrder}}" min=1 required></label>
 						</div>
 						
 						<div>
-							<label>Deadline:<input type="date" id="deadline" style="border: none;"  name="order-info-deadline" value="{{.Deadline | formatToDate}}" min="2020-01-01" max="2100-12-31" required /></label>
+							<label>Deadline:<input type="date" id="deadline" style="border: none;"  name="order-info-deadline" value="{{.Info.Deadline | formatToDate}}" min="2020-01-01" max="2100-12-31" required /></label>
 						</div>
 
 						<div>
 							<label>State:<select id="states" name="order-info-state" style="border: none;" required>
-								{{range .States}}
-									<option value="{{.}}" {{if eq . $.State}}selected{{end}}>{{.}}</option>
+								{{range .Info.States}}
+									<option value="{{.}}" {{if eq . $.Info.State}}selected{{end}}>{{.}}</option>
 								{{end}}
 							</select></label>
 						</div>
 		
 						<div>
-							<button type="submit" hx-post="/save" hx-target="#result" hx-swap="innerHTML">Save</button>
+							<button type="submit" hx-post="/save-info" hx-target="#result-info" hx-swap="innerHTML">Save</button>
 						</div>
-						<div id="result"></div>
+						<div id="result-info"></div>
 						  
 					</fieldset>
 	
 				  </form>
 			</div>
+            <h2>Execution</h2>
+            <div>
+                <form id="executionForm"
+                hx-post="/save-tasks" 
+				hx-target="#executionForm" 
+				hx-swap="outerHTML"
+                >
+                <fieldset id="taskGroup">
+                    <legend>Tasks</legend>
+                        {{range .Tasks}}
+                            <label style="display: flex; gap: 10px; align-items: flex-start;">
+                            <input type="checkbox" name="task" {{if .Checked}}checked{{end}}>
+                            <textarea name="task-"{{.Id}} rows="1" cols="15" style="border: none;" required>{{.Responsible}}</textarea>
+                            <textarea name="task-"{{.Id}} rows="1" cols="40" style="border: none;" required>{{.Description}}</textarea>
+                            </label><br>
+                        {{end}}
+
+                    <div>
+                        <button type="submit" hx-post="/save-tasks" hx-target="#result-tasks" hx-swap="innerHTML">Save</button>
+                    </div>
+                    <div id="result-tasks"></div>
+
+                </fieldset>
+                </form>
+            </div>
 	</body>
 
     <script>
@@ -117,9 +142,13 @@
         }
 
 		document.body.addEventListener("htmx:afterRequest", function (evt) {
-		if (evt.detail.requestConfig && evt.detail.requestConfig.path === "/save") {
+		if (evt.detail.requestConfig && evt.detail.requestConfig.path === "/save-info") {
             if (evt.detail.xhr.status == 200) {
-                document.querySelectorAll(".unsaved").forEach(el => el.classList.remove("unsaved"));
+                document.querySelectorAll(".unsaved").forEach(function(el){
+                    if (document.getElementById(el.id).closest('form').id == "infoForm") {
+                        el.classList.remove("unsaved");
+                    }
+                })
             }
 		}
 		});

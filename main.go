@@ -50,7 +50,7 @@ func StateValues() []State {
 	return states
 }
 
-type PageData struct {
+type Info struct {
 	OrderNr     int
 	MainTask    string
 	Responsible string
@@ -60,9 +60,22 @@ type PageData struct {
 	States      []State
 }
 
+type Task struct {
+	Id          int
+	Checked     bool
+	Responsible string
+	Description string
+}
+
+type PageData struct {
+	Info  Info
+	Tasks []Task
+}
+
 func main() {
 	http.HandleFunc("/", servePage)
-	http.HandleFunc("POST /save", handleSave)
+	http.HandleFunc("POST /save-info", handleSaveInfo)
+	http.HandleFunc("POST /save-tasks", handleSaveTasks)
 
 	fmt.Println("Server running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
@@ -73,7 +86,7 @@ func formatToDate(t time.Time) string {
 }
 
 var (
-	data = PageData{
+	info = Info{
 		OrderNr:     2,
 		MainTask:    "Go html templates + htmx",
 		Responsible: "Lala",
@@ -81,6 +94,26 @@ var (
 		Deadline:    time.Date(2025, 12, 12, 0, 0, 0, 0, time.UTC),
 		State:       InProgress,
 		States:      StateValues(),
+	}
+
+	tasks = []Task{
+		{
+			Id:          1,
+			Checked:     false,
+			Responsible: "lala",
+			Description: "eat pancake",
+		},
+		{
+			Id:          2,
+			Checked:     true,
+			Responsible: "lala",
+			Description: "eat sandwich",
+		},
+	}
+
+	pageData = PageData{
+		Info:  info,
+		Tasks: tasks,
 	}
 )
 
@@ -92,14 +125,17 @@ func servePage(w http.ResponseWriter, r *http.Request) {
 	}).ParseFiles(tmplFilename)
 
 	if err != nil {
-		fmt.Printf("[ERROR]: parse template: %v\n", err)
+		fmt.Printf("[ERROR]: parse template: %s\n", err)
 		return
 	}
 	w.Header().Set("Content-Type", "text/html")
-	tmpl.Execute(w, data)
+	err = tmpl.Execute(w, pageData)
+	if err != nil {
+		log.Printf("[ERROR]: executing html tmpl failed: %s\n", err)
+	}
 }
 
-func validatePageData(pd PageData) error {
+func validatePageData(pd Info) error {
 	zeroTime := time.Time{}
 	if len(pd.MainTask) <= 0 {
 		return fmt.Errorf("main-task is empty")
@@ -119,15 +155,17 @@ func validatePageData(pd PageData) error {
 	return nil
 }
 
-func handleSave(w http.ResponseWriter, r *http.Request) {
+func handleSaveInfo(w http.ResponseWriter, r *http.Request) {
 
 	err := r.ParseForm()
 	if err != nil {
-		fmt.Printf("[ERROR]: parsing form: %v\n", err)
+		log.Printf("[ERROR]: parsing form: %v\n", err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf(`{"error": "parsing form failed: %s"}`, err)))
 		return
 	}
 
-	formData := PageData{
+	formData := Info{
 		MainTask:    r.FormValue("order-info-main-task"),
 		Responsible: r.FormValue("order-info-responsible"),
 		State:       strToState[r.FormValue("order-info-state")],
@@ -145,28 +183,28 @@ func handleSave(w http.ResponseWriter, r *http.Request) {
 	}
 
 	changes := []string{}
-	if data.MainTask != formData.MainTask {
-		data.MainTask = formData.MainTask
+	if info.MainTask != formData.MainTask {
+		info.MainTask = formData.MainTask
 		changes = append(changes, "main-task")
 	}
 
-	if data.Responsible != formData.Responsible {
-		data.Responsible = formData.Responsible
+	if info.Responsible != formData.Responsible {
+		info.Responsible = formData.Responsible
 		changes = append(changes, "responsible")
 	}
 
-	if data.ParentOrder != formData.ParentOrder {
-		data.ParentOrder = formData.ParentOrder
+	if info.ParentOrder != formData.ParentOrder {
+		info.ParentOrder = formData.ParentOrder
 		changes = append(changes, "parent-order")
 	}
 
-	if data.Deadline != formData.Deadline {
-		data.Deadline = formData.Deadline
+	if info.Deadline != formData.Deadline {
+		info.Deadline = formData.Deadline
 		changes = append(changes, "deadline")
 	}
 
-	if data.State != formData.State {
-		data.State = formData.State
+	if info.State != formData.State {
+		info.State = formData.State
 		changes = append(changes, "state")
 	}
 
@@ -174,4 +212,8 @@ func handleSave(w http.ResponseWriter, r *http.Request) {
 		fmt.Printf("[INFO]: changes to: %v\n", changes)
 	}
 	w.WriteHeader(http.StatusOK)
+}
+
+func handleSaveTasks(w http.ResponseWriter, r *http.Request) {
+
 }
