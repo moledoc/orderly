@@ -57,9 +57,9 @@
 		<div class="content">
 			<h1>{{.Info.OrderNr}}: {{.Info.MainTask}}</h1>
 			<div>
-				<form id="infoForm"
+				<form id="formInfo"
 				hx-post="/save-info" 
-				hx-target="#infoForm" 
+				hx-target="#formInfo" 
 				hx-swap="outerHTML"
 			  >
 					<fieldset id="orderInfo">
@@ -99,19 +99,22 @@
 			</div>
             <h2>Execution</h2>
             <div>
-                <form id="executionForm"
+                <form id="formExecution"
                 hx-post="/save-tasks" 
-				hx-target="#executionForm" 
+				hx-target="#formExecution" 
 				hx-swap="outerHTML"
                 >
                 <fieldset id="taskGroup">
                     <legend>Tasks</legend>
                         {{range .Tasks}}
-                            <label style="display: flex; gap: 10px; align-items: flex-start;">
-                            <input type="checkbox" name="task" {{if .Checked}}checked{{end}}>
-                            <textarea name="task-"{{.Id}} rows="1" cols="15" style="border: none;" required>{{.Responsible}}</textarea>
-                            <textarea name="task-"{{.Id}} rows="1" cols="40" style="border: none;" required>{{.Description}}</textarea>
-                            </label><br>
+                            <div id="task-div-{{.Id}}" name="task-div-{{.Id}}">
+                                <label style="display: flex; gap: 10px; align-items: flex-start;">
+                                <input type="checkbox" id="task-checkbox-{{.Id}}" name="task-checkbox-{{.Id}}" {{if .Checked}}checked{{end}}>
+                                <textarea id="task-responsible-{{.Id}}" name="task-responsible-{{.Id}}" rows="1" cols="15" style="border: none;" required>{{.Responsible}}</textarea>
+                                <textarea id="task-description-{{.Id}}" name="task-description-{{.Id}}" rows="1" cols="40" style="border: none;" required>{{.Description}}</textarea>
+                                <button id="task-rm-btn-{{.Id}}" name="task-rm-btn-{{.Id}}" type="submit">Delete</button>
+                                </label><br>
+                            </div>
                         {{end}}
 
                     <div>
@@ -126,32 +129,54 @@
 
     <script>
         const namedElements = document.querySelectorAll('[name]');
+
         for (var i=0; i < namedElements.length; i++) {
             const elem = document.getElementById(namedElements[i].id)
             if (elem == undefined) {
                 continue
             }
-            const originalValueInfo = elem.value;
             elem.addEventListener('input', function () {
-                if (this.value !== originalValueInfo) {
                     elem.classList.add('unsaved');
-                } else {
-                    elem.classList.remove('unsaved');
-                }
+                    
+                    if (elem.name?.includes("task-")) {
+                        const idx = elem.name.substring(elem.name.lastIndexOf('-') + 1);
+                        const taskDiv = document.getElementById('task-div-'+idx);
+                        taskDiv.classList.add('unsaved');
+                    }
             })
-        }
+            if (elem.name?.includes("task-rm-btn-")) {
+                elem?.addEventListener('click', function (e) {
+                    const idx = elem.name.substring(elem.name.lastIndexOf('-') + 1);
+                    document.getElementById('task-div-'+idx)?.remove();
+                    let formExecution = document.getElementById('formExecution');
+                    formExecution.classList.add('unsaved');
+                });
+            }
+        }        
 
 		document.body.addEventListener("htmx:afterRequest", function (evt) {
-		if (evt.detail.requestConfig && evt.detail.requestConfig.path === "/save-info") {
-            if (evt.detail.xhr.status == 200) {
-                document.querySelectorAll(".unsaved").forEach(function(el){
-                    if (document.getElementById(el.id).closest('form').id == "infoForm") {
-                        el.classList.remove("unsaved");
-                    }
-                })
+            if (evt.detail.requestConfig && evt.detail.requestConfig.path === "/save-info") {
+                if (evt.detail.xhr.status == 200) {
+                    document.querySelectorAll(".unsaved").forEach(function(el){
+                        if (document.getElementById(el.id).closest('form').id == "formInfo") {
+                            el.classList.remove("unsaved");
+                        }
+                    })
+                }
             }
-		}
 		});
+        document.body.addEventListener("htmx:afterRequest", function (evt) {
+            if (evt.detail.requestConfig && evt.detail.requestConfig.path === "/save-tasks") {
+                if (evt.detail.xhr.status == 200) {
+                    document.querySelectorAll(".unsaved").forEach(function(el){
+                        if (document.getElementById(el.id).closest('form').id == "formExecution") {
+                            el.classList.remove("unsaved");
+                        }
+                    })
+                }
+            }
+		});
+
     </script>
 </html>
 

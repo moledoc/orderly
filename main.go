@@ -5,7 +5,9 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"slices"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -68,8 +70,8 @@ type Task struct {
 }
 
 type PageData struct {
-	Info  Info
-	Tasks []Task
+	Info  *Info
+	Tasks *[]*Task
 }
 
 func main() {
@@ -86,7 +88,7 @@ func formatToDate(t time.Time) string {
 }
 
 var (
-	info = Info{
+	info = &Info{
 		OrderNr:     2,
 		MainTask:    "Go html templates + htmx",
 		Responsible: "Lala",
@@ -96,7 +98,7 @@ var (
 		States:      StateValues(),
 	}
 
-	tasks = []Task{
+	tasks = &[]*Task{
 		{
 			Id:          1,
 			Checked:     false,
@@ -216,4 +218,52 @@ func handleSaveInfo(w http.ResponseWriter, r *http.Request) {
 
 func handleSaveTasks(w http.ResponseWriter, r *http.Request) {
 
+	err := r.ParseForm()
+	if err != nil {
+		log.Printf("[ERROR]: parsing form: %v\n", err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf(`{"error": "parsing form failed: %s"}`, err)))
+		return
+	}
+
+	collected := make(map[string]*Task)
+	for k, v := range r.Form {
+		elems := strings.Split(k, "-")
+		i := elems[len(elems)-1]
+		_, ok := collected[i]
+		if !ok {
+			collected[i] = &Task{}
+		}
+		ii, err := strconv.Atoi(i)
+		if err != nil {
+			log.Printf("[WARNING]: idx str to int conversion failed: %s\n", err)
+			w.WriteHeader(http.StatusInternalServerError)
+			w.Write([]byte(fmt.Sprintf(`{"error": "parsing idx failed: %s"}`, err)))
+			return
+		}
+		collected[i].Id = ii
+		kk := strings.Replace(k, fmt.Sprintf("-%v", ii), "", 1)
+		switch kk {
+		case "task-checkbox":
+			collected[i].Checked = v[0] == "on"
+		case "task-responsible":
+			collected[i].Responsible = v[0]
+		case "task-description":
+			collected[i].Description = v[0]
+		}
+	}
+	*tasks = []*Task{}
+	for _, task := range collected {
+		*tasks = append(*tasks, task)
+	}
+	slices.SortFunc(*tasks, func(a *Task, b *Task) int {
+		if a.Id < b.Id {
+			return -1
+		} else if a.Id > b.Id {
+			return 1
+		} else {
+			return 0
+		}
+	})
+	w.WriteHeader(http.StatusOK)
 }
