@@ -227,8 +227,6 @@ func handleSaveTasks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("HERE1: %+v\n", r.Form)
-
 	collected := make(map[string]*Task)
 	for k, v := range r.Form {
 		elems := strings.Split(k, "-")
@@ -281,7 +279,6 @@ func handleAddTask(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("HERE: %+v\n", r.Form)
 	if len(r.Form) == 0 {
 		return
 	}
@@ -301,4 +298,19 @@ func handleAddTask(w http.ResponseWriter, r *http.Request) {
 	*tasks = append(*tasks, newTask)
 
 	w.WriteHeader(http.StatusOK)
+
+	tmplFilename := "tasks.tmpl.html"
+	tmpl, err := template.New(tmplFilename).Funcs(template.FuncMap{
+		"formatToDate": formatToDate,
+	}).ParseFiles(tmplFilename)
+
+	if err != nil {
+		fmt.Printf("[ERROR]: parse template: %s\n", err)
+		return
+	}
+	w.Header().Set("Content-Type", "text/html")
+	err = tmpl.Execute(w, pageData)
+	if err != nil {
+		log.Printf("[ERROR]: executing html tmpl failed: %s\n", err)
+	}
 }

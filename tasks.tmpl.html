@@ -1,0 +1,23 @@
+<div>
+    <form id="formExecution"
+    hx-post="/save-tasks" 
+    hx-target="#formExecution" 
+    hx-swap="outerHTML"
+    >
+    <fieldset id="taskGroup">
+        <legend>Tasks</legend>
+            {{range .Tasks}}
+                <div id="task-div-{{.Id}}" name="task-div-{{.Id}}">
+                    <label style="display: flex; gap: 10px; align-items: flex-start;">
+                    <input type="checkbox" id="task-checkbox-{{.Id}}" name="task-checkbox-{{.Id}}" {{if .Checked}}checked{{end}}>
+                    <textarea id="task-responsible-{{.Id}}" name="task-responsible-{{.Id}}" rows="1" cols="15" style="border: none;" required>{{.Responsible}}</textarea>
+                    <textarea id="task-description-{{.Id}}" name="task-description-{{.Id}}" rows="1" cols="40" style="border: none;" required>{{.Description}}</textarea>
+                    <button id="task-rm-btn-{{.Id}}" name="task-rm-btn-{{.Id}}" type="submit">Delete</button>
+                    </label><br>
+                </div>
+            {{end}}
+            <button type="submit" hx-post="/save-tasks" hx-target="#result-tasks" hx-swap="innerHTML">Save</button>
+    </fieldset>
+    </form>
+    <div id="result-tasks"></div>               
+</div>

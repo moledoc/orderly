@@ -64,33 +64,17 @@
 			  >
 					<fieldset id="orderInfo">
 						<legend>Info</legend>
-						<div>
-							<label>Main task:<input type="text" id="main-task" style="border: none;" name="order-info-main-task" value="{{.Info.MainTask}}" required></label>
-						</div>
-		
-						<div>
-							<label>Responsible:<input type="text" id="responsible" style="border: none;" name="order-info-responsible" value="{{.Info.Responsible}}" required></label>
-						</div>
-						
-						<div>
-							<label>Parent order:<input type="number" id="parent-order" style="border: none;" name="order-info-parent-order" value="{{.Info.ParentOrder}}" min=1 required></label>
-						</div>
-						
-						<div>
-							<label>Deadline:<input type="date" id="deadline" style="border: none;"  name="order-info-deadline" value="{{.Info.Deadline | formatToDate}}" min="2020-01-01" max="2100-12-31" required /></label>
-						</div>
-
-						<div>
+							<label>Main task:<input type="text" id="main-task" style="border: none;" name="order-info-main-task" value="{{.Info.MainTask}}" required></label><br>
+							<label>Responsible:<input type="text" id="responsible" style="border: none;" name="order-info-responsible" value="{{.Info.Responsible}}" required></label><br>
+							<label>Parent order:<input type="number" id="parent-order" style="border: none;" name="order-info-parent-order" value="{{.Info.ParentOrder}}" min=1 required></label><br>					
+							<label>Deadline:<input type="date" id="deadline" style="border: none;"  name="order-info-deadline" value="{{.Info.Deadline | formatToDate}}" min="2020-01-01" max="2100-12-31" required /></label><br>
 							<label>State:<select id="states" name="order-info-state" style="border: none;" required>
 								{{range .Info.States}}
-									<option value="{{.}}" {{if eq . $.Info.State}}selected{{end}}>{{.}}</option>
+									<option value="{{.}}" {{if eq . $.Info.State}}selected{{end}}>{{.}}</option><br>
 								{{end}}
-							</select></label>
-						</div>
-		
-						<div>
+							</select></label><br>
+						
 							<button type="submit" hx-post="/save-info" hx-target="#result-info" hx-swap="innerHTML">Save</button>
-						</div>
 						<div id="result-info"></div>
 						  
 					</fieldset>
@@ -121,14 +105,11 @@
                 </form>
                 <div id="result-tasks"></div>
 
-
                 <form id="formAddExecute" style="margin-top: 1em; display: flex; gap: 10px; align-items: flex-start;">
                     <input type="text" id="new-task-responsible" name="new-task-responsible" placeholder="Responsible" required>
                     <textarea id="new-task-description" name="new-task-description" rows="1" cols="40" placeholder="Write your task here..." required></textarea>
-                    <button type="submit" hx-post="/add-task" hx-target="#result-tasks-add" hx-swap="innerHTML">Save</button>
-                </form>
-                
-                <div id="result-tasks-add"></div>
+                    <button type="submit" hx-post="/add-task" hx-target="#formExecution" hx-swap="innerHTML">Save</button>
+                </form>                
             </div>
 
 	</body>
@@ -164,7 +145,10 @@
         }        
 
 		document.body.addEventListener("htmx:afterRequest", function (evt) {
-            if (evt.detail.requestConfig && evt.detail.requestConfig.path === "/save-info") {
+            if (!evt.detail.requestConfig) {
+                return
+            }
+            if (evt.detail.requestConfig.path === "/save-info") {
                 if (evt.detail.xhr.status == 200) {
                     document.querySelectorAll(".unsaved").forEach(function(el){
                         if (document.getElementById(el.id).closest('form').id == "formInfo") {
@@ -173,9 +157,7 @@
                     })
                 }
             }
-		});
-        document.body.addEventListener("htmx:afterRequest", function (evt) {
-            if (evt.detail.requestConfig && evt.detail.requestConfig.path === "/save-tasks") {
+            if (evt.detail.requestConfig.path === "/save-tasks") {
                 if (evt.detail.xhr.status == 200) {
                     document.querySelectorAll(".unsaved").forEach(function(el){
                         if (document.getElementById(el.id).closest('form').id == "formExecution") {
@@ -184,7 +166,7 @@
                     })
                 }
             }
-            if (evt.detail.requestConfig && evt.detail.requestConfig.path === "/add-task") {
+            if (evt.detail.requestConfig.path === "/add-task") {
                 const form = document.getElementById('formAddExecute');
                 form?.reset();
             }
