@@ -78,6 +78,7 @@ func main() {
 	http.HandleFunc("/", servePage)
 	http.HandleFunc("POST /save-info", handleSaveInfo)
 	http.HandleFunc("POST /save-tasks", handleSaveTasks)
+	http.HandleFunc("POST /add-task", handleAddTask)
 
 	fmt.Println("Server running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
@@ -226,6 +227,8 @@ func handleSaveTasks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Printf("HERE1: %+v\n", r.Form)
+
 	collected := make(map[string]*Task)
 	for k, v := range r.Form {
 		elems := strings.Split(k, "-")
@@ -265,5 +268,37 @@ func handleSaveTasks(w http.ResponseWriter, r *http.Request) {
 			return 0
 		}
 	})
+	w.WriteHeader(http.StatusOK)
+}
+
+func handleAddTask(w http.ResponseWriter, r *http.Request) {
+
+	err := r.ParseForm()
+	if err != nil {
+		log.Printf("[ERROR]: parsing form: %v\n", err)
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(fmt.Sprintf(`{"error": "parsing form failed: %s"}`, err)))
+		return
+	}
+
+	fmt.Printf("HERE: %+v\n", r.Form)
+	if len(r.Form) == 0 {
+		return
+	}
+
+	l := len(*tasks) - 1
+	if l < 0 {
+		l = 0
+	}
+	task := (*tasks)[l]
+	idx := task.Id + 1
+	newTask := &Task{
+		Id:          idx,
+		Checked:     false,
+		Responsible: r.FormValue("new-task-responsible"),
+		Description: r.FormValue("new-task-description"),
+	}
+	*tasks = append(*tasks, newTask)
+
 	w.WriteHeader(http.StatusOK)
 }
