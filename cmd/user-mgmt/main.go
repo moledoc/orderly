@@ -391,7 +391,30 @@ func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
 	w.Write(bs)
 }
 
-func handleGetUsers(w http.ResponseWriter, r *http.Request) {}
+func handleGetUsers(w http.ResponseWriter, r *http.Request) {
+	ctx := AddTrace(context.Background(), w)
+	defer PrintSpans(ctx)
+
+	StartSpan(ctx, "handleGetUsers")
+	defer StopSpan(ctx, "handleGetUsers")
+
+	us, err := Storage.Read(ctx, READALL, 0)
+	if err != nil {
+		w.WriteHeader(err.StatusCode())
+		w.Write([]byte(err.String()))
+		return
+	}
+
+	bs, jsonerr := json.Marshal(us)
+	if jsonerr != nil {
+		err := NewError(http.StatusInternalServerError, "marshalling user failed")
+		w.WriteHeader(err.StatusCode())
+		w.Write([]byte(err.String()))
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+	w.Write(bs)
+}
 
 func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {}
 
