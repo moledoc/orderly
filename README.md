@@ -10,7 +10,7 @@
         * GET /user/{id}
         * GET /users
         * GET /user/{id}/subordinates
-        * PATCH /user/{id}
+        * PATCH /user
         * DELETE /user/{id}
 * order managment
     * REST API: POST, GET (by id and listing), PATCH, DELETE
