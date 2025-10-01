@@ -178,8 +178,8 @@ type Action int
 const (
 	CREATE Action = iota
 	UPDATE
-	SOFTDELETE
-	HARDDELETE
+	DELETESOFT
+	DELETEHARD
 	READ
 	READALL
 	READVERSIONS
@@ -333,7 +333,7 @@ func (s LocalStorage) Write(ctx context.Context, action Action, user *User) (*Us
 		us = s[*user.ID]
 		return us[len(us)-1], nil
 
-	case SOFTDELETE:
+	case DELETESOFT:
 		StartSpan(ctx, "LocalStorage:Write:SOFTDELETE")
 		defer StopSpan(ctx, "LocalStorage:Write:SOFTDELETE")
 		if ok {
@@ -343,7 +343,7 @@ func (s LocalStorage) Write(ctx context.Context, action Action, user *User) (*Us
 		}
 		return nil, nil
 
-	case HARDDELETE:
+	case DELETEHARD:
 		StartSpan(ctx, "LocalStorage:Write:HARDDELETE")
 		defer StopSpan(ctx, "LocalStorage:Write:HARDDELETE")
 		if ok {
@@ -458,7 +458,6 @@ func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Write(bs)
 }
 
-// TODO: manual test
 func handleGetUserVersions(w http.ResponseWriter, r *http.Request) {
 	ctx := AddTrace(context.Background(), w)
 	defer PrintSpans(ctx)
@@ -569,7 +568,36 @@ func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 	w.Write(bs)
 }
 
-func handleDeleteUser(w http.ResponseWriter, r *http.Request) {}
+func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
+	ctx := AddTrace(context.Background(), w)
+	defer PrintSpans(ctx)
+
+	StartSpan(ctx, "handleDeleteUser")
+	defer StopSpan(ctx, "handleDeleteUser")
+
+	id, errAtoi := strconv.ParseUint(r.PathValue("id"), 10, 0)
+	if errAtoi != nil {
+		err := NewError(http.StatusBadRequest, "invalid id")
+		w.WriteHeader(err.StatusCode())
+		w.Write([]byte(err.String()))
+		return
+	}
+
+	action := DELETESOFT
+
+	deleteType := r.URL.Query().Get("type")
+	if deleteType == "hard" {
+		action = DELETEHARD
+	}
+
+	_, err := Storage.Write(ctx, action, &User{ID: ptr(uint(id))})
+	if err != nil {
+		w.WriteHeader(err.StatusCode())
+		w.Write([]byte(err.String()))
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
 
 func main() {
 
