@@ -15,6 +15,18 @@ var (
 	Storage storageAPI = nil
 )
 
+func ptr[T any](t T) *T {
+	return &t
+}
+
+func deref[T any](t *T) T {
+	if t == nil {
+		var tt T
+		return tt
+	}
+	return *t
+}
+
 type CtxKey struct {
 	key string
 }
@@ -145,10 +157,10 @@ func NewError(code uint, format string, a ...any) ierror {
 }
 
 type Meta struct {
-	Version *uint      `json:"version,omitempty"`
-	Created *time.Time `json:"created,omitempty"`
-	Updated *time.Time `json:"updated,omitempty"`
-	Deleted *bool      `json:"deleted,omitempty"`
+	Version uint      `json:"version,omitempty"`
+	Created time.Time `json:"created,omitempty"`
+	Updated time.Time `json:"updated,omitempty"`
+	Deleted bool      `json:"deleted,omitempty"`
 }
 
 type Email string
@@ -280,6 +292,12 @@ func (s LocalStorage) Write(ctx context.Context, action Action, user *User) (*Us
 		}
 		id := uint(len(s) + 1)
 		user.ID = &id
+		now := time.Now().UTC()
+		user.Meta = &Meta{
+			Version: uint(1),
+			Created: now,
+			Updated: now,
+		}
 		s[id] = append(s[id], user)
 		return user, nil
 
@@ -291,22 +309,25 @@ func (s LocalStorage) Write(ctx context.Context, action Action, user *User) (*Us
 		}
 		var updUser User = *(us[len(us)-1])
 		updated := false
-		if user.Name != nil {
+		if user.Name != nil && deref(updUser.Name) != deref(user.Name) {
 			updUser.Name = user.Name
 			updated = true
 		}
-		if user.Email != nil {
+		if user.Email != nil && deref(updUser.Email) != deref(user.Email) {
 			updUser.Email = user.Email
 			updated = true
 		}
-		if user.Supervisor != nil {
+		if user.Supervisor != nil && deref(updUser.Supervisor) != deref(user.Supervisor) {
 			updUser.Supervisor = user.Supervisor
 			updated = true
 		}
 		if updated {
 			now := time.Now().UTC()
-			updUser.Meta.Updated = &now
-			*updUser.Meta.Version += 1
+			updUser.Meta = &Meta{
+				Version: updUser.Meta.Version + 1,
+				Created: updUser.Meta.Created,
+				Updated: now,
+			}
 			s[*user.ID] = append(s[*user.ID], &updUser)
 		}
 		us = s[*user.ID]
@@ -317,8 +338,7 @@ func (s LocalStorage) Write(ctx context.Context, action Action, user *User) (*Us
 		defer StopSpan(ctx, "LocalStorage:Write:SOFTDELETE")
 		if ok {
 			for _, u := range us {
-				b := true
-				u.Meta.Deleted = &b
+				u.Meta.Deleted = true
 			}
 		}
 		return nil, nil
@@ -409,7 +429,7 @@ func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.String()))
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusOK)
 	w.Write(bs)
 }
 
@@ -434,7 +454,7 @@ func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.String()))
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusOK)
 	w.Write(bs)
 }
 
@@ -468,7 +488,7 @@ func handleGetUserVersions(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.String()))
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusOK)
 	w.Write(bs)
 }
 
@@ -501,11 +521,53 @@ func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
 		w.Write([]byte(err.String()))
 		return
 	}
-	w.WriteHeader(http.StatusCreated)
+	w.WriteHeader(http.StatusOK)
 	w.Write(bs)
 }
 
-func handlePatchUser(w http.ResponseWriter, r *http.Request) {}
+func handlePatchUser(w http.ResponseWriter, r *http.Request) {
+	ctx := AddTrace(context.Background(), w)
+	defer PrintSpans(ctx)
+
+	StartSpan(ctx, "handlePatchUser")
+	defer StopSpan(ctx, "handlePatchUser")
+
+	var user User
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&user); err != nil {
+		err := NewError(http.StatusBadRequest, "invalid payload")
+		w.WriteHeader(err.StatusCode())
+		w.Write([]byte(err.String()))
+		return
+	}
+
+	{
+		// validation
+		if user.ID == nil {
+			err := NewError(http.StatusBadRequest, "id must be provided")
+			w.WriteHeader(err.StatusCode())
+			w.Write([]byte(err.String()))
+			return
+		}
+	}
+
+	u, err := Storage.Write(ctx, UPDATE, &user)
+	if err != nil {
+		w.WriteHeader(err.StatusCode())
+		w.Write([]byte(err.String()))
+		return
+	}
+
+	bs, jsonerr := json.Marshal(u)
+	if jsonerr != nil {
+		err := NewError(http.StatusInternalServerError, "marshalling user failed")
+		w.WriteHeader(err.StatusCode())
+		w.Write([]byte(err.String()))
+		return
+	}
+	w.WriteHeader(http.StatusOK)
+	w.Write(bs)
+}
 
 func handleDeleteUser(w http.ResponseWriter, r *http.Request) {}
 
