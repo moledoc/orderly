@@ -151,11 +151,13 @@ type Meta struct {
 	Deleted *bool      `json:"deleted,omitempty"`
 }
 
+type Email string
+
 type User struct {
 	ID         *uint   `json:"id,omitempty"`
 	Name       *string `json:"name,omitempty"`
-	Email      *string `json:"email,omitempty"`
-	Supervisor *string `json:"supervisor,omitempty"`
+	Email      *Email  `json:"email,omitempty"`
+	Supervisor *Email  `json:"supervisor,omitempty"`
 	Meta       *Meta   `json:"meta,omitempty"`
 }
 
@@ -224,6 +226,25 @@ func (s LocalStorage) Read(ctx context.Context, action Action, id uint) ([]*User
 			}
 			uss[i] = us[len(us)-1]
 			i += 1
+		}
+		return uss, nil
+	case READSUBORDINATES:
+		StartSpan(ctx, "LocalStorage:Read:READSUBORDINATES")
+		defer StopSpan(ctx, "LocalStorage:Read:READSUBORDINATES")
+		ssupervisor, ok := s[id]
+		if !ok || len(ssupervisor) == 0 {
+			return nil, NewError(http.StatusNotFound, "not found during read")
+		}
+		supervisor := ssupervisor[len(ssupervisor)-1]
+
+		var uss []*User
+		for _, us := range s {
+			if len(us) == 0 {
+				continue
+			}
+			if u := us[len(us)-1]; u.Supervisor != nil && *u.Supervisor == *supervisor.Email {
+				uss = append(uss, u)
+			}
 		}
 		return uss, nil
 	default:
@@ -451,7 +472,38 @@ func handleGetUserVersions(w http.ResponseWriter, r *http.Request) {
 	w.Write(bs)
 }
 
-func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {}
+func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
+	ctx := AddTrace(context.Background(), w)
+	defer PrintSpans(ctx)
+
+	StartSpan(ctx, "handleGetUserSubOrdinates")
+	defer StopSpan(ctx, "handleGetUserSubOrdinates")
+
+	id, errAtoi := strconv.ParseUint(r.PathValue("id"), 10, 0)
+	if errAtoi != nil {
+		err := NewError(http.StatusBadRequest, "invalid id")
+		w.WriteHeader(err.StatusCode())
+		w.Write([]byte(err.String()))
+		return
+	}
+
+	u, err := Storage.Read(ctx, READSUBORDINATES, uint(id))
+	if err != nil {
+		w.WriteHeader(err.StatusCode())
+		w.Write([]byte(err.String()))
+		return
+	}
+
+	bs, jsonerr := json.Marshal(u)
+	if jsonerr != nil {
+		err := NewError(http.StatusInternalServerError, "marshalling user failed")
+		w.WriteHeader(err.StatusCode())
+		w.Write([]byte(err.String()))
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+	w.Write(bs)
+}
 
 func handlePatchUser(w http.ResponseWriter, r *http.Request) {}
 
