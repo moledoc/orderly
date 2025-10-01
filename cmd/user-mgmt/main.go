@@ -166,11 +166,14 @@ const (
 	UPDATE
 	SOFTDELETE
 	HARDDELETE
+	READ
+	READVERSIONS
+	READALL
 )
 
 type storageAPI interface {
 	Close(ctx context.Context)
-	Read(ctx context.Context, id uint) (*User, ierror)
+	Read(ctx context.Context, action Action, id uint) ([]*User, ierror)
 	Write(ctx context.Context, action Action, user *User) (*User, ierror)
 }
 
@@ -184,18 +187,47 @@ func (s LocalStorage) Close(ctx context.Context) {
 	s = nil
 }
 
-func (s LocalStorage) Read(ctx context.Context, id uint) (*User, ierror) {
+func (s LocalStorage) Read(ctx context.Context, action Action, id uint) ([]*User, ierror) {
 	StartSpan(ctx, "LocalStorage:Read")
 	defer StopSpan(ctx, "LocalStorage:Read")
 
 	if s == nil {
 		return nil, NewError(http.StatusInternalServerError, "localstorage not initialized for read")
 	}
-	us, ok := s[id]
-	if !ok || len(us) == 0 {
-		return nil, NewError(http.StatusNotFound, "not found during read")
+
+	switch action {
+	case READ:
+		StartSpan(ctx, "LocalStorage:Read:READ")
+		defer StopSpan(ctx, "LocalStorage:Read:READ")
+		us, ok := s[id]
+		if !ok || len(us) == 0 {
+			return nil, NewError(http.StatusNotFound, "not found during read")
+		}
+		return []*User{us[len(us)-1]}, nil
+	case READVERSIONS:
+		StartSpan(ctx, "LocalStorage:Read:READVERSIONS")
+		defer StopSpan(ctx, "LocalStorage:Read:READVERSIONS")
+		us, ok := s[id]
+		if !ok || len(us) == 0 {
+			return nil, NewError(http.StatusNotFound, "not found during read")
+		}
+		return us, nil
+	case READALL:
+		StartSpan(ctx, "LocalStorage:Read:READALL")
+		defer StopSpan(ctx, "LocalStorage:Read:READALL")
+		uss := make([]*User, len(s))
+		i := 0
+		for _, us := range s {
+			if len(us) == 0 {
+				continue
+			}
+			uss[i] = us[len(us)-1]
+			i += 1
+		}
+		return uss, nil
+	default:
+		return nil, NewError(http.StatusInternalServerError, "undefined read action")
 	}
-	return us[len(us)-1], nil
 }
 
 func (s LocalStorage) Write(ctx context.Context, action Action, user *User) (*User, ierror) {
@@ -220,17 +252,18 @@ func (s LocalStorage) Write(ctx context.Context, action Action, user *User) (*Us
 
 	case CREATE:
 		StartSpan(ctx, "LocalStorage:Write:CREATE")
+		defer StopSpan(ctx, "LocalStorage:Write:CREATE")
 		if ok || len(us) > 0 {
 			return nil, NewError(http.StatusConflict, "already exists during write")
 		}
 		id := uint(len(s) + 1)
 		user.ID = &id
 		s[id] = append(s[id], user)
-		StopSpan(ctx, "LocalStorage:Write:CREATE")
 		return user, nil
 
 	case UPDATE:
 		StartSpan(ctx, "LocalStorage:Write:UPDATE")
+		defer StopSpan(ctx, "LocalStorage:Write:UPDATE")
 		if !ok || len(us) == 0 {
 			return nil, NewError(http.StatusNotFound, "not found during write")
 		}
@@ -255,26 +288,25 @@ func (s LocalStorage) Write(ctx context.Context, action Action, user *User) (*Us
 			s[*user.ID] = append(s[*user.ID], &updUser)
 		}
 		us = s[*user.ID]
-		StopSpan(ctx, "LocalStorage:Write:UPDATE")
 		return us[len(us)-1], nil
 
 	case SOFTDELETE:
 		StartSpan(ctx, "LocalStorage:Write:SOFTDELETE")
+		defer StopSpan(ctx, "LocalStorage:Write:SOFTDELETE")
 		if ok {
 			for _, u := range us {
 				b := true
 				u.Meta.Deleted = &b
 			}
 		}
-		StopSpan(ctx, "LocalStorage:Write:SOFTDELETE")
 		return nil, nil
 
 	case HARDDELETE:
 		StartSpan(ctx, "LocalStorage:Write:HARDDELETE")
+		defer StopSpan(ctx, "LocalStorage:Write:HARDDELETE")
 		if ok {
 			delete(s, *user.ID)
 		}
-		StopSpan(ctx, "LocalStorage:Write:HARDDELETE")
 		return nil, nil
 
 	default:
@@ -341,7 +373,7 @@ func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := Storage.Read(ctx, uint(id))
+	u, err := Storage.Read(ctx, READ, uint(id))
 	if err != nil {
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
