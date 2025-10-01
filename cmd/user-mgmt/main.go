@@ -3,9 +3,68 @@ package main
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"net/http"
+	"runtime"
+	"strconv"
 	"time"
 )
+
+func randalphanum() string {
+	v := ""
+	for len(v) < 32 {
+		v = fmt.Sprintf("%v%v", v, strconv.FormatInt(rand.Int63(), 16))
+	}
+	v = v[:32]
+	return v
+}
+
+func AddTrace(w http.ResponseWriter) {
+	if len(w.Header().Get("trace")) == 0 {
+		w.Header().Add("trace", randalphanum())
+	}
+}
+
+func GetTrace(w http.ResponseWriter) string {
+	if len(w.Header().Get("trace")) == 0 {
+		return ""
+	}
+	return w.Header().Get("trace")
+}
+
+type Spans map[string]*Span
+
+type Span struct {
+	FuncName string    `json:"func_name"`
+	Filename string    `json:"filename"`
+	Line     int       `json:"line"`
+	Trace    string    `json:"trace"`
+	Start    time.Time `json:"start"`
+	End      time.Time `json:"end"`
+}
+
+func (ss Spans) StartSpan(w http.ResponseWriter) {
+	pc, file, line, _ := runtime.Caller(2)
+	fn := runtime.FuncForPC(pc)
+	trace := w.Header().Get("trace")
+	s := &Span{
+		FuncName: fn.Name(),
+		Filename: file,
+		Line:     line,
+		Trace:    trace,
+		Start:    time.Now().UTC(),
+	}
+	ss[trace] = s
+}
+
+func (ss Spans) StopSpan(w http.ResponseWriter) {
+	trace := w.Header().Get("trace")
+	s, ok := ss[trace]
+	if !ok {
+		return
+	}
+	s.End = time.Now().UTC()
+}
 
 type ierror interface {
 	String() string
