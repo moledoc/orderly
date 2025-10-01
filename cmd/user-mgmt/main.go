@@ -167,8 +167,9 @@ const (
 	SOFTDELETE
 	HARDDELETE
 	READ
-	READVERSIONS
 	READALL
+	READVERSIONS
+	READSUBORDINATES
 )
 
 type storageAPI interface {
@@ -416,6 +417,40 @@ func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Write(bs)
 }
 
+// TODO: manual test
+func handleGetUserVersions(w http.ResponseWriter, r *http.Request) {
+	ctx := AddTrace(context.Background(), w)
+	defer PrintSpans(ctx)
+
+	StartSpan(ctx, "handleGetUserVersions")
+	defer StopSpan(ctx, "handleGetUserVersions")
+
+	id, errAtoi := strconv.ParseUint(r.PathValue("id"), 10, 0)
+	if errAtoi != nil {
+		err := NewError(http.StatusBadRequest, "invalid id")
+		w.WriteHeader(err.StatusCode())
+		w.Write([]byte(err.String()))
+		return
+	}
+
+	u, err := Storage.Read(ctx, READVERSIONS, uint(id))
+	if err != nil {
+		w.WriteHeader(err.StatusCode())
+		w.Write([]byte(err.String()))
+		return
+	}
+
+	bs, jsonerr := json.Marshal(u)
+	if jsonerr != nil {
+		err := NewError(http.StatusInternalServerError, "marshalling user failed")
+		w.WriteHeader(err.StatusCode())
+		w.Write([]byte(err.String()))
+		return
+	}
+	w.WriteHeader(http.StatusCreated)
+	w.Write(bs)
+}
+
 func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {}
 
 func handlePatchUser(w http.ResponseWriter, r *http.Request) {}
@@ -429,6 +464,7 @@ func main() {
 	http.HandleFunc("POST /user", handlePostUser)
 	http.HandleFunc("GET /user/{id}", handleGetUserByID)
 	http.HandleFunc("GET /users", handleGetUsers)
+	http.HandleFunc("GET /user/{id}/versions", handleGetUserVersions)
 	http.HandleFunc("GET /user/{id}/subordinates", handleGetUserSubOrdinates)
 	http.HandleFunc("PATCH /user", handlePatchUser)
 	http.HandleFunc("DELETE /user/{id}", handleDeleteUser)
