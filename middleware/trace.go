@@ -9,10 +9,15 @@ import (
 )
 
 func AddTrace(ctx context.Context, w http.ResponseWriter) context.Context {
-	trace := w.Header().Get("trace")
+	var trace string
+	if w != nil {
+		trace = w.Header().Get("trace")
+	}
 	if len(trace) == 0 {
 		trace = utils.RandAlphanum()
-		w.Header().Add("trace", trace)
+		if w != nil {
+			w.Header().Add("trace", trace)
+		}
 	}
 	if ctx.Value(models.CtxKeyTrace) == nil {
 		ctx = context.WithValue(ctx, models.CtxKeyTrace, trace)

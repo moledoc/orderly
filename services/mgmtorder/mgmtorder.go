@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/moledoc/orderly/actions"
 	"github.com/moledoc/orderly/middleware"
 	"github.com/moledoc/orderly/models"
+	"github.com/moledoc/orderly/services/common"
 	"github.com/moledoc/orderly/storage"
 	"github.com/moledoc/orderly/storage/local"
 	"github.com/moledoc/orderly/utils"
@@ -34,7 +34,7 @@ func handlePostOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	{
+	{ // TODO: move validation to _api file
 		// validation
 		if order.Task.ID != nil {
 			err := models.NewError(http.StatusBadRequest, "id not allowed")
@@ -44,22 +44,9 @@ func handlePostOrder(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	resp, err := strg.Write(ctx, actions.CREATE, &order)
-	if err != nil {
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
+	resp, err := HandlePostOrder(ctx, &order)
 
-	bs, jsonerr := json.Marshal(resp)
-	if jsonerr != nil {
-		err := models.NewError(http.StatusInternalServerError, "marshalling order failed")
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-	w.WriteHeader(http.StatusCreated)
-	w.Write(bs)
+	common.WriteResponse(ctx, w, resp, err, http.StatusCreated)
 }
 
 func handleGetOrderByID(w http.ResponseWriter, r *http.Request) {
@@ -77,47 +64,20 @@ func handleGetOrderByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := strg.Read(ctx, actions.READ, uint(id))
-	if err != nil {
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
+	resp, err := HandleGetOrderByID(ctx, uint(id))
+	common.WriteResponse(ctx, w, resp, err, http.StatusOK)
 
-	bs, jsonerr := json.Marshal(resp)
-	if jsonerr != nil {
-		err := models.NewError(http.StatusInternalServerError, "marshalling order failed")
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	w.Write(bs)
 }
 
 func handleGetOrders(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
 
-	middleware.SpanStart(ctx, "handleGetOrders")
-	defer middleware.SpanStop(ctx, "handleGetOrders")
+	middleware.SpanStart(ctx, "handleGetOrderByID")
+	defer middleware.SpanStop(ctx, "handleGetOrderByID")
 
-	resp, err := strg.Read(ctx, actions.READALL, 0)
-	if err != nil {
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-
-	bs, jsonerr := json.Marshal(resp)
-	if jsonerr != nil {
-		err := models.NewError(http.StatusInternalServerError, "marshalling order failed")
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	w.Write(bs)
+	resp, err := HandleGetOrders(ctx)
+	common.WriteResponse(ctx, w, resp, err, http.StatusOK)
 }
 
 func handleGetOrderVersions(w http.ResponseWriter, r *http.Request) {
@@ -135,22 +95,8 @@ func handleGetOrderVersions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := strg.Read(ctx, actions.READVERSIONS, uint(id))
-	if err != nil {
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-
-	bs, jsonerr := json.Marshal(resp)
-	if jsonerr != nil {
-		err := models.NewError(http.StatusInternalServerError, "marshalling order failed")
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	w.Write(bs)
+	resp, err := HandleGetOrderVersions(ctx, uint(id))
+	common.WriteResponse(ctx, w, resp, err, http.StatusOK)
 }
 
 func handleGetOrderSubOrders(w http.ResponseWriter, r *http.Request) {
@@ -168,22 +114,8 @@ func handleGetOrderSubOrders(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := strg.Read(ctx, actions.READSUBORDERS, uint(id))
-	if err != nil {
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-
-	bs, jsonerr := json.Marshal(resp)
-	if jsonerr != nil {
-		err := models.NewError(http.StatusInternalServerError, "marshalling order failed")
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	w.Write(bs)
+	resp, err := HandleGetOrderSubOrders(ctx, uint(id))
+	common.WriteResponse(ctx, w, resp, err, http.StatusOK)
 }
 
 func handlePatchOrder(w http.ResponseWriter, r *http.Request) {
@@ -202,7 +134,7 @@ func handlePatchOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	{
+	{ // TODO: move validation to _api
 		// validation
 		if order.Task.ID == nil {
 			err := models.NewError(http.StatusBadRequest, "id must be provided")
@@ -212,22 +144,9 @@ func handlePatchOrder(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	resp, err := strg.Write(ctx, actions.UPDATE, &order)
-	if err != nil {
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
+	resp, err := HandlePatchOrder(ctx, &order)
 
-	bs, jsonerr := json.Marshal(resp)
-	if jsonerr != nil {
-		err := models.NewError(http.StatusInternalServerError, "marshalling order failed")
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	w.Write(bs)
+	common.WriteResponse(ctx, w, resp, err, http.StatusOK)
 }
 
 func handleDeleteOrder(w http.ResponseWriter, r *http.Request) {
@@ -245,20 +164,23 @@ func handleDeleteOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	action := actions.DELETESOFT
+	order := &models.Order{
+		Task: &models.Task{
+			ID: utils.Ptr(uint(id)),
+		},
+	}
+	var resp *models.Order
+	var err models.IError
 
 	deleteType := r.URL.Query().Get("type")
 	if deleteType == "hard" {
-		action = actions.DELETEHARD
+		resp, err = HandleDeleteOrderHard(ctx, order)
+	} else {
+		resp, err = HandleDeleteOrderSoft(ctx, order)
+
 	}
 
-	_, err := strg.Write(ctx, action, &models.Order{Task: &models.Task{ID: utils.Ptr(uint(id))}})
-	if err != nil {
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-	w.WriteHeader(http.StatusNoContent)
+	common.WriteResponse(ctx, w, resp, err, http.StatusNoContent)
 }
 
 func New() {

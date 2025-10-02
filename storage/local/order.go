@@ -301,7 +301,7 @@ func (s StorageOrder) Write(ctx context.Context, action actions.Action, order *m
 		}
 		return nil, nil
 
-	case actions.DELETEHARD:
+	case actions.DELETEHARD: // TODO: only allowed if no suborders
 		middleware.SpanStart(ctx, "LocalStorageOrder:Write:HARDDELETE")
 		defer middleware.SpanStop(ctx, "LocalStorageOrder:Write:HARDDELETE")
 		if ok {
