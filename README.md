@@ -12,7 +12,7 @@
         * GET /user/{id}/subordinates
         * PATCH /user
         * DELETE /user/{id}\[?type=hard\]
-* order managment
+- [x] order managment
     * REST API: POST, GET (by id and listing), PATCH, DELETE
         * POST /order
         * GET /order/{id}
