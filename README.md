@@ -4,14 +4,14 @@
 
 ## TODOs
 
-* user management
+- [x] user management
     * REST API: POST, GET (by id and listing), PATCH, DELETE
         * POST /user
         * GET /user/{id}
         * GET /users
         * GET /user/{id}/subordinates
         * PATCH /user
-        * DELETE /user/{id}
+        * DELETE /user/{id}\[?type=hard\]
 * order managment
     * REST API: POST, GET (by id and listing), PATCH, DELETE
         * POST /order
