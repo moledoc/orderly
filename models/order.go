@@ -18,28 +18,28 @@ const (
 )
 
 type Task struct {
-	ID          *uint   `json:"id"`
-	State       *State  `json:"state"`
-	Accountable *string `json:"accountable"`
-	Objective   *string `json:"objective"`
-	Meta        *Meta   `json:"meta"`
+	ID          *uint   `json:"id,omitempty"`
+	State       *State  `json:"state,omitempty"`
+	Accountable *string `json:"accountable,omitempty"`
+	Objective   *string `json:"objective,omitempty"`
+	Meta        *Meta   `json:"meta,omitempty"`
 }
 
 type SitRep struct {
-	ID            *uint   `json:"id"`
-	Cron          *string `json:"cron"`
-	WorkCompleted *uint   `json:"work_completed"`
-	State         *State  `json:"state"`
-	Summary       *string `json:"summary"`
-	Meta          *Meta   `json:"meta"`
+	ID            *uint   `json:"id,omitempty"`
+	Cron          *string `json:"cron,omitempty"`
+	WorkCompleted *uint   `json:"work_completed,omitempty"`
+	State         *State  `json:"state,omitempty"`
+	Summary       *string `json:"summary,omitempty"`
+	Meta          *Meta   `json:"meta,omitempty"`
 }
 
 type Order struct {
-	Task          *Task      `json:"task"`
-	SubTasks      []*Task    `json:"subtasks"`
-	ParentOrderID *uint      `json:"parent_order_id"`
-	Deadline      *time.Time `json:"deadline"`
-	SitReps       []*SitRep  `json:"sitreps"`
+	Task          *Task      `json:"task,omitempty"`
+	SubTasks      []*Task    `json:"subtasks,omitempty"`
+	ParentOrderID *uint      `json:"parent_order_id,omitempty"`
+	Deadline      *time.Time `json:"deadline,omitempty"`
+	SitReps       []*SitRep  `json:"sitreps,omitempty"`
 }
 
 func (o *Order) Clone() *Order {

@@ -134,6 +134,8 @@ func (s StorageOrder) Write(ctx context.Context, action actions.Action, order *m
 		if !ok || len(os) == 0 {
 			return nil, models.NewError(http.StatusNotFound, "not found during write")
 		}
+		now := time.Now().UTC()
+
 		var updOrder models.Order = utils.Deref(os[len(os)-1].Clone())
 		updated := false
 
@@ -149,6 +151,10 @@ func (s StorageOrder) Write(ctx context.Context, action actions.Action, order *m
 			}
 			if task.Objective != nil && utils.Deref(updTask.Objective) != utils.Deref(task.Objective) {
 				updTask.Objective = task.Objective
+				upd = true
+			}
+			if task.Meta != nil && updTask.Meta.Deleted != task.Meta.Deleted {
+				updTask.Meta.Deleted = task.Meta.Deleted
 				upd = true
 			}
 			return updated || upd
@@ -176,6 +182,10 @@ func (s StorageOrder) Write(ctx context.Context, action actions.Action, order *m
 				updSitRep.Summary = sitrep.Summary
 				upd = true
 			}
+			if sitrep.Meta != nil && updSitRep.Meta.Deleted != sitrep.Meta.Deleted {
+				updSitRep.Meta.Deleted = sitrep.Meta.Deleted
+				upd = true
+			}
 			return updated || upd
 		}
 
@@ -201,7 +211,8 @@ func (s StorageOrder) Write(ctx context.Context, action actions.Action, order *m
 							updatedSubtask.Meta = &models.Meta{
 								Version: updSubTask.Meta.Version + 1,
 								Created: updSubTask.Meta.Created,
-								Updated: time.Now().UTC(),
+								Updated: now,
+								Deleted: updSubTask.Meta.Deleted,
 							}
 							updOrder.SubTasks[j] = &updatedSubtask
 						}
@@ -212,15 +223,8 @@ func (s StorageOrder) Write(ctx context.Context, action actions.Action, order *m
 				updated = updated || upd
 			} else { // NOTE: new subtask
 				updated = true
-				now := time.Now().UTC()
-				highestID := uint(0)
-				for _, st := range updOrder.SubTasks {
-					if highestID < utils.Deref(st.ID) {
-						highestID = utils.Deref(st.ID)
-					}
-				}
 				updOrder.SubTasks = append(updOrder.SubTasks, &models.Task{
-					ID:          utils.Ptr(highestID + 1),
+					ID:          utils.Ptr(uint(len(updOrder.SubTasks) + 1)),
 					State:       subtask.State,
 					Accountable: subtask.Accountable,
 					Objective:   subtask.Objective,
@@ -244,7 +248,8 @@ func (s StorageOrder) Write(ctx context.Context, action actions.Action, order *m
 							updatedSubtask.Meta = &models.Meta{
 								Version: updSitRep.Meta.Version + 1,
 								Created: updSitRep.Meta.Created,
-								Updated: time.Now().UTC(),
+								Updated: now,
+								Deleted: updSitRep.Meta.Deleted,
 							}
 							updOrder.SitReps[j] = &updatedSubtask
 						}
@@ -255,15 +260,8 @@ func (s StorageOrder) Write(ctx context.Context, action actions.Action, order *m
 				updated = updated || upd
 			} else { // NOTE: new sitrep
 				updated = true
-				now := time.Now().UTC()
-				highestID := uint(0)
-				for _, sr := range updOrder.SitReps {
-					if highestID < utils.Deref(sr.ID) {
-						highestID = utils.Deref(sr.ID)
-					}
-				}
 				updOrder.SitReps = append(updOrder.SitReps, &models.SitRep{
-					ID:            utils.Ptr(highestID + 1),
+					ID:            utils.Ptr(uint(len(updOrder.SitReps) + 1)),
 					Cron:          sitrep.Cron,
 					WorkCompleted: sitrep.WorkCompleted,
 					State:         sitrep.State,
@@ -277,10 +275,7 @@ func (s StorageOrder) Write(ctx context.Context, action actions.Action, order *m
 			}
 		}
 
-		// TODO: handle subtask and sitrep .meta.deleted
-
 		if updated {
-			now := time.Now().UTC()
 			updOrder.Task.Meta = &models.Meta{
 				Version: updOrder.Task.Meta.Version + 1,
 				Created: updOrder.Task.Meta.Created,
