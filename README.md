@@ -12,14 +12,15 @@
         * GET /user/{id}/subordinates
         * PATCH /user
         * DELETE /user/{id}\[?type=hard\]
-* order managment
+- [x] order managment
     * REST API: POST, GET (by id and listing), PATCH, DELETE
         * POST /order
         * GET /order/{id}
         * GET /orders
         * GET /order/{id}/suborders
+        * GET /order/{id}/suborders
         * PATCH /order/{id}
-        * DELETE /order/{id}
+        * DELETE /user/{id}\[?type=hard\]
 * order UI
     * check [order.html](./order.html) for first idea draft
     * idea to use htmx, so there might be some UI related endpoints
@@ -27,7 +28,8 @@
 * user UI
     * idea to use htmx, so there might be some UI related endpoints
         * POST/GET/PATCH/DELETE /ui/<endpoint>
-* login
+* login(?)
+* optimize versioning
 * testing (functional, performance)?
 * deploying (docker)
 * documentation (README)

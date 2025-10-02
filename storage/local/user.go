@@ -8,26 +8,27 @@ import (
 	"github.com/moledoc/orderly/actions"
 	"github.com/moledoc/orderly/middleware"
 	"github.com/moledoc/orderly/models"
+	"github.com/moledoc/orderly/storage"
 	"github.com/moledoc/orderly/utils"
 )
 
-type Storage map[uint][]*models.User
+type StorageUser map[uint][]*models.User
 
-func New() Storage {
-	return make(Storage)
+func NewStorageUser() storage.StorageUserAPI {
+	return make(StorageUser)
 }
 
-func (s Storage) Close(ctx context.Context) {
+func (s StorageUser) Close(ctx context.Context) {
 
-	middleware.SpanStart(ctx, "LocalStorage:Close")
-	defer middleware.SpanStop(ctx, "LocalStorage:Close")
+	middleware.SpanStart(ctx, "LocalStorageUser:Close")
+	defer middleware.SpanStop(ctx, "LocalStorageUser:Close")
 
 	s = nil
 }
 
-func (s Storage) Read(ctx context.Context, action actions.Action, id uint) ([]*models.User, models.IError) {
-	middleware.SpanStart(ctx, "LocalStorage:Read")
-	defer middleware.SpanStop(ctx, "LocalStorage:Read")
+func (s StorageUser) Read(ctx context.Context, action actions.Action, id uint) ([]*models.User, models.IError) {
+	middleware.SpanStart(ctx, "LocalStorageUser:Read")
+	defer middleware.SpanStop(ctx, "LocalStorageUser:Read")
 
 	if s == nil {
 		return nil, models.NewError(http.StatusInternalServerError, "localstorage not initialized for read")
@@ -35,24 +36,24 @@ func (s Storage) Read(ctx context.Context, action actions.Action, id uint) ([]*m
 
 	switch action {
 	case actions.READ:
-		middleware.SpanStart(ctx, "LocalStorage:Read:READ")
-		defer middleware.SpanStop(ctx, "LocalStorage:Read:READ")
+		middleware.SpanStart(ctx, "LocalStorageUser:Read:READ")
+		defer middleware.SpanStop(ctx, "LocalStorageUser:Read:READ")
 		us, ok := s[id]
 		if !ok || len(us) == 0 {
 			return nil, models.NewError(http.StatusNotFound, "not found during read")
 		}
 		return []*models.User{us[len(us)-1]}, nil
 	case actions.READVERSIONS:
-		middleware.SpanStart(ctx, "LocalStorage:Read:READVERSIONS")
-		defer middleware.SpanStop(ctx, "LocalStorage:Read:READVERSIONS")
+		middleware.SpanStart(ctx, "LocalStorageUser:Read:READVERSIONS")
+		defer middleware.SpanStop(ctx, "LocalStorageUser:Read:READVERSIONS")
 		us, ok := s[id]
 		if !ok || len(us) == 0 {
 			return nil, models.NewError(http.StatusNotFound, "not found during read")
 		}
 		return us, nil
 	case actions.READALL:
-		middleware.SpanStart(ctx, "LocalStorage:Read:READALL")
-		defer middleware.SpanStop(ctx, "LocalStorage:Read:READALL")
+		middleware.SpanStart(ctx, "LocalStorageUser:Read:READALL")
+		defer middleware.SpanStop(ctx, "LocalStorageUser:Read:READALL")
 		uss := make([]*models.User, len(s))
 		i := 0
 		for _, us := range s {
@@ -64,8 +65,8 @@ func (s Storage) Read(ctx context.Context, action actions.Action, id uint) ([]*m
 		}
 		return uss, nil
 	case actions.READSUBORDINATES:
-		middleware.SpanStart(ctx, "LocalStorage:Read:READSUBORDINATES")
-		defer middleware.SpanStop(ctx, "LocalStorage:Read:READSUBORDINATES")
+		middleware.SpanStart(ctx, "LocalStorageUser:Read:READSUBORDINATES")
+		defer middleware.SpanStop(ctx, "LocalStorageUser:Read:READSUBORDINATES")
 		ssupervisor, ok := s[id]
 		if !ok || len(ssupervisor) == 0 {
 			return nil, models.NewError(http.StatusNotFound, "not found during read")
@@ -77,7 +78,7 @@ func (s Storage) Read(ctx context.Context, action actions.Action, id uint) ([]*m
 			if len(us) == 0 {
 				continue
 			}
-			if u := us[len(us)-1]; u.Supervisor != nil && *u.Supervisor == *supervisor.Email {
+			if u := us[len(us)-1]; u.Supervisor != nil && utils.Deref(u.Supervisor) == utils.Deref(supervisor.Email) {
 				uss = append(uss, u)
 			}
 		}
@@ -87,10 +88,10 @@ func (s Storage) Read(ctx context.Context, action actions.Action, id uint) ([]*m
 	}
 }
 
-func (s Storage) Write(ctx context.Context, action actions.Action, user *models.User) (*models.User, models.IError) {
+func (s StorageUser) Write(ctx context.Context, action actions.Action, user *models.User) (*models.User, models.IError) {
 
-	middleware.SpanStart(ctx, "LocalStorage:Write")
-	defer middleware.SpanStop(ctx, "LocalStorage:Write")
+	middleware.SpanStart(ctx, "LocalStorageUser:Write")
+	defer middleware.SpanStop(ctx, "LocalStorageUser:Write")
 
 	if s == nil {
 		return nil, models.NewError(http.StatusInternalServerError, "localstorage not initialized for write")
@@ -102,14 +103,14 @@ func (s Storage) Write(ctx context.Context, action actions.Action, user *models.
 	var us []*models.User
 	var ok bool
 	if user.ID != nil {
-		us, ok = s[*user.ID]
+		us, ok = s[utils.Deref(user.ID)]
 	}
 
 	switch action {
 
 	case actions.CREATE:
-		middleware.SpanStart(ctx, "LocalStorage:Write:CREATE")
-		defer middleware.SpanStop(ctx, "LocalStorage:Write:CREATE")
+		middleware.SpanStart(ctx, "LocalStorageUser:Write:CREATE")
+		defer middleware.SpanStop(ctx, "LocalStorageUser:Write:CREATE")
 		if ok || len(us) > 0 {
 			return nil, models.NewError(http.StatusConflict, "already exists during write")
 		}
@@ -125,12 +126,12 @@ func (s Storage) Write(ctx context.Context, action actions.Action, user *models.
 		return user, nil
 
 	case actions.UPDATE:
-		middleware.SpanStart(ctx, "LocalStorage:Write:UPDATE")
-		defer middleware.SpanStop(ctx, "LocalStorage:Write:UPDATE")
+		middleware.SpanStart(ctx, "LocalStorageUser:Write:UPDATE")
+		defer middleware.SpanStop(ctx, "LocalStorageUser:Write:UPDATE")
 		if !ok || len(us) == 0 {
 			return nil, models.NewError(http.StatusNotFound, "not found during write")
 		}
-		var updUser models.User = *(us[len(us)-1])
+		var updUser models.User = utils.Deref(us[len(us)-1].Clone())
 		updated := false
 		if user.Name != nil && utils.Deref(updUser.Name) != utils.Deref(user.Name) {
 			updUser.Name = user.Name
@@ -151,14 +152,14 @@ func (s Storage) Write(ctx context.Context, action actions.Action, user *models.
 				Created: updUser.Meta.Created,
 				Updated: now,
 			}
-			s[*user.ID] = append(s[*user.ID], &updUser)
+			s[utils.Deref(user.ID)] = append(s[utils.Deref(user.ID)], &updUser)
 		}
-		us = s[*user.ID]
+		us = s[utils.Deref(user.ID)]
 		return us[len(us)-1], nil
 
 	case actions.DELETESOFT:
-		middleware.SpanStart(ctx, "LocalStorage:Write:SOFTDELETE")
-		defer middleware.SpanStop(ctx, "LocalStorage:Write:SOFTDELETE")
+		middleware.SpanStart(ctx, "LocalStorageUser:Write:SOFTDELETE")
+		defer middleware.SpanStop(ctx, "LocalStorageUser:Write:SOFTDELETE")
 		if ok {
 			for _, u := range us {
 				u.Meta.Deleted = true
@@ -167,10 +168,10 @@ func (s Storage) Write(ctx context.Context, action actions.Action, user *models.
 		return nil, nil
 
 	case actions.DELETEHARD:
-		middleware.SpanStart(ctx, "LocalStorage:Write:HARDDELETE")
-		defer middleware.SpanStop(ctx, "LocalStorage:Write:HARDDELETE")
+		middleware.SpanStart(ctx, "LocalStorageUser:Write:HARDDELETE")
+		defer middleware.SpanStop(ctx, "LocalStorageUser:Write:HARDDELETE")
 		if ok {
-			delete(s, *user.ID)
+			delete(s, utils.Deref(user.ID))
 		}
 		return nil, nil
 

@@ -18,6 +18,10 @@ func Deref[T any](t *T) T {
 	return *t
 }
 
+func RePtr[T any](t *T) *T {
+	return Ptr(Deref(t))
+}
+
 func RandAlphanum() string {
 	v := ""
 	for len(v) < 32 {

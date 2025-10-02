@@ -16,19 +16,19 @@ import (
 )
 
 var (
-	strg storage.StorageUserAPI = nil
+	strg storage.StorageOrderAPI = nil
 )
 
-func handlePostUser(w http.ResponseWriter, r *http.Request) {
+func handlePostOrder(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
 
-	middleware.SpanStart(ctx, "handlePostUser")
-	defer middleware.SpanStop(ctx, "handlePostUser")
+	middleware.SpanStart(ctx, "handlePostOrder")
+	defer middleware.SpanStop(ctx, "handlePostOrder")
 
-	var user models.User
+	var order models.Order
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&user); err != nil {
+	if err := decoder.Decode(&order); err != nil {
 		err := models.NewError(http.StatusBadRequest, "invalid payload")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
@@ -37,7 +37,7 @@ func handlePostUser(w http.ResponseWriter, r *http.Request) {
 
 	{
 		// validation
-		if user.ID != nil {
+		if order.Task.ID != nil {
 			err := models.NewError(http.StatusBadRequest, "id not allowed")
 			w.WriteHeader(err.StatusCode())
 			w.Write([]byte(err.String()))
@@ -45,7 +45,7 @@ func handlePostUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	resp, err := strg.Write(ctx, actions.CREATE, &user)
+	resp, err := strg.Write(ctx, actions.CREATE, &order)
 	if err != nil {
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
@@ -54,7 +54,7 @@ func handlePostUser(w http.ResponseWriter, r *http.Request) {
 
 	bs, jsonerr := json.Marshal(resp)
 	if jsonerr != nil {
-		err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
+		err := models.NewError(http.StatusInternalServerError, "marshalling order failed")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
@@ -63,12 +63,12 @@ func handlePostUser(w http.ResponseWriter, r *http.Request) {
 	w.Write(bs)
 }
 
-func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
+func handleGetOrderByID(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
 
-	middleware.SpanStart(ctx, "handleGetUserByID")
-	defer middleware.SpanStop(ctx, "handleGetUserByID")
+	middleware.SpanStart(ctx, "handleGetOrderByID")
+	defer middleware.SpanStop(ctx, "handleGetOrderByID")
 
 	id, errAtoi := strconv.ParseUint(r.PathValue("id"), 10, 0)
 	if errAtoi != nil {
@@ -87,7 +87,7 @@ func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
 
 	bs, jsonerr := json.Marshal(resp)
 	if jsonerr != nil {
-		err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
+		err := models.NewError(http.StatusInternalServerError, "marshalling order failed")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
@@ -96,12 +96,12 @@ func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
 	w.Write(bs)
 }
 
-func handleGetUsers(w http.ResponseWriter, r *http.Request) {
+func handleGetOrders(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
 
-	middleware.SpanStart(ctx, "handleGetUsers")
-	defer middleware.SpanStop(ctx, "handleGetUsers")
+	middleware.SpanStart(ctx, "handleGetOrders")
+	defer middleware.SpanStop(ctx, "handleGetOrders")
 
 	resp, err := strg.Read(ctx, actions.READALL, 0)
 	if err != nil {
@@ -112,7 +112,7 @@ func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 
 	bs, jsonerr := json.Marshal(resp)
 	if jsonerr != nil {
-		err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
+		err := models.NewError(http.StatusInternalServerError, "marshalling order failed")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
@@ -121,12 +121,12 @@ func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 	w.Write(bs)
 }
 
-func handleGetUserVersions(w http.ResponseWriter, r *http.Request) {
+func handleGetOrderVersions(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
 
-	middleware.SpanStart(ctx, "handleGetUserVersions")
-	defer middleware.SpanStop(ctx, "handleGetUserVersions")
+	middleware.SpanStart(ctx, "handleGetOrderVersions")
+	defer middleware.SpanStop(ctx, "handleGetOrderVersions")
 
 	id, errAtoi := strconv.ParseUint(r.PathValue("id"), 10, 0)
 	if errAtoi != nil {
@@ -145,7 +145,7 @@ func handleGetUserVersions(w http.ResponseWriter, r *http.Request) {
 
 	bs, jsonerr := json.Marshal(resp)
 	if jsonerr != nil {
-		err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
+		err := models.NewError(http.StatusInternalServerError, "marshalling order failed")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
@@ -154,12 +154,12 @@ func handleGetUserVersions(w http.ResponseWriter, r *http.Request) {
 	w.Write(bs)
 }
 
-func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
+func handleGetOrderSubOrders(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
 
-	middleware.SpanStart(ctx, "handleGetUserSubOrdinates")
-	defer middleware.SpanStop(ctx, "handleGetUserSubOrdinates")
+	middleware.SpanStart(ctx, "handleGetOrderSubOrders")
+	defer middleware.SpanStop(ctx, "handleGetOrderSubOrders")
 
 	id, errAtoi := strconv.ParseUint(r.PathValue("id"), 10, 0)
 	if errAtoi != nil {
@@ -169,7 +169,7 @@ func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := strg.Read(ctx, actions.READSUBORDINATES, uint(id))
+	resp, err := strg.Read(ctx, actions.READSUBORDERS, uint(id))
 	if err != nil {
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
@@ -178,7 +178,7 @@ func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
 
 	bs, jsonerr := json.Marshal(resp)
 	if jsonerr != nil {
-		err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
+		err := models.NewError(http.StatusInternalServerError, "marshalling order failed")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
@@ -187,16 +187,16 @@ func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
 	w.Write(bs)
 }
 
-func handlePatchUser(w http.ResponseWriter, r *http.Request) {
+func handlePatchOrder(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
 
-	middleware.SpanStart(ctx, "handlePatchUser")
-	defer middleware.SpanStop(ctx, "handlePatchUser")
+	middleware.SpanStart(ctx, "handlePatchOrder")
+	defer middleware.SpanStop(ctx, "handlePatchOrder")
 
-	var user models.User
+	var order models.Order
 	decoder := json.NewDecoder(r.Body)
-	if err := decoder.Decode(&user); err != nil {
+	if err := decoder.Decode(&order); err != nil {
 		err := models.NewError(http.StatusBadRequest, "invalid payload")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
@@ -205,7 +205,7 @@ func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 
 	{
 		// validation
-		if user.ID == nil {
+		if order.Task.ID == nil {
 			err := models.NewError(http.StatusBadRequest, "id must be provided")
 			w.WriteHeader(err.StatusCode())
 			w.Write([]byte(err.String()))
@@ -213,7 +213,7 @@ func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	resp, err := strg.Write(ctx, actions.UPDATE, &user)
+	resp, err := strg.Write(ctx, actions.UPDATE, &order)
 	if err != nil {
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
@@ -222,7 +222,7 @@ func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 
 	bs, jsonerr := json.Marshal(resp)
 	if jsonerr != nil {
-		err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
+		err := models.NewError(http.StatusInternalServerError, "marshalling order failed")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
@@ -231,12 +231,12 @@ func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 	w.Write(bs)
 }
 
-func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
+func handleDeleteOrder(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
 
-	middleware.SpanStart(ctx, "handleDeleteUser")
-	defer middleware.SpanStop(ctx, "handleDeleteUser")
+	middleware.SpanStart(ctx, "handleDeleteOrder")
+	defer middleware.SpanStop(ctx, "handleDeleteOrder")
 
 	id, errAtoi := strconv.ParseUint(r.PathValue("id"), 10, 0)
 	if errAtoi != nil {
@@ -253,7 +253,7 @@ func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
 		action = actions.DELETEHARD
 	}
 
-	_, err := strg.Write(ctx, action, &models.User{ID: utils.Ptr(uint(id))})
+	_, err := strg.Write(ctx, action, &models.Order{Task: &models.Task{ID: utils.Ptr(uint(id))}})
 	if err != nil {
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
@@ -264,15 +264,15 @@ func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	strg = local.NewStorageUser()
+	strg = local.NewStorageOrder()
 
-	http.HandleFunc("POST /user", handlePostUser)
-	http.HandleFunc("GET /user/{id}", handleGetUserByID)
-	http.HandleFunc("GET /users", handleGetUsers)
-	http.HandleFunc("GET /user/{id}/versions", handleGetUserVersions)
-	http.HandleFunc("GET /user/{id}/subordinates", handleGetUserSubOrdinates)
-	http.HandleFunc("PATCH /user", handlePatchUser)
-	http.HandleFunc("DELETE /user/{id}", handleDeleteUser)
+	http.HandleFunc("POST /order", handlePostOrder)
+	http.HandleFunc("GET /order/{id}", handleGetOrderByID)
+	http.HandleFunc("GET /orders", handleGetOrders)
+	http.HandleFunc("GET /order/{id}/versions", handleGetOrderVersions)
+	http.HandleFunc("GET /order/{id}/suborders", handleGetOrderSubOrders)
+	http.HandleFunc("PATCH /order", handlePatchOrder)
+	http.HandleFunc("DELETE /order/{id}", handleDeleteOrder)
 
 	fmt.Println("Server running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
