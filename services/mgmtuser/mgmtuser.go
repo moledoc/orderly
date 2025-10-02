@@ -1,9 +1,8 @@
-package main
+package mgmtuser
 
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -262,7 +261,7 @@ func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func main() {
+func New() {
 
 	strg = local.NewStorageUser()
 
@@ -273,7 +272,4 @@ func main() {
 	http.HandleFunc("GET /user/{id}/subordinates", handleGetUserSubOrdinates)
 	http.HandleFunc("PATCH /user", handlePatchUser)
 	http.HandleFunc("DELETE /user/{id}", handleDeleteUser)
-
-	fmt.Println("Server running on http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
 }

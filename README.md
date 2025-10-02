@@ -28,11 +28,13 @@
 * user UI
     * idea to use htmx, so there might be some UI related endpoints
         * POST/GET/PATCH/DELETE /ui/<endpoint>
+* input validation
+* accept correct Content-Type
 * login(?)
 * optimize versioning
 * testing (functional, performance)?
 * deploying (docker)
-* documentation (README)
+* documentation (README, swagger)
 
 ## Author
 

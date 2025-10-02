@@ -1,9 +1,8 @@
-package main
+package mgmtorder
 
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -262,8 +261,7 @@ func handleDeleteOrder(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-func main() {
-
+func New() {
 	strg = local.NewStorageOrder()
 
 	http.HandleFunc("POST /order", handlePostOrder)
@@ -273,7 +271,4 @@ func main() {
 	http.HandleFunc("GET /order/{id}/suborders", handleGetOrderSubOrders)
 	http.HandleFunc("PATCH /order", handlePatchOrder)
 	http.HandleFunc("DELETE /order/{id}", handleDeleteOrder)
-
-	fmt.Println("Server running on http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
 }
