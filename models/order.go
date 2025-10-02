@@ -26,12 +26,12 @@ type Task struct {
 }
 
 type SitRep struct {
-	ID            *uint      `json:"id"`
-	Timestamp     *time.Time `json:"timestamp"`
-	Cron          *string    `json:"cron"`
-	WorkCompleted *uint      `json:"work_completed"`
-	State         *State     `json:"state"`
-	Summary       *string    `json:"summary"`
+	ID            *uint   `json:"id"`
+	Cron          *string `json:"cron"`
+	WorkCompleted *uint   `json:"work_completed"`
+	State         *State  `json:"state"`
+	Summary       *string `json:"summary"`
+	Meta          *Meta   `json:"meta"`
 }
 
 type Order struct {
@@ -67,11 +67,11 @@ func (o *Order) Clone() *Order {
 	for i, sitrep := range o.SitReps {
 		clone.SitReps[i] = &SitRep{
 			ID:            utils.RePtr(sitrep.ID),
-			Timestamp:     utils.RePtr(sitrep.Timestamp),
 			Cron:          utils.RePtr(sitrep.Cron),
 			WorkCompleted: utils.RePtr(sitrep.WorkCompleted),
 			State:         utils.RePtr(sitrep.State),
 			Summary:       utils.RePtr(sitrep.Summary),
+			Meta:          sitrep.Meta.Clone(),
 		}
 	}
 	return &clone

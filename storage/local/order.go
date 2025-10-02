@@ -153,6 +153,31 @@ func (s StorageOrder) Write(ctx context.Context, action actions.Action, order *m
 			}
 			return updated || upd
 		}
+		updateSitRepFunc := func(updated bool, sitrep *models.SitRep, updSitRep *models.SitRep) bool {
+			upd := false
+
+			if sitrep.State != nil && utils.Deref(updSitRep.State) != utils.Deref(sitrep.State) {
+				updSitRep.State = sitrep.State
+				upd = true
+			}
+			if sitrep.Cron != nil && utils.Deref(updSitRep.Cron) != utils.Deref(sitrep.Cron) {
+				updSitRep.Cron = sitrep.Cron
+				upd = true
+			}
+			if sitrep.WorkCompleted != nil && utils.Deref(updSitRep.WorkCompleted) != utils.Deref(sitrep.WorkCompleted) {
+				updSitRep.WorkCompleted = sitrep.WorkCompleted
+				upd = true
+			}
+			if sitrep.State != nil && utils.Deref(updSitRep.State) != utils.Deref(sitrep.State) {
+				updSitRep.State = sitrep.State
+				upd = true
+			}
+			if sitrep.Summary != nil && utils.Deref(updSitRep.Summary) != utils.Deref(sitrep.Summary) {
+				updSitRep.Summary = sitrep.Summary
+				upd = true
+			}
+			return updated || upd
+		}
 
 		updated = updateTaskFunc(updated, order.Task, updOrder.Task)
 
@@ -188,8 +213,14 @@ func (s StorageOrder) Write(ctx context.Context, action actions.Action, order *m
 			} else { // NOTE: new subtask
 				updated = true
 				now := time.Now().UTC()
+				highestID := uint(0)
+				for _, st := range updOrder.SubTasks {
+					if highestID < utils.Deref(st.ID) {
+						highestID = utils.Deref(st.ID)
+					}
+				}
 				updOrder.SubTasks = append(updOrder.SubTasks, &models.Task{
-					ID:          utils.Ptr(uint(1 + len(updOrder.SubTasks))),
+					ID:          utils.Ptr(highestID + 1),
 					State:       subtask.State,
 					Accountable: subtask.Accountable,
 					Objective:   subtask.Objective,
@@ -201,6 +232,52 @@ func (s StorageOrder) Write(ctx context.Context, action actions.Action, order *m
 				})
 			}
 		}
+
+		for _, sitrep := range order.SitReps {
+			if sitrep.ID != nil { // NOTE: existing sitrep
+				upd := false
+				for j, updSitRep := range updOrder.SitReps {
+					if utils.Deref(sitrep.ID) == utils.Deref(updSitRep.ID) {
+						upd = updateSitRepFunc(upd, sitrep, updSitRep)
+						if upd {
+							updatedSubtask := utils.Deref(updSitRep)
+							updatedSubtask.Meta = &models.Meta{
+								Version: updSitRep.Meta.Version + 1,
+								Created: updSitRep.Meta.Created,
+								Updated: time.Now().UTC(),
+							}
+							updOrder.SitReps[j] = &updatedSubtask
+						}
+						break
+					}
+				}
+
+				updated = updated || upd
+			} else { // NOTE: new sitrep
+				updated = true
+				now := time.Now().UTC()
+				highestID := uint(0)
+				for _, sr := range updOrder.SitReps {
+					if highestID < utils.Deref(sr.ID) {
+						highestID = utils.Deref(sr.ID)
+					}
+				}
+				updOrder.SitReps = append(updOrder.SitReps, &models.SitRep{
+					ID:            utils.Ptr(highestID + 1),
+					Cron:          sitrep.Cron,
+					WorkCompleted: sitrep.WorkCompleted,
+					State:         sitrep.State,
+					Summary:       sitrep.Summary,
+					Meta: &models.Meta{
+						Version: uint(1),
+						Created: now,
+						Updated: now,
+					},
+				})
+			}
+		}
+
+		// TODO: handle subtask and sitrep .meta.deleted
 
 		if updated {
 			now := time.Now().UTC()
