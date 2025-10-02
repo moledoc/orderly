@@ -167,7 +167,7 @@ func (s StorageUser) Write(ctx context.Context, action actions.Action, user *mod
 		}
 		return nil, nil
 
-	case actions.DELETEHARD:
+	case actions.DELETEHARD: // TODO: only allowed when no subordinates
 		middleware.SpanStart(ctx, "LocalStorageUser:Write:HARDDELETE")
 		defer middleware.SpanStop(ctx, "LocalStorageUser:Write:HARDDELETE")
 		if ok {

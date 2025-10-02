@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/moledoc/orderly/actions"
 	"github.com/moledoc/orderly/middleware"
 	"github.com/moledoc/orderly/models"
+	"github.com/moledoc/orderly/services/common"
 	"github.com/moledoc/orderly/storage"
 	"github.com/moledoc/orderly/storage/local"
 	"github.com/moledoc/orderly/utils"
@@ -34,7 +34,7 @@ func handlePostUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	{
+	{ // TODO: move validation to _api
 		// validation
 		if user.ID != nil {
 			err := models.NewError(http.StatusBadRequest, "id not allowed")
@@ -44,22 +44,8 @@ func handlePostUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	resp, err := strg.Write(ctx, actions.CREATE, &user)
-	if err != nil {
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-
-	bs, jsonerr := json.Marshal(resp)
-	if jsonerr != nil {
-		err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-	w.WriteHeader(http.StatusCreated)
-	w.Write(bs)
+	resp, err := HandlePostUser(ctx, &user)
+	common.WriteResponse(ctx, w, resp, err, http.StatusCreated)
 }
 
 func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
@@ -77,47 +63,8 @@ func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := strg.Read(ctx, actions.READ, uint(id))
-	if err != nil {
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-
-	bs, jsonerr := json.Marshal(resp)
-	if jsonerr != nil {
-		err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	w.Write(bs)
-}
-
-func handleGetUsers(w http.ResponseWriter, r *http.Request) {
-	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
-
-	middleware.SpanStart(ctx, "handleGetUsers")
-	defer middleware.SpanStop(ctx, "handleGetUsers")
-
-	resp, err := strg.Read(ctx, actions.READALL, 0)
-	if err != nil {
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-
-	bs, jsonerr := json.Marshal(resp)
-	if jsonerr != nil {
-		err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	w.Write(bs)
+	resp, err := HandleGetUserByID(ctx, uint(id))
+	common.WriteResponse(ctx, w, resp, err, http.StatusOK)
 }
 
 func handleGetUserVersions(w http.ResponseWriter, r *http.Request) {
@@ -135,22 +82,8 @@ func handleGetUserVersions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := strg.Read(ctx, actions.READVERSIONS, uint(id))
-	if err != nil {
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-
-	bs, jsonerr := json.Marshal(resp)
-	if jsonerr != nil {
-		err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	w.Write(bs)
+	resp, err := HandleGetUserVersions(ctx, uint(id))
+	common.WriteResponse(ctx, w, resp, err, http.StatusOK)
 }
 
 func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
@@ -168,22 +101,8 @@ func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	resp, err := strg.Read(ctx, actions.READSUBORDINATES, uint(id))
-	if err != nil {
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-
-	bs, jsonerr := json.Marshal(resp)
-	if jsonerr != nil {
-		err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	w.Write(bs)
+	resp, err := HandleGetUserSubOrdinates(ctx, uint(id))
+	common.WriteResponse(ctx, w, resp, err, http.StatusOK)
 }
 
 func handlePatchUser(w http.ResponseWriter, r *http.Request) {
@@ -202,7 +121,7 @@ func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	{
+	{ // TODO: move validation to _api
 		// validation
 		if user.ID == nil {
 			err := models.NewError(http.StatusBadRequest, "id must be provided")
@@ -212,22 +131,8 @@ func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	resp, err := strg.Write(ctx, actions.UPDATE, &user)
-	if err != nil {
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-
-	bs, jsonerr := json.Marshal(resp)
-	if jsonerr != nil {
-		err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-	w.WriteHeader(http.StatusOK)
-	w.Write(bs)
+	resp, err := HandlePatchUser(ctx, &user)
+	common.WriteResponse(ctx, w, resp, err, http.StatusOK)
 }
 
 func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
@@ -245,20 +150,20 @@ func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	action := actions.DELETESOFT
+	var resp *models.User
+	var err models.IError
 
 	deleteType := r.URL.Query().Get("type")
 	if deleteType == "hard" {
-		action = actions.DELETEHARD
+		resp, err = HandleDeleteUserHard(ctx, &models.User{
+			ID: utils.Ptr(uint(id)),
+		})
+	} else {
+		resp, err = HandleDeleteUserSoft(ctx, &models.User{
+			ID: utils.Ptr(uint(id)),
+		})
 	}
-
-	_, err := strg.Write(ctx, action, &models.User{ID: utils.Ptr(uint(id))})
-	if err != nil {
-		w.WriteHeader(err.StatusCode())
-		w.Write([]byte(err.String()))
-		return
-	}
-	w.WriteHeader(http.StatusNoContent)
+	common.WriteResponse(ctx, w, resp, err, http.StatusNoContent)
 }
 
 func New() {
@@ -267,7 +172,28 @@ func New() {
 
 	http.HandleFunc("POST /user", handlePostUser)
 	http.HandleFunc("GET /user/{id}", handleGetUserByID)
-	http.HandleFunc("GET /users", handleGetUsers)
+
+	http.HandleFunc("GET /users", func(w http.ResponseWriter, r *http.Request) {
+		ctx := middleware.AddTrace(context.Background(), w)
+
+		resp, err := HandleGetUsers(ctx)
+		if err != nil {
+			w.WriteHeader(err.StatusCode())
+			w.Write([]byte(err.String()))
+			return
+		}
+
+		bs, jsonerr := json.Marshal(resp)
+		if jsonerr != nil {
+			err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
+			w.WriteHeader(err.StatusCode())
+			w.Write([]byte(err.String()))
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write(bs)
+	})
+
 	http.HandleFunc("GET /user/{id}/versions", handleGetUserVersions)
 	http.HandleFunc("GET /user/{id}/subordinates", handleGetUserSubOrdinates)
 	http.HandleFunc("PATCH /user", handlePatchUser)
