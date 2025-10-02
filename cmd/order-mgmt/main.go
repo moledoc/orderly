@@ -45,14 +45,14 @@ func handlePostOrder(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	u, err := strg.Write(ctx, actions.CREATE, &order)
+	resp, err := strg.Write(ctx, actions.CREATE, &order)
 	if err != nil {
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
 	}
 
-	bs, jsonerr := json.Marshal(u)
+	bs, jsonerr := json.Marshal(resp)
 	if jsonerr != nil {
 		err := models.NewError(http.StatusInternalServerError, "marshalling order failed")
 		w.WriteHeader(err.StatusCode())
@@ -78,14 +78,14 @@ func handleGetOrderByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := strg.Read(ctx, actions.READ, uint(id))
+	resp, err := strg.Read(ctx, actions.READ, uint(id))
 	if err != nil {
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
 	}
 
-	bs, jsonerr := json.Marshal(u)
+	bs, jsonerr := json.Marshal(resp)
 	if jsonerr != nil {
 		err := models.NewError(http.StatusInternalServerError, "marshalling order failed")
 		w.WriteHeader(err.StatusCode())
@@ -103,14 +103,14 @@ func handleGetOrders(w http.ResponseWriter, r *http.Request) {
 	middleware.SpanStart(ctx, "handleGetOrders")
 	defer middleware.SpanStop(ctx, "handleGetOrders")
 
-	us, err := strg.Read(ctx, actions.READALL, 0)
+	resp, err := strg.Read(ctx, actions.READALL, 0)
 	if err != nil {
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
 	}
 
-	bs, jsonerr := json.Marshal(us)
+	bs, jsonerr := json.Marshal(resp)
 	if jsonerr != nil {
 		err := models.NewError(http.StatusInternalServerError, "marshalling order failed")
 		w.WriteHeader(err.StatusCode())
@@ -136,14 +136,14 @@ func handleGetOrderVersions(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := strg.Read(ctx, actions.READVERSIONS, uint(id))
+	resp, err := strg.Read(ctx, actions.READVERSIONS, uint(id))
 	if err != nil {
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
 	}
 
-	bs, jsonerr := json.Marshal(u)
+	bs, jsonerr := json.Marshal(resp)
 	if jsonerr != nil {
 		err := models.NewError(http.StatusInternalServerError, "marshalling order failed")
 		w.WriteHeader(err.StatusCode())
@@ -154,12 +154,12 @@ func handleGetOrderVersions(w http.ResponseWriter, r *http.Request) {
 	w.Write(bs)
 }
 
-func handleGetOrderSubTasks(w http.ResponseWriter, r *http.Request) {
+func handleGetOrderSubOrders(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
 
-	middleware.SpanStart(ctx, "handleGetOrderSubTasks")
-	defer middleware.SpanStop(ctx, "handleGetOrderSubTasks")
+	middleware.SpanStart(ctx, "handleGetOrderSubOrders")
+	defer middleware.SpanStop(ctx, "handleGetOrderSubOrders")
 
 	id, errAtoi := strconv.ParseUint(r.PathValue("id"), 10, 0)
 	if errAtoi != nil {
@@ -169,14 +169,14 @@ func handleGetOrderSubTasks(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u, err := strg.Read(ctx, actions.READSUBORDINATES, uint(id))
+	resp, err := strg.Read(ctx, actions.READSUBORDERS, uint(id))
 	if err != nil {
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
 	}
 
-	bs, jsonerr := json.Marshal(u)
+	bs, jsonerr := json.Marshal(resp)
 	if jsonerr != nil {
 		err := models.NewError(http.StatusInternalServerError, "marshalling order failed")
 		w.WriteHeader(err.StatusCode())
@@ -213,14 +213,14 @@ func handlePatchOrder(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	u, err := strg.Write(ctx, actions.UPDATE, &order)
+	resp, err := strg.Write(ctx, actions.UPDATE, &order)
 	if err != nil {
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
 	}
 
-	bs, jsonerr := json.Marshal(u)
+	bs, jsonerr := json.Marshal(resp)
 	if jsonerr != nil {
 		err := models.NewError(http.StatusInternalServerError, "marshalling order failed")
 		w.WriteHeader(err.StatusCode())
@@ -270,7 +270,7 @@ func main() {
 	http.HandleFunc("GET /order/{id}", handleGetOrderByID)
 	http.HandleFunc("GET /orders", handleGetOrders)
 	http.HandleFunc("GET /order/{id}/versions", handleGetOrderVersions)
-	http.HandleFunc("GET /order/{id}/subtasks", handleGetOrderSubTasks)
+	http.HandleFunc("GET /order/{id}/suborders", handleGetOrderSubOrders)
 	http.HandleFunc("PATCH /order", handlePatchOrder)
 	http.HandleFunc("DELETE /order/{id}", handleDeleteOrder)
 

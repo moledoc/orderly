@@ -35,6 +35,7 @@ func (s StorageOrder) Read(ctx context.Context, action actions.Action, id uint) 
 	}
 
 	switch action {
+
 	case actions.READ:
 		middleware.SpanStart(ctx, "LocalStorageOrder:Read:READ")
 		defer middleware.SpanStop(ctx, "LocalStorageOrder:Read:READ")
@@ -43,6 +44,7 @@ func (s StorageOrder) Read(ctx context.Context, action actions.Action, id uint) 
 			return nil, models.NewError(http.StatusNotFound, "not found during read")
 		}
 		return []*models.Order{os[len(os)-1]}, nil
+
 	case actions.READVERSIONS:
 		middleware.SpanStart(ctx, "LocalStorageOrder:Read:READVERSIONS")
 		defer middleware.SpanStop(ctx, "LocalStorageOrder:Read:READVERSIONS")
@@ -51,6 +53,7 @@ func (s StorageOrder) Read(ctx context.Context, action actions.Action, id uint) 
 			return nil, models.NewError(http.StatusNotFound, "not found during read")
 		}
 		return os, nil
+
 	case actions.READALL:
 		middleware.SpanStart(ctx, "LocalStorageOrder:Read:READALL")
 		defer middleware.SpanStop(ctx, "LocalStorageOrder:Read:READALL")
@@ -64,9 +67,10 @@ func (s StorageOrder) Read(ctx context.Context, action actions.Action, id uint) 
 			i += 1
 		}
 		return oss, nil
-	case actions.READSUBTASKS:
-		middleware.SpanStart(ctx, "LocalStorageOrder:Read:READSUBTASKS")
-		defer middleware.SpanStop(ctx, "LocalStorageOrder:Read:READSUBTASKS")
+
+	case actions.READSUBORDERS:
+		middleware.SpanStart(ctx, "LocalStorageOrder:Read:READSUBORDERS")
+		defer middleware.SpanStop(ctx, "LocalStorageOrder:Read:READSUBORDERS")
 		ssubtask, ok := s[id]
 		if !ok || len(ssubtask) == 0 {
 			return nil, models.NewError(http.StatusNotFound, "not found during read")
@@ -78,11 +82,12 @@ func (s StorageOrder) Read(ctx context.Context, action actions.Action, id uint) 
 			if len(os) == 0 {
 				continue
 			}
-			if o := os[len(os)-1]; o.ParentOrderID != nil && *o.ParentOrderID == *subtask.ParentOrderID {
+			if o := os[len(os)-1]; o.ParentOrderID != nil && utils.Deref(o.ParentOrderID) == utils.Deref(subtask.Task.ID) {
 				oss = append(oss, o)
 			}
 		}
 		return oss, nil
+
 	default:
 		return nil, models.NewError(http.StatusInternalServerError, "undefined read action")
 	}
@@ -103,7 +108,7 @@ func (s StorageOrder) Write(ctx context.Context, action actions.Action, order *m
 	var os []*models.Order
 	var ok bool
 	if order.Task.ID != nil {
-		os, ok = s[*order.Task.ID]
+		os, ok = s[utils.Deref(order.Task.ID)]
 	}
 
 	switch action {
@@ -281,9 +286,9 @@ func (s StorageOrder) Write(ctx context.Context, action actions.Action, order *m
 				Created: updOrder.Task.Meta.Created,
 				Updated: now,
 			}
-			s[*order.Task.ID] = append(s[*order.Task.ID], &updOrder)
+			s[*order.Task.ID] = append(s[utils.Deref(order.Task.ID)], &updOrder)
 		}
-		os = s[*order.Task.ID]
+		os = s[utils.Deref(order.Task.ID)]
 		return os[len(os)-1], nil
 
 	case actions.DELETESOFT:
@@ -300,7 +305,7 @@ func (s StorageOrder) Write(ctx context.Context, action actions.Action, order *m
 		middleware.SpanStart(ctx, "LocalStorageOrder:Write:HARDDELETE")
 		defer middleware.SpanStop(ctx, "LocalStorageOrder:Write:HARDDELETE")
 		if ok {
-			delete(s, *order.Task.ID)
+			delete(s, utils.Deref(order.Task.ID))
 		}
 		return nil, nil
 

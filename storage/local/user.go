@@ -78,7 +78,7 @@ func (s StorageUser) Read(ctx context.Context, action actions.Action, id uint) (
 			if len(us) == 0 {
 				continue
 			}
-			if u := us[len(us)-1]; u.Supervisor != nil && *u.Supervisor == *supervisor.Email {
+			if u := us[len(us)-1]; u.Supervisor != nil && utils.Deref(u.Supervisor) == utils.Deref(supervisor.Email) {
 				uss = append(uss, u)
 			}
 		}
@@ -103,7 +103,7 @@ func (s StorageUser) Write(ctx context.Context, action actions.Action, user *mod
 	var us []*models.User
 	var ok bool
 	if user.ID != nil {
-		us, ok = s[*user.ID]
+		us, ok = s[utils.Deref(user.ID)]
 	}
 
 	switch action {
@@ -152,9 +152,9 @@ func (s StorageUser) Write(ctx context.Context, action actions.Action, user *mod
 				Created: updUser.Meta.Created,
 				Updated: now,
 			}
-			s[*user.ID] = append(s[*user.ID], &updUser)
+			s[utils.Deref(user.ID)] = append(s[utils.Deref(user.ID)], &updUser)
 		}
-		us = s[*user.ID]
+		us = s[utils.Deref(user.ID)]
 		return us[len(us)-1], nil
 
 	case actions.DELETESOFT:
@@ -171,7 +171,7 @@ func (s StorageUser) Write(ctx context.Context, action actions.Action, user *mod
 		middleware.SpanStart(ctx, "LocalStorageUser:Write:HARDDELETE")
 		defer middleware.SpanStop(ctx, "LocalStorageUser:Write:HARDDELETE")
 		if ok {
-			delete(s, *user.ID)
+			delete(s, utils.Deref(user.ID))
 		}
 		return nil, nil
 

@@ -18,8 +18,9 @@
         * GET /order/{id}
         * GET /orders
         * GET /order/{id}/suborders
+        * GET /order/{id}/suborders
         * PATCH /order/{id}
-        * DELETE /order/{id}
+        * DELETE /user/{id}\[?type=hard\]
 * order UI
     * check [order.html](./order.html) for first idea draft
     * idea to use htmx, so there might be some UI related endpoints
