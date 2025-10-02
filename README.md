@@ -27,7 +27,8 @@
 * user UI
     * idea to use htmx, so there might be some UI related endpoints
         * POST/GET/PATCH/DELETE /ui/<endpoint>
-* login
+* login(?)
+* optimize versioning
 * testing (functional, performance)?
 * deploying (docker)
 * documentation (README)
