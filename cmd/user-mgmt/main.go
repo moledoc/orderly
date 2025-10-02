@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	strg storage.StorageAPI = nil
+	strg storage.StorageUserAPI = nil
 )
 
 func handlePostUser(w http.ResponseWriter, r *http.Request) {
@@ -264,7 +264,7 @@ func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	strg = local.New()
+	strg = local.NewStorageUser()
 
 	http.HandleFunc("POST /user", handlePostUser)
 	http.HandleFunc("GET /user/{id}", handleGetUserByID)

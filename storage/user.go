@@ -7,7 +7,7 @@ import (
 	"github.com/moledoc/orderly/models"
 )
 
-type StorageAPI interface {
+type StorageUserAPI interface {
 	Close(ctx context.Context)
 	Read(ctx context.Context, action actions.Action, id uint) ([]*models.User, models.IError)
 	Write(ctx context.Context, action actions.Action, user *models.User) (*models.User, models.IError)
