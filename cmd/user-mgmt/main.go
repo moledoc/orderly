@@ -4,369 +4,32 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
 	"net/http"
-	"runtime"
 	"strconv"
-	"time"
+
+	"github.com/moledoc/orderly/actions"
+	"github.com/moledoc/orderly/middleware"
+	"github.com/moledoc/orderly/models"
+	"github.com/moledoc/orderly/storage"
+	"github.com/moledoc/orderly/storage/local"
+	"github.com/moledoc/orderly/utils"
 )
 
 var (
-	Storage storageAPI = nil
+	strg storage.StorageAPI = nil
 )
-
-func ptr[T any](t T) *T {
-	return &t
-}
-
-func deref[T any](t *T) T {
-	if t == nil {
-		var tt T
-		return tt
-	}
-	return *t
-}
-
-type CtxKey struct {
-	key string
-}
-
-var (
-	CtxKeyTrace = CtxKey{key: "trace"}
-)
-
-func randalphanum() string {
-	v := ""
-	for len(v) < 32 {
-		v = fmt.Sprintf("%v%v", v, strconv.FormatInt(rand.Int63(), 16))
-	}
-	v = v[:32]
-	return v
-}
-
-func AddTrace(ctx context.Context, w http.ResponseWriter) context.Context {
-	trace := w.Header().Get("trace")
-	if len(trace) == 0 {
-		trace = randalphanum()
-		w.Header().Add("trace", trace)
-	}
-	if ctx.Value(CtxKeyTrace) == nil {
-		ctx = context.WithValue(ctx, CtxKeyTrace, trace)
-	}
-	return ctx
-}
-
-func GetTrace(w http.ResponseWriter) string {
-	if len(w.Header().Get("trace")) == 0 {
-		return ""
-	}
-	return w.Header().Get("trace")
-}
-
-var Spans map[string][]*Span = make(map[string][]*Span)
-
-type Span struct {
-	FuncName string    `json:"func_name,omitempty"`
-	Filename string    `json:"filename,omitempty"`
-	Line     int       `json:"line,omitempty"`
-	Trace    string    `json:"trace,omitempty"`
-	Start    time.Time `json:"start,omitempty"`
-	End      time.Time `json:"end,omitempty"`
-	Desc     string    `json:"desc,omitempty"`
-}
-
-func PrintSpans(ctx context.Context) {
-	trace := ctx.Value(CtxKeyTrace).(string)
-	spans := Spans[trace]
-	emptyTime := time.Time{}
-	var prevEnd time.Time
-	for _, span := range spans {
-		if span.End.Equal(emptyTime) {
-			if prevEnd.Equal(emptyTime) {
-				span.End = time.Now().UTC()
-			} else {
-				span.End = prevEnd
-			}
-			prevEnd = span.End
-		}
-		bs, err := json.Marshal(span)
-		if err == nil {
-			fmt.Println(string(bs))
-		}
-	}
-}
-
-func StartSpan(ctx context.Context, desc string) {
-	pc, file, line, _ := runtime.Caller(1)
-	fn := runtime.FuncForPC(pc)
-	trace := ctx.Value(CtxKeyTrace).(string)
-	s := &Span{
-		FuncName: fn.Name(),
-		Filename: file,
-		Line:     line,
-		Trace:    trace,
-		Start:    time.Now().UTC(),
-		Desc:     desc,
-	}
-	Spans[trace] = append(Spans[trace], s)
-}
-
-func StopSpan(ctx context.Context, desc string) {
-	pc, file, _, _ := runtime.Caller(1)
-	fn := runtime.FuncForPC(pc)
-	trace := ctx.Value(CtxKeyTrace).(string)
-	spans, ok := Spans[trace]
-	if !ok {
-		return
-	}
-	for _, span := range spans {
-		if span.Filename == file && span.FuncName == fn.Name() && span.Desc == desc {
-			span.End = time.Now().UTC()
-			break
-		}
-	}
-}
-
-type ierror interface {
-	String() string
-	StatusCode() int
-	StatusMessage() string
-}
-
-type erro struct {
-	Code    int    `json:"code,omitempty"`
-	Message string `json:"message,omitempty"`
-}
-
-func (e *erro) String() string {
-	return fmt.Sprintf(`{"code": %d, "message": %q}`, e.Code, e.Message)
-}
-
-func (e *erro) StatusCode() int {
-	return e.Code
-}
-func (e *erro) StatusMessage() string {
-	return e.Message
-}
-
-func NewError(code uint, format string, a ...any) ierror {
-	return &erro{
-		Code:    int(code),
-		Message: fmt.Sprintf(format, a...),
-	}
-}
-
-type Meta struct {
-	Version uint      `json:"version,omitempty"`
-	Created time.Time `json:"created,omitempty"`
-	Updated time.Time `json:"updated,omitempty"`
-	Deleted bool      `json:"deleted,omitempty"`
-}
-
-type Email string
-
-type User struct {
-	ID         *uint   `json:"id,omitempty"`
-	Name       *string `json:"name,omitempty"`
-	Email      *Email  `json:"email,omitempty"`
-	Supervisor *Email  `json:"supervisor,omitempty"`
-	Meta       *Meta   `json:"meta,omitempty"`
-}
-
-type Action int
-
-const (
-	CREATE Action = iota
-	UPDATE
-	DELETESOFT
-	DELETEHARD
-	READ
-	READALL
-	READVERSIONS
-	READSUBORDINATES
-)
-
-type storageAPI interface {
-	Close(ctx context.Context)
-	Read(ctx context.Context, action Action, id uint) ([]*User, ierror)
-	Write(ctx context.Context, action Action, user *User) (*User, ierror)
-}
-
-type LocalStorage map[uint][]*User
-
-func (s LocalStorage) Close(ctx context.Context) {
-
-	StartSpan(ctx, "LocalStorage:Close")
-	defer StopSpan(ctx, "LocalStorage:Close")
-
-	s = nil
-}
-
-func (s LocalStorage) Read(ctx context.Context, action Action, id uint) ([]*User, ierror) {
-	StartSpan(ctx, "LocalStorage:Read")
-	defer StopSpan(ctx, "LocalStorage:Read")
-
-	if s == nil {
-		return nil, NewError(http.StatusInternalServerError, "localstorage not initialized for read")
-	}
-
-	switch action {
-	case READ:
-		StartSpan(ctx, "LocalStorage:Read:READ")
-		defer StopSpan(ctx, "LocalStorage:Read:READ")
-		us, ok := s[id]
-		if !ok || len(us) == 0 {
-			return nil, NewError(http.StatusNotFound, "not found during read")
-		}
-		return []*User{us[len(us)-1]}, nil
-	case READVERSIONS:
-		StartSpan(ctx, "LocalStorage:Read:READVERSIONS")
-		defer StopSpan(ctx, "LocalStorage:Read:READVERSIONS")
-		us, ok := s[id]
-		if !ok || len(us) == 0 {
-			return nil, NewError(http.StatusNotFound, "not found during read")
-		}
-		return us, nil
-	case READALL:
-		StartSpan(ctx, "LocalStorage:Read:READALL")
-		defer StopSpan(ctx, "LocalStorage:Read:READALL")
-		uss := make([]*User, len(s))
-		i := 0
-		for _, us := range s {
-			if len(us) == 0 {
-				continue
-			}
-			uss[i] = us[len(us)-1]
-			i += 1
-		}
-		return uss, nil
-	case READSUBORDINATES:
-		StartSpan(ctx, "LocalStorage:Read:READSUBORDINATES")
-		defer StopSpan(ctx, "LocalStorage:Read:READSUBORDINATES")
-		ssupervisor, ok := s[id]
-		if !ok || len(ssupervisor) == 0 {
-			return nil, NewError(http.StatusNotFound, "not found during read")
-		}
-		supervisor := ssupervisor[len(ssupervisor)-1]
-
-		var uss []*User
-		for _, us := range s {
-			if len(us) == 0 {
-				continue
-			}
-			if u := us[len(us)-1]; u.Supervisor != nil && *u.Supervisor == *supervisor.Email {
-				uss = append(uss, u)
-			}
-		}
-		return uss, nil
-	default:
-		return nil, NewError(http.StatusInternalServerError, "undefined read action")
-	}
-}
-
-func (s LocalStorage) Write(ctx context.Context, action Action, user *User) (*User, ierror) {
-
-	StartSpan(ctx, "LocalStorage:Write")
-	defer StopSpan(ctx, "LocalStorage:Write")
-
-	if s == nil {
-		return nil, NewError(http.StatusInternalServerError, "localstorage not initialized for write")
-	}
-	if user == nil {
-		return nil, NewError(http.StatusInternalServerError, "invalid user object in write")
-	}
-
-	var us []*User
-	var ok bool
-	if user.ID != nil {
-		us, ok = s[*user.ID]
-	}
-
-	switch action {
-
-	case CREATE:
-		StartSpan(ctx, "LocalStorage:Write:CREATE")
-		defer StopSpan(ctx, "LocalStorage:Write:CREATE")
-		if ok || len(us) > 0 {
-			return nil, NewError(http.StatusConflict, "already exists during write")
-		}
-		id := uint(len(s) + 1)
-		user.ID = &id
-		now := time.Now().UTC()
-		user.Meta = &Meta{
-			Version: uint(1),
-			Created: now,
-			Updated: now,
-		}
-		s[id] = append(s[id], user)
-		return user, nil
-
-	case UPDATE:
-		StartSpan(ctx, "LocalStorage:Write:UPDATE")
-		defer StopSpan(ctx, "LocalStorage:Write:UPDATE")
-		if !ok || len(us) == 0 {
-			return nil, NewError(http.StatusNotFound, "not found during write")
-		}
-		var updUser User = *(us[len(us)-1])
-		updated := false
-		if user.Name != nil && deref(updUser.Name) != deref(user.Name) {
-			updUser.Name = user.Name
-			updated = true
-		}
-		if user.Email != nil && deref(updUser.Email) != deref(user.Email) {
-			updUser.Email = user.Email
-			updated = true
-		}
-		if user.Supervisor != nil && deref(updUser.Supervisor) != deref(user.Supervisor) {
-			updUser.Supervisor = user.Supervisor
-			updated = true
-		}
-		if updated {
-			now := time.Now().UTC()
-			updUser.Meta = &Meta{
-				Version: updUser.Meta.Version + 1,
-				Created: updUser.Meta.Created,
-				Updated: now,
-			}
-			s[*user.ID] = append(s[*user.ID], &updUser)
-		}
-		us = s[*user.ID]
-		return us[len(us)-1], nil
-
-	case DELETESOFT:
-		StartSpan(ctx, "LocalStorage:Write:SOFTDELETE")
-		defer StopSpan(ctx, "LocalStorage:Write:SOFTDELETE")
-		if ok {
-			for _, u := range us {
-				u.Meta.Deleted = true
-			}
-		}
-		return nil, nil
-
-	case DELETEHARD:
-		StartSpan(ctx, "LocalStorage:Write:HARDDELETE")
-		defer StopSpan(ctx, "LocalStorage:Write:HARDDELETE")
-		if ok {
-			delete(s, *user.ID)
-		}
-		return nil, nil
-
-	default:
-		return nil, NewError(http.StatusInternalServerError, "undefined write action")
-	}
-}
 
 func handlePostUser(w http.ResponseWriter, r *http.Request) {
-	ctx := AddTrace(context.Background(), w)
-	defer PrintSpans(ctx)
+	ctx := middleware.AddTrace(context.Background(), w)
+	defer middleware.SpanFlushTrace(ctx)
 
-	StartSpan(ctx, "handlePostUser")
-	defer StopSpan(ctx, "handlePostUser")
+	middleware.SpanStart(ctx, "handlePostUser")
+	defer middleware.SpanStop(ctx, "handlePostUser")
 
-	var user User
+	var user models.User
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&user); err != nil {
-		err := NewError(http.StatusBadRequest, "invalid payload")
+		err := models.NewError(http.StatusBadRequest, "invalid payload")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
@@ -375,14 +38,14 @@ func handlePostUser(w http.ResponseWriter, r *http.Request) {
 	{
 		// validation
 		if user.ID != nil {
-			err := NewError(http.StatusBadRequest, "id not allowed")
+			err := models.NewError(http.StatusBadRequest, "id not allowed")
 			w.WriteHeader(err.StatusCode())
 			w.Write([]byte(err.String()))
 			return
 		}
 	}
 
-	u, err := Storage.Write(ctx, CREATE, &user)
+	u, err := strg.Write(ctx, actions.CREATE, &user)
 	if err != nil {
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
@@ -391,7 +54,7 @@ func handlePostUser(w http.ResponseWriter, r *http.Request) {
 
 	bs, jsonerr := json.Marshal(u)
 	if jsonerr != nil {
-		err := NewError(http.StatusInternalServerError, "marshalling user failed")
+		err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
@@ -401,21 +64,21 @@ func handlePostUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
-	ctx := AddTrace(context.Background(), w)
-	defer PrintSpans(ctx)
+	ctx := middleware.AddTrace(context.Background(), w)
+	defer middleware.SpanFlushTrace(ctx)
 
-	StartSpan(ctx, "handleGetUserByID")
-	defer StopSpan(ctx, "handleGetUserByID")
+	middleware.SpanStart(ctx, "handleGetUserByID")
+	defer middleware.SpanStop(ctx, "handleGetUserByID")
 
 	id, errAtoi := strconv.ParseUint(r.PathValue("id"), 10, 0)
 	if errAtoi != nil {
-		err := NewError(http.StatusBadRequest, "invalid id")
+		err := models.NewError(http.StatusBadRequest, "invalid id")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
 	}
 
-	u, err := Storage.Read(ctx, READ, uint(id))
+	u, err := strg.Read(ctx, actions.READ, uint(id))
 	if err != nil {
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
@@ -424,7 +87,7 @@ func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
 
 	bs, jsonerr := json.Marshal(u)
 	if jsonerr != nil {
-		err := NewError(http.StatusInternalServerError, "marshalling user failed")
+		err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
@@ -434,13 +97,13 @@ func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetUsers(w http.ResponseWriter, r *http.Request) {
-	ctx := AddTrace(context.Background(), w)
-	defer PrintSpans(ctx)
+	ctx := middleware.AddTrace(context.Background(), w)
+	defer middleware.SpanFlushTrace(ctx)
 
-	StartSpan(ctx, "handleGetUsers")
-	defer StopSpan(ctx, "handleGetUsers")
+	middleware.SpanStart(ctx, "handleGetUsers")
+	defer middleware.SpanStop(ctx, "handleGetUsers")
 
-	us, err := Storage.Read(ctx, READALL, 0)
+	us, err := strg.Read(ctx, actions.READALL, 0)
 	if err != nil {
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
@@ -449,7 +112,7 @@ func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 
 	bs, jsonerr := json.Marshal(us)
 	if jsonerr != nil {
-		err := NewError(http.StatusInternalServerError, "marshalling user failed")
+		err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
@@ -459,21 +122,21 @@ func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetUserVersions(w http.ResponseWriter, r *http.Request) {
-	ctx := AddTrace(context.Background(), w)
-	defer PrintSpans(ctx)
+	ctx := middleware.AddTrace(context.Background(), w)
+	defer middleware.SpanFlushTrace(ctx)
 
-	StartSpan(ctx, "handleGetUserVersions")
-	defer StopSpan(ctx, "handleGetUserVersions")
+	middleware.SpanStart(ctx, "handleGetUserVersions")
+	defer middleware.SpanStop(ctx, "handleGetUserVersions")
 
 	id, errAtoi := strconv.ParseUint(r.PathValue("id"), 10, 0)
 	if errAtoi != nil {
-		err := NewError(http.StatusBadRequest, "invalid id")
+		err := models.NewError(http.StatusBadRequest, "invalid id")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
 	}
 
-	u, err := Storage.Read(ctx, READVERSIONS, uint(id))
+	u, err := strg.Read(ctx, actions.READVERSIONS, uint(id))
 	if err != nil {
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
@@ -482,7 +145,7 @@ func handleGetUserVersions(w http.ResponseWriter, r *http.Request) {
 
 	bs, jsonerr := json.Marshal(u)
 	if jsonerr != nil {
-		err := NewError(http.StatusInternalServerError, "marshalling user failed")
+		err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
@@ -492,21 +155,21 @@ func handleGetUserVersions(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
-	ctx := AddTrace(context.Background(), w)
-	defer PrintSpans(ctx)
+	ctx := middleware.AddTrace(context.Background(), w)
+	defer middleware.SpanFlushTrace(ctx)
 
-	StartSpan(ctx, "handleGetUserSubOrdinates")
-	defer StopSpan(ctx, "handleGetUserSubOrdinates")
+	middleware.SpanStart(ctx, "handleGetUserSubOrdinates")
+	defer middleware.SpanStop(ctx, "handleGetUserSubOrdinates")
 
 	id, errAtoi := strconv.ParseUint(r.PathValue("id"), 10, 0)
 	if errAtoi != nil {
-		err := NewError(http.StatusBadRequest, "invalid id")
+		err := models.NewError(http.StatusBadRequest, "invalid id")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
 	}
 
-	u, err := Storage.Read(ctx, READSUBORDINATES, uint(id))
+	u, err := strg.Read(ctx, actions.READSUBORDINATES, uint(id))
 	if err != nil {
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
@@ -515,7 +178,7 @@ func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
 
 	bs, jsonerr := json.Marshal(u)
 	if jsonerr != nil {
-		err := NewError(http.StatusInternalServerError, "marshalling user failed")
+		err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
@@ -525,16 +188,16 @@ func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlePatchUser(w http.ResponseWriter, r *http.Request) {
-	ctx := AddTrace(context.Background(), w)
-	defer PrintSpans(ctx)
+	ctx := middleware.AddTrace(context.Background(), w)
+	defer middleware.SpanFlushTrace(ctx)
 
-	StartSpan(ctx, "handlePatchUser")
-	defer StopSpan(ctx, "handlePatchUser")
+	middleware.SpanStart(ctx, "handlePatchUser")
+	defer middleware.SpanStop(ctx, "handlePatchUser")
 
-	var user User
+	var user models.User
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&user); err != nil {
-		err := NewError(http.StatusBadRequest, "invalid payload")
+		err := models.NewError(http.StatusBadRequest, "invalid payload")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
@@ -543,14 +206,14 @@ func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 	{
 		// validation
 		if user.ID == nil {
-			err := NewError(http.StatusBadRequest, "id must be provided")
+			err := models.NewError(http.StatusBadRequest, "id must be provided")
 			w.WriteHeader(err.StatusCode())
 			w.Write([]byte(err.String()))
 			return
 		}
 	}
 
-	u, err := Storage.Write(ctx, UPDATE, &user)
+	u, err := strg.Write(ctx, actions.UPDATE, &user)
 	if err != nil {
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
@@ -559,7 +222,7 @@ func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 
 	bs, jsonerr := json.Marshal(u)
 	if jsonerr != nil {
-		err := NewError(http.StatusInternalServerError, "marshalling user failed")
+		err := models.NewError(http.StatusInternalServerError, "marshalling user failed")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
@@ -569,28 +232,28 @@ func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
-	ctx := AddTrace(context.Background(), w)
-	defer PrintSpans(ctx)
+	ctx := middleware.AddTrace(context.Background(), w)
+	defer middleware.SpanFlushTrace(ctx)
 
-	StartSpan(ctx, "handleDeleteUser")
-	defer StopSpan(ctx, "handleDeleteUser")
+	middleware.SpanStart(ctx, "handleDeleteUser")
+	defer middleware.SpanStop(ctx, "handleDeleteUser")
 
 	id, errAtoi := strconv.ParseUint(r.PathValue("id"), 10, 0)
 	if errAtoi != nil {
-		err := NewError(http.StatusBadRequest, "invalid id")
+		err := models.NewError(http.StatusBadRequest, "invalid id")
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
 		return
 	}
 
-	action := DELETESOFT
+	action := actions.DELETESOFT
 
 	deleteType := r.URL.Query().Get("type")
 	if deleteType == "hard" {
-		action = DELETEHARD
+		action = actions.DELETEHARD
 	}
 
-	_, err := Storage.Write(ctx, action, &User{ID: ptr(uint(id))})
+	_, err := strg.Write(ctx, action, &models.User{ID: utils.Ptr(uint(id))})
 	if err != nil {
 		w.WriteHeader(err.StatusCode())
 		w.Write([]byte(err.String()))
@@ -601,7 +264,7 @@ func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 
-	Storage = make(LocalStorage)
+	strg = local.New()
 
 	http.HandleFunc("POST /user", handlePostUser)
 	http.HandleFunc("GET /user/{id}", handleGetUserByID)

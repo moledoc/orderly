@@ -1,0 +1,14 @@
+package actions
+
+type Action int
+
+const (
+	CREATE Action = iota
+	UPDATE
+	DELETESOFT
+	DELETEHARD
+	READ
+	READALL
+	READVERSIONS
+	READSUBORDINATES
+)
