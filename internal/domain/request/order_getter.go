@@ -1,0 +1,175 @@
+package request
+
+import (
+	"github.com/moledoc/orderly/internal/domain/meta"
+	"github.com/moledoc/orderly/internal/domain/order"
+)
+
+func (r *PostOrderRequest) GetOrder() *order.Order {
+	if r == nil {
+		return nil
+	}
+	return r.Order
+}
+
+////////////////
+
+func (r *GetOrderByIDRequest) GetID() meta.ID {
+	if r == nil || r.ID == nil {
+		return ""
+	}
+	return *r.ID
+}
+
+////////////////
+
+func (r *GetOrderVersionsRequest) GetID() meta.ID {
+	if r == nil || r.ID == nil {
+		return ""
+	}
+	return *r.ID
+}
+
+////////////////
+
+func (r *GetOrderSubOrdersRequest) GetID() meta.ID {
+	if r == nil || r.ID == nil {
+		return ""
+	}
+	return *r.ID
+}
+
+////////////////
+
+func (r *PatchOrderRequest) GetOrder() *order.Order {
+	if r == nil {
+		return nil
+	}
+	return r.Order
+}
+
+////////////////
+
+func (r *DeleteOrderRequest) GetID() meta.ID {
+	if r == nil || r.ID == nil {
+		return ""
+	}
+	return *r.ID
+}
+
+func (r *DeleteOrderRequest) GetHard() bool {
+	if r == nil || r.Hard == nil {
+		return false
+	}
+	return *r.Hard
+}
+
+////////////////
+
+func (r *PutSubTaskRequest) GetOrderID() meta.ID {
+	if r == nil || r.OrderID == nil {
+		return ""
+	}
+	return *r.OrderID
+}
+
+func (r *PutSubTaskRequest) GetTask() *order.Task {
+	if r == nil {
+		return nil
+	}
+	return r.Task
+}
+
+////////////////
+
+func (r *PatchSubTaskRequest) GetOrderID() meta.ID {
+	if r == nil || r.OrderID == nil {
+		return ""
+	}
+	return *r.OrderID
+}
+
+func (r *PatchSubTaskRequest) GetTask() *order.Task {
+	if r == nil {
+		return nil
+	}
+	return r.Task
+}
+
+////////////////
+
+func (r *DeleteSubTaskRequest) GetOrderID() meta.ID {
+	if r == nil || r.OrderID == nil {
+		return ""
+	}
+	return *r.OrderID
+}
+
+func (r *DeleteSubTaskRequest) GetSubTaskID() meta.ID {
+	if r == nil || r.SubTaskID == nil {
+		return ""
+	}
+	return *r.SubTaskID
+}
+
+func (r *DeleteSubTaskRequest) GetHard() bool {
+	if r == nil {
+		return false
+	}
+	return r.Hard
+}
+
+////////////////
+
+func (r *PutSitRepRequest) GetOrderID() meta.ID {
+	if r == nil || r.OrderID == nil {
+		return ""
+	}
+	return *r.OrderID
+}
+
+func (r *PutSitRepRequest) GetSitRep() *order.SitRep {
+	if r == nil {
+		return nil
+	}
+	return r.SitRep
+}
+
+////////////////
+
+func (r *PatchSitRepRequest) GetOrderID() meta.ID {
+	if r == nil || r.OrderID == nil {
+		return ""
+	}
+	return *r.OrderID
+}
+
+func (r *PatchSitRepRequest) GetSitRep() *order.SitRep {
+	if r == nil {
+		return nil
+	}
+	return r.SitRep
+}
+
+////////////////
+
+func (r *DeleteSitRepRequest) GetOrderID() meta.ID {
+	if r == nil || r.OrderID == nil {
+		return ""
+	}
+	return *r.OrderID
+}
+
+func (r *DeleteSitRepRequest) GetSitRepID() meta.ID {
+	if r == nil || r.SitRepID == nil {
+		return ""
+	}
+	return *r.SitRepID
+}
+
+func (r *DeleteSitRepRequest) GetHard() bool {
+	if r == nil || r.Hard == nil {
+		return false
+	}
+	return *r.Hard
+}

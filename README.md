@@ -35,6 +35,9 @@
 * testing (functional, performance)?
 * deploying (docker)
 * documentation (README, swagger)
+* MAYBE: TODO: pagination
+* logging
+* TODO: easier deadline setting - i.e. allow just dates, timestamp could be separate
 
 ## Author
 
