@@ -1,11 +1,14 @@
 package tests
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -28,41 +31,67 @@ type UserAPI interface {
 	DeleteUser(t *testing.T, ctx context.Context, req *request.DeleteUserRequest) (*response.DeleteUserResponse, errwrap.Error)
 }
 
-func (*UserSvc) PostUser(t *testing.T, ctx context.Context, req *request.PostUserRequest) (*response.PostUserResponse, errwrap.Error) {
+func (api *UserAPISvc) PostUser(t *testing.T, ctx context.Context, req *request.PostUserRequest) (*response.PostUserResponse, errwrap.Error) {
+	t.Helper()
+	return api.Svc.PostUser(ctx, req)
+}
+
+func (*UserAPISvc) GetUserByID(t *testing.T, ctx context.Context, req *request.GetUserByIDRequest) (*response.GetUserByIDResponse, errwrap.Error) {
+	t.Helper()
 	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
 }
-func (*UserSvc) GetUserByID(t *testing.T, ctx context.Context, req *request.GetUserByIDRequest) (*response.GetUserByIDResponse, errwrap.Error) {
+func (*UserAPISvc) GetUsers(t *testing.T, ctx context.Context, req *request.GetUsersRequest) (*response.GetUsersResponse, errwrap.Error) {
+	t.Helper()
 	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
 }
-func (*UserSvc) GetUsers(t *testing.T, ctx context.Context, req *request.GetUsersRequest) (*response.GetUsersResponse, errwrap.Error) {
+func (*UserAPISvc) GetUserSubOrdinates(t *testing.T, ctx context.Context, req *request.GetUserSubOrdinatesRequest) (*response.GetUserSubOrdinatesResponse, errwrap.Error) {
+	t.Helper()
 	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
 }
-func (*UserSvc) GetUserSubOrdinates(t *testing.T, ctx context.Context, req *request.GetUserSubOrdinatesRequest) (*response.GetUserSubOrdinatesResponse, errwrap.Error) {
+func (*UserAPISvc) PatchUser(t *testing.T, ctx context.Context, req *request.PatchUserRequest) (*response.PatchUserResponse, errwrap.Error) {
+	t.Helper()
 	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
 }
-func (*UserSvc) PatchUser(t *testing.T, ctx context.Context, req *request.PatchUserRequest) (*response.PatchUserResponse, errwrap.Error) {
-	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
-}
-func (*UserSvc) DeleteUser(t *testing.T, ctx context.Context, req *request.DeleteUserRequest) (*response.DeleteUserResponse, errwrap.Error) {
+func (*UserAPISvc) DeleteUser(t *testing.T, ctx context.Context, req *request.DeleteUserRequest) (*response.DeleteUserResponse, errwrap.Error) {
+	t.Helper()
 	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
 }
 
-func (*UserReq) PostUser(t *testing.T, ctx context.Context, req *request.PostUserRequest) (*response.PostUserResponse, errwrap.Error) {
+func (api *UserAPIReq) PostUser(t *testing.T, ctx context.Context, req *request.PostUserRequest) (*response.PostUserResponse, errwrap.Error) {
+	t.Helper()
+	reqBytes, err := json.Marshal(req)
+	if err != nil {
+		return nil, errwrap.NewError(http.StatusBadRequest, "marshaling request failed: %s", err)
+	}
+	respHttp, err := api.HttpClient.Post("http://localhost:8080/user", "application/json", bytes.NewBuffer(reqBytes))
+	if err != nil {
+		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
+	}
+	var resp response.PostUserResponse
+	if err := json.NewDecoder(respHttp.Body).Decode(&resp); err != nil {
+		return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
+	}
+	return &resp, nil
+}
+
+func (*UserAPIReq) GetUserByID(t *testing.T, ctx context.Context, req *request.GetUserByIDRequest) (*response.GetUserByIDResponse, errwrap.Error) {
+	t.Helper()
 	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
 }
-func (*UserReq) GetUserByID(t *testing.T, ctx context.Context, req *request.GetUserByIDRequest) (*response.GetUserByIDResponse, errwrap.Error) {
+func (*UserAPIReq) GetUsers(t *testing.T, ctx context.Context, req *request.GetUsersRequest) (*response.GetUsersResponse, errwrap.Error) {
+	t.Helper()
 	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
 }
-func (*UserReq) GetUsers(t *testing.T, ctx context.Context, req *request.GetUsersRequest) (*response.GetUsersResponse, errwrap.Error) {
+func (*UserAPIReq) GetUserSubOrdinates(t *testing.T, ctx context.Context, req *request.GetUserSubOrdinatesRequest) (*response.GetUserSubOrdinatesResponse, errwrap.Error) {
+	t.Helper()
 	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
 }
-func (*UserReq) GetUserSubOrdinates(t *testing.T, ctx context.Context, req *request.GetUserSubOrdinatesRequest) (*response.GetUserSubOrdinatesResponse, errwrap.Error) {
+func (*UserAPIReq) PatchUser(t *testing.T, ctx context.Context, req *request.PatchUserRequest) (*response.PatchUserResponse, errwrap.Error) {
+	t.Helper()
 	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
 }
-func (*UserReq) PatchUser(t *testing.T, ctx context.Context, req *request.PatchUserRequest) (*response.PatchUserResponse, errwrap.Error) {
-	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
-}
-func (*UserReq) DeleteUser(t *testing.T, ctx context.Context, req *request.DeleteUserRequest) (*response.DeleteUserResponse, errwrap.Error) {
+func (*UserAPIReq) DeleteUser(t *testing.T, ctx context.Context, req *request.DeleteUserRequest) (*response.DeleteUserResponse, errwrap.Error) {
+	t.Helper()
 	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
 }
 
@@ -186,6 +215,11 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 					Name:       name,
 					Email:      email,
 					Supervisor: supervisor,
+					Meta: &meta.Meta{
+						Created: time.Now().UTC(),
+						Updated: time.Now().UTC(),
+						Version: 2,
+					},
 				},
 			})
 			require.Error(t, err)

@@ -1,8 +1,11 @@
 package tests
 
 import (
+	"net/http"
 	"testing"
 
+	"github.com/moledoc/orderly/internal/repository/local"
+	"github.com/moledoc/orderly/internal/service/mgmtuser"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -11,18 +14,43 @@ type UserSuite struct {
 	API UserAPI
 }
 
-type UserSvc struct{} // NOTE: tests service layer methods
-type UserReq struct{} // NOTE: tests service through HTTP requests
+type UserAPISvc struct { // NOTE: tests service layer methods
+	Svc mgmtuser.ServiceMgmtUserAPI
+}
+
+func NewUserAPISvc() *UserAPISvc {
+	// TODO: local vs db
+	return &UserAPISvc{
+		Svc: mgmtuser.NewServiceMgmtUser(local.NewLocalRepositoryUser()),
+	}
+}
+
+type UserAPIReq struct { // NOTE: tests service through HTTP requests
+	// TODO: local vs db
+	HttpClient *http.Client
+}
+
+func NewUserAPIReq() *UserAPIReq {
+	// TODO: local vs db
+	return &UserAPIReq{
+		HttpClient: &http.Client{},
+	}
+}
+
+var (
+	_ UserAPI = (*UserAPISvc)(nil)
+	_ UserAPI = (*UserAPIReq)(nil)
+)
 
 func TestUserSuite(t *testing.T) {
-	t.Run("UserSvc", func(t *testing.T) {
+	t.Run("UserAPISvc", func(t *testing.T) {
 		suite.Run(t, &UserSuite{
-			API: new(UserSvc),
+			API: NewUserAPISvc(),
 		})
 	})
-	t.Run("UserReq", func(t *testing.T) {
+	t.Run("UserAPIReq", func(t *testing.T) {
 		suite.Run(t, &UserSuite{
-			API: new(UserReq),
+			API: NewUserAPIReq(),
 		})
 	})
 }

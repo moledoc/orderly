@@ -55,6 +55,10 @@ func validatePostUserRequest(req *request.PostUserRequest) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "user.id disallowed")
 	}
 
+	if req.GetUser().Meta != nil {
+		return errwrap.NewError(http.StatusBadRequest, "user.meta disallowed")
+	}
+
 	return validateUser(req.GetUser())
 }
 
@@ -75,7 +79,7 @@ func validateGetUserByIDRequest(req *request.GetUserByIDRequest) errwrap.Error {
 	return nil
 }
 
-func validateGetUsersRequest(req *request.GetUsersRequest) errwrap.Error {
+func validateGetUsersRequest(*request.GetUsersRequest) errwrap.Error {
 	return nil
 }
 

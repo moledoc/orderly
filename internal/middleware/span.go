@@ -17,6 +17,10 @@ var (
 	spansMutex sync.Mutex
 )
 
+const (
+	backupTraceID = "64af2f5045fabe402bce9ce950cb49fa"
+)
+
 func SpanFlushTrace(ctx context.Context) {
 	spansMutex.Lock()
 	defer spansMutex.Unlock()
@@ -48,7 +52,13 @@ func SpanStart(ctx context.Context, desc string) {
 
 	pc, file, line, _ := runtime.Caller(1)
 	fn := runtime.FuncForPC(pc)
-	trace := ctx.Value(consts.CtxKeyTrace).(string)
+
+	traceFromCtx := ctx.Value(consts.CtxKeyTrace)
+	trace := backupTraceID
+	if traceFromCtx != nil {
+		trace = traceFromCtx.(string)
+	}
+
 	s := &span.Span{
 		FuncName: fn.Name(),
 		Filename: file,
@@ -66,7 +76,13 @@ func SpanStop(ctx context.Context, desc string) {
 
 	pc, file, _, _ := runtime.Caller(1)
 	fn := runtime.FuncForPC(pc)
-	trace := ctx.Value(consts.CtxKeyTrace).(string)
+
+	traceFromCtx := ctx.Value(consts.CtxKeyTrace)
+	trace := backupTraceID
+	if traceFromCtx != nil {
+		trace = traceFromCtx.(string)
+	}
+
 	spans, ok := spanss[trace]
 	if !ok {
 		return

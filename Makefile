@@ -18,8 +18,13 @@ run-order:
 run:
 	go run ./cmd/orderly/main.go
 
-tests-user:
-	echo "TODO: test mgmtuser"
+tests-user: 
+	go test -v -test.run=TestUserSuite/UserAPISvc ./tests/...
+
+tests-user-http: 
+	go run ./cmd/mgmtuser/main.go &
+	go test -v -test.run=TestUserSuite/UserAPIReq ./tests/...
+	kill -9 $(lsof -ti tcp:8080)
 
 tests-order:
 	echo "TODO: test mgmtorder"
