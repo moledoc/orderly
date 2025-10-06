@@ -20,7 +20,7 @@ type Span struct {
 	FuncName string       `json:"func_name,omitempty"`
 	Filename string       `json:"filename,omitempty"`
 	Line     int          `json:"line,omitempty"`
-	TraceID  string       `json:"trace,omitempty"`
+	TraceID  string       `json:"trace_id,omitempty"`
 	Start    time.Time    `json:"start,omitempty"`
 	End      time.Time    `json:"end,omitempty"`
 	Duration SpanDuration `json:"duration,omitempty"`

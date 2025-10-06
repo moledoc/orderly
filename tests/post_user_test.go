@@ -17,8 +17,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
 	"github.com/moledoc/orderly/internal/domain/user"
-	"github.com/moledoc/orderly/internal/middleware"
-	"github.com/moledoc/orderly/pkg/consts"
 	"github.com/moledoc/orderly/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -82,11 +80,7 @@ func (api *UserAPIReq) PostUser(t *testing.T, ctx context.Context, req *request.
 		return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
 	}
 
-	traceID := respHttp.Header.Get(consts.CtxKeyTrace.Key)
-	ctx = context.WithValue(ctx, consts.CtxKeyTrace, traceID)
-	middleware.SpanFlushTrace(ctx)
-
-	return nil, errw
+	return nil, &errw
 }
 
 func (*UserAPIReq) GetUserByID(t *testing.T, ctx context.Context, req *request.GetUserByIDRequest) (*response.GetUserByIDResponse, errwrap.Error) {

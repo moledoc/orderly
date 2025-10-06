@@ -10,6 +10,7 @@ import (
 	"github.com/moledoc/orderly/internal/middleware"
 	"github.com/moledoc/orderly/internal/service/mgmtorder"
 	"github.com/moledoc/orderly/internal/service/mgmtuser"
+	"github.com/moledoc/orderly/pkg/consts"
 )
 
 var (
@@ -36,6 +37,14 @@ func writeResponse(ctx context.Context, w http.ResponseWriter, resp any, err err
 	defer middleware.SpanStop(ctx, "WriteResponse")
 
 	if err != nil {
+
+		var traceID string
+		ctxTraceID := ctx.Value(consts.CtxKeyTrace)
+		if ctxTraceID != nil {
+			traceID = ctxTraceID.(string)
+		}
+		err.SetTraceID(traceID)
+
 		w.WriteHeader(err.GetStatusCode())
 		w.Write([]byte(err.String()))
 		return
