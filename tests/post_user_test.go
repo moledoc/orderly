@@ -17,6 +17,8 @@ import (
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
 	"github.com/moledoc/orderly/internal/domain/user"
+	"github.com/moledoc/orderly/internal/middleware"
+	"github.com/moledoc/orderly/pkg/consts"
 	"github.com/moledoc/orderly/pkg/utils"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -36,25 +38,25 @@ func (api *UserAPISvc) PostUser(t *testing.T, ctx context.Context, req *request.
 	return api.Svc.PostUser(ctx, req)
 }
 
-func (*UserAPISvc) GetUserByID(t *testing.T, ctx context.Context, req *request.GetUserByIDRequest) (*response.GetUserByIDResponse, errwrap.Error) {
+func (api *UserAPISvc) GetUserByID(t *testing.T, ctx context.Context, req *request.GetUserByIDRequest) (*response.GetUserByIDResponse, errwrap.Error) {
 	t.Helper()
-	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
+	return api.Svc.GetUserByID(ctx, req)
 }
-func (*UserAPISvc) GetUsers(t *testing.T, ctx context.Context, req *request.GetUsersRequest) (*response.GetUsersResponse, errwrap.Error) {
+func (api *UserAPISvc) GetUsers(t *testing.T, ctx context.Context, req *request.GetUsersRequest) (*response.GetUsersResponse, errwrap.Error) {
 	t.Helper()
-	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
+	return api.Svc.GetUsers(ctx, req)
 }
-func (*UserAPISvc) GetUserSubOrdinates(t *testing.T, ctx context.Context, req *request.GetUserSubOrdinatesRequest) (*response.GetUserSubOrdinatesResponse, errwrap.Error) {
+func (api *UserAPISvc) GetUserSubOrdinates(t *testing.T, ctx context.Context, req *request.GetUserSubOrdinatesRequest) (*response.GetUserSubOrdinatesResponse, errwrap.Error) {
 	t.Helper()
-	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
+	return api.Svc.GetUserSubOrdinates(ctx, req)
 }
-func (*UserAPISvc) PatchUser(t *testing.T, ctx context.Context, req *request.PatchUserRequest) (*response.PatchUserResponse, errwrap.Error) {
+func (api *UserAPISvc) PatchUser(t *testing.T, ctx context.Context, req *request.PatchUserRequest) (*response.PatchUserResponse, errwrap.Error) {
 	t.Helper()
-	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
+	return api.Svc.PatchUser(ctx, req)
 }
-func (*UserAPISvc) DeleteUser(t *testing.T, ctx context.Context, req *request.DeleteUserRequest) (*response.DeleteUserResponse, errwrap.Error) {
+func (api *UserAPISvc) DeleteUser(t *testing.T, ctx context.Context, req *request.DeleteUserRequest) (*response.DeleteUserResponse, errwrap.Error) {
 	t.Helper()
-	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
+	return api.Svc.DeleteUser(ctx, req)
 }
 
 func (api *UserAPIReq) PostUser(t *testing.T, ctx context.Context, req *request.PostUserRequest) (*response.PostUserResponse, errwrap.Error) {
@@ -79,6 +81,11 @@ func (api *UserAPIReq) PostUser(t *testing.T, ctx context.Context, req *request.
 	if err := json.NewDecoder(respHttp.Body).Decode(&errw); err != nil {
 		return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
 	}
+
+	traceID := respHttp.Header.Get(consts.CtxKeyTrace.Key)
+	ctx = context.WithValue(ctx, consts.CtxKeyTrace, traceID)
+	middleware.SpanFlushTrace(ctx)
+
 	return nil, errw
 }
 

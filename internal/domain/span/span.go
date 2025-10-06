@@ -1,6 +1,8 @@
 package span
 
 import (
+	"encoding/json"
+	"fmt"
 	"time"
 )
 
@@ -8,14 +10,21 @@ type CtxKey struct {
 	Key string
 }
 
+type SpanDuration time.Duration
+
+func (sd SpanDuration) MarshalJSON() ([]byte, error) {
+	return json.Marshal(time.Duration(sd).String())
+}
+
 type Span struct {
-	FuncName string    `json:"func_name,omitempty"`
-	Filename string    `json:"filename,omitempty"`
-	Line     int       `json:"line,omitempty"`
-	TraceID  string    `json:"trace,omitempty"`
-	Start    time.Time `json:"start,omitempty"`
-	End      time.Time `json:"end,omitempty"`
-	Desc     string    `json:"desc,omitempty"`
+	FuncName string       `json:"func_name,omitempty"`
+	Filename string       `json:"filename,omitempty"`
+	Line     int          `json:"line,omitempty"`
+	TraceID  string       `json:"trace,omitempty"`
+	Start    time.Time    `json:"start,omitempty"`
+	End      time.Time    `json:"end,omitempty"`
+	Duration SpanDuration `json:"duration,omitempty"`
+	Desc     string       `json:"desc,omitempty"`
 }
 
 func (s *Span) GetFuncName() string {
@@ -60,6 +69,13 @@ func (s *Span) GetEnd() time.Time {
 	return s.End
 }
 
+func (s *Span) GetDuration() SpanDuration {
+	if s == nil {
+		return 0
+	}
+	return s.Duration
+}
+
 func (s *Span) GetDesc() string {
 	if s == nil {
 		return ""
@@ -67,4 +83,10 @@ func (s *Span) GetDesc() string {
 	return s.Desc
 }
 
-type Spans map[string][]*Span
+func (s *Span) String() string {
+	bs, err := json.Marshal(s)
+	if err != nil {
+		return fmt.Sprintf("marshalling error: %s", err)
+	}
+	return string(bs)
+}
