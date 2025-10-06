@@ -4,11 +4,14 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/moledoc/orderly/services/mgmtorder"
+	"github.com/moledoc/orderly/internal/repository/local"
+	"github.com/moledoc/orderly/internal/router"
+	"github.com/moledoc/orderly/internal/service/mgmtorder"
 )
 
 func main() {
-	mgmtorder.New()
+
+	router.RouteOrder(mgmtorder.NewServiceMgmtOrder(local.NewLocalRepositoryOrder()))
 
 	fmt.Println("Server running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)
