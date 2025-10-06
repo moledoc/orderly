@@ -14,10 +14,6 @@ type GetOrdersResponse struct {
 	Orders []*order.Order `json:"orders"`
 }
 
-type GetOrderVersionsResponse struct {
-	OrderVersions []*order.Order `json:"order_versions"`
-}
-
 type GetOrderSubOrdersResponse struct {
 	SubOrders []*order.Order `json:"sub_orders"`
 }
@@ -30,15 +26,15 @@ type DeleteOrderResponse struct{}
 
 ////////////////
 
-type PutSubTaskResponse struct {
+type PutDelegatedTaskResponse struct {
 	Order *order.Order `json:"order"`
 }
 
-type PatchSubTaskResponse struct {
+type PatchDelegatedTaskResponse struct {
 	Order *order.Order `json:"order"`
 }
 
-type DeleteSubTaskResponse struct {
+type DeleteDelegatedTaskResponse struct {
 	Order *order.Order `json:"order"`
 }
 

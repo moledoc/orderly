@@ -15,10 +15,6 @@ type GetUserByIDRequest struct {
 
 type GetUsersRequest struct{}
 
-type GetUserVersionsRequest struct {
-	ID *meta.ID `json:"id"`
-}
-
 type GetUserSubOrdinatesRequest struct {
 	ID *meta.ID `json:"id"`
 }
@@ -28,6 +24,5 @@ type PatchUserRequest struct {
 }
 
 type DeleteUserRequest struct {
-	ID   *meta.ID `json:"id"`
-	Hard *bool    `json:"hard"`
+	ID *meta.ID `json:"id"`
 }

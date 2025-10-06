@@ -28,7 +28,6 @@ func (s *serviceMgmtUser) PostUser(ctx context.Context, req *request.PostUserReq
 		Version: 1,
 		Created: now,
 		Updated: now,
-		Deleted: false,
 	}
 
 	user, err := s.Repository.Write(ctx, u)
@@ -75,23 +74,6 @@ func (s *serviceMgmtUser) GetUsers(ctx context.Context, req *request.GetUsersReq
 	}, nil
 }
 
-func (s *serviceMgmtUser) GetUserVersions(ctx context.Context, req *request.GetUserVersionsRequest) (*response.GetUserVersionsResponse, errwrap.Error) {
-	middleware.SpanStart(ctx, "GetUserVersions")
-	defer middleware.SpanStop(ctx, "GetUserVersions")
-
-	if err := validateGetUserVersionsRequest(req); err != nil {
-		return nil, err
-	}
-
-	resp, err := s.Repository.ReadVersions(ctx, req.GetID())
-	if err != nil {
-		return nil, err
-	}
-	return &response.GetUserVersionsResponse{
-		UserVersions: resp,
-	}, nil
-}
-
 func (s *serviceMgmtUser) GetUserSubOrdinates(ctx context.Context, req *request.GetUserSubOrdinatesRequest) (*response.GetUserSubOrdinatesResponse, errwrap.Error) {
 	middleware.SpanStart(ctx, "GetUserSubOrdinates")
 	defer middleware.SpanStop(ctx, "GetUserSubOrdinates")
@@ -123,7 +105,31 @@ func (s *serviceMgmtUser) PatchUser(ctx context.Context, req *request.PatchUserR
 	}
 
 	patchedUser := user.Clone()
-	// TODO: apply req.user diff to patchedUser
+	reqUser := req.GetUser()
+	hasChanges := false
+
+	if reqUser.Name != nil && reqUser.GetName() != patchedUser.GetName() {
+		patchedUser.SetName(reqUser.GetName())
+		hasChanges = true
+	}
+	if reqUser.Email != nil && reqUser.GetEmail() != patchedUser.GetEmail() {
+		patchedUser.SetEmail(reqUser.GetEmail())
+		hasChanges = true
+	}
+	if reqUser.Supervisor != nil && reqUser.GetSupervisor() != patchedUser.GetSupervisor() {
+		patchedUser.SetSupervisor(reqUser.GetSupervisor())
+		hasChanges = true
+	}
+
+	if !hasChanges { // no changes, return current user
+		return &response.PatchUserResponse{
+			User: user,
+		}, nil
+	}
+
+	now := time.Now().UTC()
+	patchedUser.GetMeta().VersionIncr()
+	patchedUser.GetMeta().SetUpdated(now)
 
 	resp, err := s.Repository.Write(ctx, patchedUser)
 	if err != nil {
@@ -142,20 +148,5 @@ func (s *serviceMgmtUser) DeleteUser(ctx context.Context, req *request.DeleteUse
 		return nil, err
 	}
 
-	var err errwrap.Error
-
-	if req.GetHard() {
-		return &response.DeleteUserResponse{}, s.Repository.Delete(ctx, req.GetID())
-	}
-
-	user, err := s.Repository.ReadByID(ctx, req.GetID())
-	if err != nil {
-		return nil, err
-	}
-
-	softDeletedUser := user.Clone()
-	softDeletedUser.GetMeta().SetDeleted(true)
-	_, err = s.Repository.Write(ctx, softDeletedUser)
-
-	return &response.DeleteUserResponse{}, err
+	return &response.DeleteUserResponse{}, s.Repository.Delete(ctx, req.GetID())
 }

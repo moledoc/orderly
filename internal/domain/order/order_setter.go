@@ -35,11 +35,11 @@ func (tt *Task) SetObjective(objective string) {
 	*tt.Objective = objective
 }
 
-func (tt *Task) SetMeta(meta *meta.Meta) {
-	if tt == nil {
+func (tt *Task) SetDeadline(deadline time.Time) {
+	if tt == nil || tt.Deadline == nil {
 		return
 	}
-	tt.Meta = meta
+	*tt.Deadline = deadline
 }
 
 ////////////
@@ -72,13 +72,6 @@ func (sr *SitRep) SetSummary(summary string) {
 	*sr.Summary = summary
 }
 
-func (sr *SitRep) SetMeta(meta *meta.Meta) {
-	if sr == nil {
-		return
-	}
-	sr.Meta = meta
-}
-
 ////////////
 
 func (o *Order) SetTask(task *Task) {
@@ -88,11 +81,11 @@ func (o *Order) SetTask(task *Task) {
 	o.Task = task
 }
 
-func (o *Order) SetSubTasks(subtasks []*Task) {
+func (o *Order) SetDelegatedTasks(delegatedTask []*Task) {
 	if o == nil {
 		return
 	}
-	o.SubTasks = subtasks
+	o.DelegatedTasks = delegatedTask
 }
 
 func (o *Order) SetParentOrderID(parentorderid meta.ID) {
@@ -102,16 +95,16 @@ func (o *Order) SetParentOrderID(parentorderid meta.ID) {
 	*o.ParentOrderID = parentorderid
 }
 
-func (o *Order) SetDeadline(deadline time.Time) {
-	if o == nil || o.Deadline == nil {
-		return
-	}
-	*o.Deadline = deadline
-}
-
 func (o *Order) SetSitReps(sitreps []*SitRep) {
 	if o == nil || o.SitReps == nil {
 		return
 	}
 	o.SitReps = sitreps
+}
+
+func (o *Order) SetMeta(meta *meta.Meta) {
+	if o == nil {
+		return
+	}
+	o.Meta = meta
 }

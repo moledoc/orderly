@@ -11,7 +11,7 @@ import (
 	"github.com/moledoc/orderly/internal/repository"
 )
 
-type LocalRepositoryOrder map[meta.ID][]*order.Order
+type LocalRepositoryOrder map[meta.ID]*order.Order
 
 var (
 	_ repository.RepositoryOrderAPI = (LocalRepositoryOrder)(nil)
@@ -42,11 +42,11 @@ func (r LocalRepositoryOrder) ReadByID(ctx context.Context, ID meta.ID) (*order.
 	}
 
 	order, ok := r[ID]
-	if !ok || len(order) == 0 {
+	if !ok {
 		return nil, errwrap.NewError(http.StatusNotFound, "not found")
 	}
 
-	return order[len(order)-1], nil
+	return order, nil
 }
 
 func (r LocalRepositoryOrder) ReadSubOrders(ctx context.Context, ID meta.ID) ([]*order.Order, errwrap.Error) {
@@ -58,41 +58,20 @@ func (r LocalRepositoryOrder) ReadSubOrders(ctx context.Context, ID meta.ID) ([]
 	}
 
 	parentOrder, ok := r[ID]
-	if !ok || len(parentOrder) == 0 {
+	if !ok {
 		return nil, errwrap.NewError(http.StatusNotFound, "not found")
 	}
-	po := parentOrder[len(parentOrder)-1]
 
 	// MAYBE: TODO: optimize sub-order finding
 	var subOrders []*order.Order
 	for _, order := range r {
-		if len(order) == 0 {
-			continue
-		}
-		o := order[len(order)-1]
-		if o.GetParentOrderID() == po.GetTask().GetID() {
-			subOrders = append(subOrders, o)
+		if order.GetParentOrderID() == parentOrder.GetTask().GetID() {
+			subOrders = append(subOrders, order)
 		}
 
 	}
 
 	return subOrders, nil
-}
-
-func (r LocalRepositoryOrder) ReadVersions(ctx context.Context, ID meta.ID) ([]*order.Order, errwrap.Error) {
-	middleware.SpanStart(ctx, "LocalStorageOrder:ReadVersions")
-	defer middleware.SpanStop(ctx, "LocalStorageOrder:ReadVersions")
-
-	if r == nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
-	}
-
-	order, ok := r[ID]
-	if !ok || len(order) == 0 {
-		return nil, errwrap.NewError(http.StatusNotFound, "not found")
-	}
-
-	return order, nil
 }
 
 func (r LocalRepositoryOrder) ReadAll(ctx context.Context) ([]*order.Order, errwrap.Error) {
@@ -105,10 +84,7 @@ func (r LocalRepositoryOrder) ReadAll(ctx context.Context) ([]*order.Order, errw
 
 	var orders []*order.Order
 	for _, order := range r {
-		if len(order) == 0 {
-			continue
-		}
-		orders = append(orders, order[len(order)-1])
+		orders = append(orders, order)
 	}
 
 	return orders, nil
@@ -123,7 +99,7 @@ func (r LocalRepositoryOrder) Write(ctx context.Context, order *order.Order) (*o
 	}
 
 	id := order.GetTask().GetID()
-	r[id] = append(r[id], order)
+	r[id] = order
 
 	return order, nil
 }

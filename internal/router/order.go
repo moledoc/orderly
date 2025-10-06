@@ -55,19 +55,6 @@ func getOrders(w http.ResponseWriter, r *http.Request) {
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func getOrderVersions(w http.ResponseWriter, r *http.Request) {
-	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
-
-	middleware.SpanStart(ctx, "getOrderVersions")
-	defer middleware.SpanStop(ctx, "getOrderVersions")
-
-	resp, err := mgmtordersvc.GetOrderVersions(ctx, &request.GetOrderVersionsRequest{
-		ID: utils.Ptr(meta.ID(r.PathValue(orderID))),
-	})
-	writeResponse(ctx, w, resp, err, http.StatusOK)
-}
-
 func getOrderSubOrders(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
@@ -107,65 +94,63 @@ func deleteOrder(w http.ResponseWriter, r *http.Request) {
 	defer middleware.SpanStop(ctx, "deleteOrder")
 
 	resp, err := mgmtordersvc.DeleteOrder(ctx, &request.DeleteOrderRequest{
-		ID:   utils.Ptr(meta.ID(r.PathValue(orderID))),
-		Hard: utils.Ptr(r.PathValue(hardDelete) == "true"),
+		ID: utils.Ptr(meta.ID(r.PathValue(orderID))),
 	})
 	writeResponse(ctx, w, resp, err, http.StatusNoContent)
 }
 
 ////////////////
 
-func putSubTask(w http.ResponseWriter, r *http.Request) {
+func putDelegatedTask(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
 
-	middleware.SpanStart(ctx, "putSubTask")
-	defer middleware.SpanStop(ctx, "putSubTask")
+	middleware.SpanStart(ctx, "putDelegatedTask")
+	defer middleware.SpanStop(ctx, "putDelegatedTask")
 
-	var req request.PutSubTaskRequest = request.PutSubTaskRequest{
+	var req request.PutDelegatedTaskRequest = request.PutDelegatedTaskRequest{
 		OrderID: utils.Ptr(meta.ID(r.PathValue(orderID))),
 	}
-	var resp *response.PutSubTaskResponse
+	var resp *response.PutDelegatedTaskResponse
 	var err errwrap.Error
 
 	err = decodeBody(ctx, r, &req)
 	if err == nil {
-		resp, err = mgmtordersvc.PutSubTask(ctx, &req)
+		resp, err = mgmtordersvc.PutDelegatedTask(ctx, &req)
 	}
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func patchSubTask(w http.ResponseWriter, r *http.Request) {
+func patchDelegatedTask(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
 
-	middleware.SpanStart(ctx, "patchSubTask")
-	defer middleware.SpanStop(ctx, "patchSubTask")
+	middleware.SpanStart(ctx, "patchDelegatedTask")
+	defer middleware.SpanStop(ctx, "patchDelegatedTask")
 
-	var req request.PatchSubTaskRequest = request.PatchSubTaskRequest{
+	var req request.PatchDelegatedTaskRequest = request.PatchDelegatedTaskRequest{
 		OrderID: utils.Ptr(meta.ID(r.PathValue(orderID))),
 	}
-	var resp *response.PatchSubTaskResponse
+	var resp *response.PatchDelegatedTaskResponse
 	var err errwrap.Error
 
 	err = decodeBody(ctx, r, &req)
 	if err == nil {
-		resp, err = mgmtordersvc.PatchSubTask(ctx, &req)
+		resp, err = mgmtordersvc.PatchDelegatedTask(ctx, &req)
 	}
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func deleteSubTask(w http.ResponseWriter, r *http.Request) {
+func deleteDelegatedTask(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
 
-	middleware.SpanStart(ctx, "deleteSubTask")
-	defer middleware.SpanStop(ctx, "deleteSubTask")
+	middleware.SpanStart(ctx, "deleteDelegatedTask")
+	defer middleware.SpanStop(ctx, "deleteDelegatedTask")
 
-	resp, err := mgmtordersvc.DeleteSubTask(ctx, &request.DeleteSubTaskRequest{
-		OrderID:   utils.Ptr(meta.ID(r.PathValue(orderID))),
-		SubTaskID: utils.Ptr(meta.ID(r.PathValue(subtaskID))),
-		Hard:      r.URL.Query().Get(hardDelete) == "true",
+	resp, err := mgmtordersvc.DeleteDelegatedTask(ctx, &request.DeleteDelegatedTaskRequest{
+		OrderID:         utils.Ptr(meta.ID(r.PathValue(orderID))),
+		DelegatedTaskID: utils.Ptr(meta.ID(r.PathValue(delegatedTaskID))),
 	})
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
@@ -222,7 +207,6 @@ func deleteSitRep(w http.ResponseWriter, r *http.Request) {
 	resp, err := mgmtordersvc.DeleteSitRep(ctx, &request.DeleteSitRepRequest{
 		OrderID:  utils.Ptr(meta.ID(r.PathValue(orderID))),
 		SitRepID: utils.Ptr(meta.ID(r.PathValue(sitrepID))),
-		Hard:     utils.Ptr(r.URL.Query().Get(hardDelete) == "true"),
 	})
 
 	writeResponse(ctx, w, resp, err, http.StatusOK)

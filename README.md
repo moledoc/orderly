@@ -18,7 +18,7 @@
         * GET /order/{id}
         * GET /orders
         * GET /order/{id}/suborders
-        * GET /order/{id}/suborders
+        * GET /order/{id}/delegated_tasks
         * PATCH /order/{id}
         * DELETE /user/{id}\[?type=hard\]
 * order UI
@@ -37,7 +37,8 @@
 * documentation (README, swagger)
 * MAYBE: TODO: pagination
 * logging
-* TODO: easier deadline setting - i.e. allow just dates, timestamp could be separate
+* implement changelog
+* MAYBE: soft-delete
 
 ## Author
 

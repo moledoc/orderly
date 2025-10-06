@@ -23,15 +23,6 @@ func (r *GetUserByIDRequest) GetID() meta.ID {
 
 ////////////////
 
-func (r *GetUserVersionsRequest) GetID() meta.ID {
-	if r == nil || r.ID == nil {
-		return ""
-	}
-	return *r.ID
-}
-
-////////////////
-
 func (r *GetUserSubOrdinatesRequest) GetID() meta.ID {
 	if r == nil || r.ID == nil {
 		return ""
@@ -55,11 +46,4 @@ func (r *DeleteUserRequest) GetID() meta.ID {
 		return ""
 	}
 	return *r.ID
-}
-
-func (r *DeleteUserRequest) GetHard() bool {
-	if r == nil || r.Hard == nil {
-		return false
-	}
-	return *r.Hard
 }

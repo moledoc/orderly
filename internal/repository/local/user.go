@@ -11,7 +11,7 @@ import (
 	"github.com/moledoc/orderly/internal/repository"
 )
 
-type LocalRepositoryUser map[meta.ID][]*user.User
+type LocalRepositoryUser map[meta.ID]*user.User
 
 var (
 	_ repository.RepositoryUserAPI = (LocalRepositoryUser)(nil)
@@ -41,10 +41,10 @@ func (r LocalRepositoryUser) ReadByID(ctx context.Context, ID meta.ID) (*user.Us
 	}
 
 	user, ok := r[ID]
-	if !ok || len(user) == 0 {
+	if !ok {
 		return nil, errwrap.NewError(http.StatusNotFound, "not found")
 	}
-	return user[len(user)-1], nil
+	return user, nil
 }
 
 func (r LocalRepositoryUser) ReadSubOrdinates(ctx context.Context, ID meta.ID) ([]*user.User, errwrap.Error) {
@@ -56,40 +56,20 @@ func (r LocalRepositoryUser) ReadSubOrdinates(ctx context.Context, ID meta.ID) (
 	}
 
 	supervisor, ok := r[ID]
-	if !ok || len(supervisor) == 0 {
+	if !ok {
 		return nil, errwrap.NewError(http.StatusNotFound, "not found")
 	}
-	sup := supervisor[len(supervisor)-1]
 
 	// MAYBE: TODO: optimize subordinate finding
 	var subOrdinates []*user.User
 	for _, user := range r {
-		if len(user) == 0 {
-			continue
-		}
-		o := user[len(user)-1]
-		if o.GetSupervisor() == sup.GetEmail() {
-			subOrdinates = append(subOrdinates, o)
-		}
 
+		if user.GetSupervisor() == supervisor.GetEmail() {
+			subOrdinates = append(subOrdinates, user)
+		}
 	}
 
 	return subOrdinates, nil
-}
-
-func (r LocalRepositoryUser) ReadVersions(ctx context.Context, ID meta.ID) ([]*user.User, errwrap.Error) {
-	middleware.SpanStart(ctx, "LocalRepositoryUser:ReadVersions")
-	defer middleware.SpanStop(ctx, "LocalRepositoryUser:ReadVersions")
-
-	if r == nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository user uninitialized")
-	}
-
-	user, ok := r[ID]
-	if !ok || len(user) == 0 {
-		return nil, errwrap.NewError(http.StatusNotFound, "not found")
-	}
-	return user, nil
 }
 
 func (r LocalRepositoryUser) ReadAll(ctx context.Context) ([]*user.User, errwrap.Error) {
@@ -102,10 +82,7 @@ func (r LocalRepositoryUser) ReadAll(ctx context.Context) ([]*user.User, errwrap
 
 	var users []*user.User
 	for _, user := range r {
-		if len(user) == 0 {
-			continue
-		}
-		users = append(users, user[len(user)-1])
+		users = append(users, user)
 	}
 	return users, nil
 }
@@ -119,7 +96,7 @@ func (r LocalRepositoryUser) Write(ctx context.Context, user *user.User) (*user.
 	}
 
 	id := user.GetID()
-	r[id] = append(r[id], user)
+	r[id] = user
 
 	return user, nil
 }

@@ -79,23 +79,6 @@ func validateGetUsersRequest(req *request.GetUsersRequest) errwrap.Error {
 	return nil
 }
 
-func validateGetUserVersionsRequest(req *request.GetUserVersionsRequest) errwrap.Error {
-	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil request")
-	}
-
-	if req.ID == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil id")
-	}
-
-	err := validation.ValidateID(req.GetID())
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func validateGetUserSubOrdinatesRequest(req *request.GetUserSubOrdinatesRequest) errwrap.Error {
 	if req == nil {
 		return errwrap.NewError(http.StatusBadRequest, "nil request")

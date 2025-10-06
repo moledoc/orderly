@@ -23,23 +23,26 @@ type Task struct {
 	State       *State      `json:"state,omitempty"`
 	Accountable *user.Email `json:"accountable,omitempty"`
 	Objective   *string     `json:"objective,omitempty"`
-	Meta        *meta.Meta  `json:"meta,omitempty"`
+	Deadline    *time.Time  `json:"deadline,omitempty"`
 }
 
 type SitRep struct {
-	ID            *meta.ID   `json:"id,omitempty"`
-	WorkCompleted *uint      `json:"work_completed,omitempty"`
-	State         *State     `json:"state,omitempty"`
-	Summary       *string    `json:"summary,omitempty"`
-	Meta          *meta.Meta `json:"meta,omitempty"`
+	ID            *meta.ID `json:"id,omitempty"`
+	WorkCompleted *uint    `json:"work_completed,omitempty"`
+	State         *State   `json:"state,omitempty"`
+	Summary       *string  `json:"summary,omitempty"`
 }
 
 type Order struct {
-	Task          *Task      `json:"task,omitempty"`
-	SubTasks      []*Task    `json:"subtasks,omitempty"`
-	ParentOrderID *meta.ID   `json:"parent_order_id,omitempty"`
-	Deadline      *time.Time `json:"deadline,omitempty"`
-	SitReps       []*SitRep  `json:"sitreps,omitempty"`
+	Task           *Task      `json:"task,omitempty"`
+	DelegatedTasks []*Task    `json:"delegated_tasks,omitempty"`
+	ParentOrderID  *meta.ID   `json:"parent_order_id,omitempty"`
+	SitReps        []*SitRep  `json:"sitreps,omitempty"`
+	Meta           *meta.Meta `json:"meta,omitempty"`
+}
+
+func Empty() *Order {
+	return &Order{}
 }
 
 func (o *Order) Clone() *Order {
@@ -52,21 +55,20 @@ func (o *Order) Clone() *Order {
 			State:       utils.Ptr(o.GetTask().GetState()),
 			Accountable: utils.Ptr(o.GetTask().GetAccountable()),
 			Objective:   utils.Ptr(o.GetTask().GetObjective()),
-			Meta:        o.Task.Meta.Clone(),
+			Deadline:    utils.Ptr(o.GetTask().GetDeadline()),
 		},
-		Deadline:      utils.Ptr(o.GetDeadline()),
-		ParentOrderID: utils.Ptr(o.GetParentOrderID()),
-		SubTasks:      make([]*Task, len(o.GetSubTasks())),
-		SitReps:       make([]*SitRep, len(o.GetSitReps())),
+		ParentOrderID:  utils.Ptr(o.GetParentOrderID()),
+		DelegatedTasks: make([]*Task, len(o.GetDelegatedTasks())),
+		SitReps:        make([]*SitRep, len(o.GetSitReps())),
+		Meta:           o.GetMeta().Clone(),
 	}
 
-	for i, subtask := range o.GetSubTasks() {
-		clone.SubTasks[i] = &Task{
-			ID:          utils.Ptr(subtask.GetID()),
-			State:       utils.Ptr(subtask.GetState()),
-			Accountable: utils.Ptr(subtask.GetAccountable()),
-			Objective:   utils.Ptr(subtask.GetObjective()),
-			Meta:        subtask.GetMeta().Clone(),
+	for i, delegatedTask := range o.GetDelegatedTasks() {
+		clone.DelegatedTasks[i] = &Task{
+			ID:          utils.Ptr(delegatedTask.GetID()),
+			State:       utils.Ptr(delegatedTask.GetState()),
+			Accountable: utils.Ptr(delegatedTask.GetAccountable()),
+			Objective:   utils.Ptr(delegatedTask.GetObjective()),
 		}
 	}
 
@@ -76,7 +78,6 @@ func (o *Order) Clone() *Order {
 			WorkCompleted: utils.Ptr(sitrep.GetWorkCompleted()),
 			State:         utils.Ptr(sitrep.GetState()),
 			Summary:       utils.Ptr(sitrep.GetSummary()),
-			Meta:          sitrep.GetMeta().Clone(),
 		}
 	}
 	return &clone

@@ -15,10 +15,6 @@ type GetOrderByIDRequest struct {
 
 type GetOrdersRequest struct{}
 
-type GetOrderVersionsRequest struct {
-	ID *meta.ID `json:"id"`
-}
-
 type GetOrderSubOrdersRequest struct {
 	ID *meta.ID `json:"id"`
 }
@@ -28,26 +24,24 @@ type PatchOrderRequest struct {
 }
 
 type DeleteOrderRequest struct {
-	ID   *meta.ID `json:"id"`
-	Hard *bool    `json:"hard"`
+	ID *meta.ID `json:"id"`
 }
 
 ////////////////
 
-type PutSubTaskRequest struct {
+type PutDelegatedTaskRequest struct {
 	OrderID *meta.ID    `json:"order_id"`
 	Task    *order.Task `json:"task"`
 }
 
-type PatchSubTaskRequest struct {
+type PatchDelegatedTaskRequest struct {
 	OrderID *meta.ID    `json:"order_id"`
 	Task    *order.Task `json:"task"`
 }
 
-type DeleteSubTaskRequest struct {
-	OrderID   *meta.ID `json:"order_id"`
-	SubTaskID *meta.ID `json:"subtask_id"`
-	Hard      bool     `json:"hard"`
+type DeleteDelegatedTaskRequest struct {
+	OrderID         *meta.ID `json:"order_id"`
+	DelegatedTaskID *meta.ID `json:"delegatedTask_id"`
 }
 
 ////////////////
@@ -65,5 +59,4 @@ type PatchSitRepRequest struct {
 type DeleteSitRepRequest struct {
 	OrderID  *meta.ID `json:"order_id"`
 	SitRepID *meta.ID `json:"sitrep_id"`
-	Hard     *bool    `json:"hard"`
 }

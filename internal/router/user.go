@@ -55,19 +55,6 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func getUserVersions(w http.ResponseWriter, r *http.Request) {
-	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
-
-	middleware.SpanStart(ctx, "getUserVersions")
-	defer middleware.SpanStop(ctx, "getUserVersions")
-
-	resp, err := mgmtusersvc.GetUserVersions(ctx, &request.GetUserVersionsRequest{
-		ID: utils.Ptr(meta.ID(r.PathValue(userID))),
-	})
-	writeResponse(ctx, w, resp, err, http.StatusOK)
-}
-
 func getUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
@@ -108,8 +95,7 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	defer middleware.SpanStop(ctx, "deleteUser")
 
 	resp, err := mgmtusersvc.DeleteUser(ctx, &request.DeleteUserRequest{
-		ID:   utils.Ptr(meta.ID(r.PathValue(userID))),
-		Hard: utils.Ptr(r.PathValue(hardDelete) == "true"),
+		ID: utils.Ptr(meta.ID(r.PathValue(userID))),
 	})
 	writeResponse(ctx, w, resp, err, http.StatusNoContent)
 }

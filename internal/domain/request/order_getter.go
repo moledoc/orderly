@@ -23,15 +23,6 @@ func (r *GetOrderByIDRequest) GetID() meta.ID {
 
 ////////////////
 
-func (r *GetOrderVersionsRequest) GetID() meta.ID {
-	if r == nil || r.ID == nil {
-		return ""
-	}
-	return *r.ID
-}
-
-////////////////
-
 func (r *GetOrderSubOrdersRequest) GetID() meta.ID {
 	if r == nil || r.ID == nil {
 		return ""
@@ -57,23 +48,16 @@ func (r *DeleteOrderRequest) GetID() meta.ID {
 	return *r.ID
 }
 
-func (r *DeleteOrderRequest) GetHard() bool {
-	if r == nil || r.Hard == nil {
-		return false
-	}
-	return *r.Hard
-}
-
 ////////////////
 
-func (r *PutSubTaskRequest) GetOrderID() meta.ID {
+func (r *PutDelegatedTaskRequest) GetOrderID() meta.ID {
 	if r == nil || r.OrderID == nil {
 		return ""
 	}
 	return *r.OrderID
 }
 
-func (r *PutSubTaskRequest) GetTask() *order.Task {
+func (r *PutDelegatedTaskRequest) GetTask() *order.Task {
 	if r == nil {
 		return nil
 	}
@@ -82,14 +66,14 @@ func (r *PutSubTaskRequest) GetTask() *order.Task {
 
 ////////////////
 
-func (r *PatchSubTaskRequest) GetOrderID() meta.ID {
+func (r *PatchDelegatedTaskRequest) GetOrderID() meta.ID {
 	if r == nil || r.OrderID == nil {
 		return ""
 	}
 	return *r.OrderID
 }
 
-func (r *PatchSubTaskRequest) GetTask() *order.Task {
+func (r *PatchDelegatedTaskRequest) GetTask() *order.Task {
 	if r == nil {
 		return nil
 	}
@@ -98,25 +82,18 @@ func (r *PatchSubTaskRequest) GetTask() *order.Task {
 
 ////////////////
 
-func (r *DeleteSubTaskRequest) GetOrderID() meta.ID {
+func (r *DeleteDelegatedTaskRequest) GetOrderID() meta.ID {
 	if r == nil || r.OrderID == nil {
 		return ""
 	}
 	return *r.OrderID
 }
 
-func (r *DeleteSubTaskRequest) GetSubTaskID() meta.ID {
-	if r == nil || r.SubTaskID == nil {
+func (r *DeleteDelegatedTaskRequest) GetDelegatedTaskID() meta.ID {
+	if r == nil || r.DelegatedTaskID == nil {
 		return ""
 	}
-	return *r.SubTaskID
-}
-
-func (r *DeleteSubTaskRequest) GetHard() bool {
-	if r == nil {
-		return false
-	}
-	return r.Hard
+	return *r.DelegatedTaskID
 }
 
 ////////////////
@@ -165,11 +142,4 @@ func (r *DeleteSitRepRequest) GetSitRepID() meta.ID {
 		return ""
 	}
 	return *r.SitRepID
-}
-
-func (r *DeleteSitRepRequest) GetHard() bool {
-	if r == nil || r.Hard == nil {
-		return false
-	}
-	return *r.Hard
 }

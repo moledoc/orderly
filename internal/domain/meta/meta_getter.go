@@ -24,10 +24,3 @@ func (m *Meta) GetUpdated() time.Time {
 	}
 	return m.Updated
 }
-
-func (m *Meta) GetDeleted() bool {
-	if m == nil {
-		return false
-	}
-	return m.Deleted
-}

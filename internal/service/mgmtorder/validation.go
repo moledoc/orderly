@@ -34,9 +34,8 @@ func validateTask(task *order.Task) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "invalid task.objective")
 	}
 
-	err = validation.ValidateMeta(task.GetMeta())
-	if err != nil {
-		return err
+	if task.Deadline == nil {
+		return errwrap.NewError(http.StatusBadRequest, "invalid task.deadline")
 	}
 
 	return nil
@@ -67,11 +66,6 @@ func validateSitRep(sitrep *order.SitRep) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "invalid sitrep.Summary")
 	}
 
-	err := validation.ValidateMeta(sitrep.GetMeta())
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -90,12 +84,8 @@ func validateOrder(order *order.Order) errwrap.Error {
 		return err
 	}
 
-	if order.Deadline == nil {
-		return errwrap.NewError(http.StatusBadRequest, "invalid order.deadline")
-	}
-
-	for _, subtask := range order.GetSubTasks() {
-		err := validateTask(subtask)
+	for _, delegatedTask := range order.GetDelegatedTasks() {
+		err := validateTask(delegatedTask)
 		if err != nil {
 			return err
 		}
@@ -106,6 +96,11 @@ func validateOrder(order *order.Order) errwrap.Error {
 		if err != nil {
 			return err
 		}
+	}
+
+	err = validation.ValidateMeta(order.GetMeta())
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -147,22 +142,6 @@ func validateGetOrderByIDRequest(req *request.GetOrderByIDRequest) errwrap.Error
 }
 
 func validateGetOrdersRequest(req *request.GetOrdersRequest) errwrap.Error {
-	return nil
-}
-
-func validateGetOrderVersionsRequest(req *request.GetOrderVersionsRequest) errwrap.Error {
-	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil request")
-	}
-
-	if req.ID == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil id")
-	}
-
-	err := validation.ValidateID(req.GetID())
-	if err != nil {
-		return err
-	}
 	return nil
 }
 
@@ -219,7 +198,7 @@ func validateDeleteOrderRequest(req *request.DeleteOrderRequest) errwrap.Error {
 
 ////////
 
-func validatePutSubTaskRequest(req *request.PutSubTaskRequest) errwrap.Error {
+func validatePutDelegatedTaskRequest(req *request.PutDelegatedTaskRequest) errwrap.Error {
 	if req == nil {
 		return errwrap.NewError(http.StatusBadRequest, "nil request")
 	}
@@ -244,7 +223,7 @@ func validatePutSubTaskRequest(req *request.PutSubTaskRequest) errwrap.Error {
 	return validateTask(req.GetTask())
 }
 
-func validatePatchSubTaskRequest(req *request.PatchSubTaskRequest) errwrap.Error {
+func validatePatchDelegatedTaskRequest(req *request.PatchDelegatedTaskRequest) errwrap.Error {
 	if req == nil {
 		return errwrap.NewError(http.StatusBadRequest, "nil request")
 	}
@@ -269,7 +248,7 @@ func validatePatchSubTaskRequest(req *request.PatchSubTaskRequest) errwrap.Error
 	return validateTask(req.GetTask())
 }
 
-func validateDeleteSubTaskRequest(req *request.DeleteSubTaskRequest) errwrap.Error {
+func validateDeleteDelegatedTaskRequest(req *request.DeleteDelegatedTaskRequest) errwrap.Error {
 	if req == nil {
 		return errwrap.NewError(http.StatusBadRequest, "nil request")
 	}
@@ -283,7 +262,7 @@ func validateDeleteSubTaskRequest(req *request.DeleteSubTaskRequest) errwrap.Err
 		return err
 	}
 
-	err = validation.ValidateID(req.GetSubTaskID())
+	err = validation.ValidateID(req.GetDelegatedTaskID())
 	if err != nil {
 		return err
 	}

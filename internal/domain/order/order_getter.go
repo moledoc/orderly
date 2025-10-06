@@ -35,11 +35,11 @@ func (tt *Task) GetObjective() string {
 	return *tt.Objective
 }
 
-func (tt *Task) GetMeta() *meta.Meta {
-	if tt == nil {
-		return nil
+func (tt *Task) GetDeadline() time.Time {
+	if tt == nil || tt.Deadline == nil {
+		return time.Time{}
 	}
-	return tt.Meta
+	return *tt.Deadline
 }
 
 ////////////
@@ -72,13 +72,6 @@ func (sr *SitRep) GetSummary() string {
 	return *sr.Summary
 }
 
-func (sr *SitRep) GetMeta() *meta.Meta {
-	if sr == nil {
-		return nil
-	}
-	return sr.Meta
-}
-
 ////////////
 
 func (o *Order) GetTask() *Task {
@@ -88,11 +81,11 @@ func (o *Order) GetTask() *Task {
 	return o.Task
 }
 
-func (o *Order) GetSubTasks() []*Task {
+func (o *Order) GetDelegatedTasks() []*Task {
 	if o == nil {
 		return nil
 	}
-	return o.SubTasks
+	return o.DelegatedTasks
 }
 
 func (o *Order) GetParentOrderID() meta.ID {
@@ -102,16 +95,16 @@ func (o *Order) GetParentOrderID() meta.ID {
 	return *o.ParentOrderID
 }
 
-func (o *Order) GetDeadline() time.Time {
-	if o == nil || o.Deadline == nil {
-		return time.Time{}
-	}
-	return *o.Deadline
-}
-
 func (o *Order) GetSitReps() []*SitRep {
 	if o == nil || o.SitReps == nil {
 		return nil
 	}
 	return o.SitReps
+}
+
+func (o *Order) GetMeta() *meta.Meta {
+	if o == nil {
+		return nil
+	}
+	return o.Meta
 }

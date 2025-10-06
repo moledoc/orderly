@@ -13,11 +13,11 @@ import (
 )
 
 var (
-	orderID    = "order_id"
-	subtaskID  = "subtask_id"
-	sitrepID   = "sitrep_id"
-	hardDelete = "hard_delete"
-	userID     = "user_id"
+	orderID         = "order_id"
+	delegatedTaskID = "delegated_task_id"
+	sitrepID        = "sitrep_id"
+	hardDelete      = "hard_delete"
+	userID          = "user_id"
 )
 
 func decodeBody(ctx context.Context, r *http.Request, req any) errwrap.Error {
@@ -73,14 +73,13 @@ func RouteOrder(svc mgmtorder.ServiceMgmtOrderAPI) {
 	http.HandleFunc("POST /v1/mgmt/order", postOrder)
 	http.HandleFunc(fmt.Sprintf("GET /v1/mgmt/order/{%v}", orderID), getOrderByID)
 	http.HandleFunc("GET /v1/mgmt/orders", getOrders)
-	http.HandleFunc(fmt.Sprintf("GET /v1/mgmt/order/{%v}/versions", orderID), getOrderVersions)
 	http.HandleFunc(fmt.Sprintf("GET /v1/mgmt/order/{%v}/suborders", orderID), getOrderSubOrders)
 	http.HandleFunc("PATCH /v1/mgmt/order", patchOrder)
 	http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/order/{%v}", orderID), deleteOrder)
 
-	http.HandleFunc(fmt.Sprintf("PUT /v1/mgmt/order/{%v}/subtask", orderID), putSubTask)
-	http.HandleFunc(fmt.Sprintf("PATCH /v1/mgmt/order/{%v}/subtask", orderID), patchSubTask)
-	http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/order/{%v}/subtask/{%v}", orderID, subtaskID), deleteSubTask)
+	http.HandleFunc(fmt.Sprintf("PUT /v1/mgmt/order/{%v}/delegated_task", orderID), putDelegatedTask)
+	http.HandleFunc(fmt.Sprintf("PATCH /v1/mgmt/order/{%v}/delegated_task", orderID), patchDelegatedTask)
+	http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/order/{%v}/delegated_task/{%v}", orderID, delegatedTaskID), deleteDelegatedTask)
 
 	http.HandleFunc(fmt.Sprintf("PUT /v1/mgmt/order/{%v}/sitrep", orderID), putSitRep)
 	http.HandleFunc(fmt.Sprintf("PATCH /v1/mgmt/order/{%v}/sitrep", orderID), patchSitRep)
@@ -97,7 +96,6 @@ func RouteUser(svc mgmtuser.ServiceMgmtUserAPI) {
 	http.HandleFunc("POST /v1/mgmt/user", postUser)
 	http.HandleFunc(fmt.Sprintf("GET /v1/mgmt/user/{%v}", userID), getUserByID)
 	http.HandleFunc("GET /v1/mgmt/users", getUsers)
-	http.HandleFunc(fmt.Sprintf("GET /v1/mgmt/user/{%v}/versions", userID), getUserVersions)
 	http.HandleFunc(fmt.Sprintf("GET /v1/mgmt/user/{%v}/subordinates", userID), getUserSubOrdinates)
 	http.HandleFunc("PATCH /v1/mgmt/user", patchUser)
 	http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/user/{%v}", userID), deleteUser)
