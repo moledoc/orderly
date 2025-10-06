@@ -4,7 +4,7 @@ all: clean dir compile
 dir: clean
 	mkdir -p bin
 
-compile:
+build:
 	go build -o ./bin/mgmtuser ./cmd/mgmtuser/main.go
 	go build -o ./bin/mgmtorder ./cmd/mgmtorder/main.go
 	go build -o ./bin/orderly ./cmd/orderly/main.go
@@ -18,13 +18,21 @@ run-order:
 run:
 	go run ./cmd/orderly/main.go
 
-tests-user: 
-	go test -v -test.run=TestUserSuite/UserAPISvc ./tests/...
+up-user: build
+	./bin/mgmtuser
 
+up-order: build
+	./bin/mgmtuser
+
+up: build
+	./bin/orderly
+
+tests-user: 
+	go test -v -test.run=TestUserSvcSuite/UserAPISvc ./tests/...
+
+# NOTE: needs mgmtuser-service running
 tests-user-http: 
-	go run ./cmd/mgmtuser/main.go &
-	go test -v -test.run=TestUserSuite/UserAPIReq ./tests/...
-	kill -9 $(lsof -ti tcp:8080)
+	go test -v -test.run=TestUserReqSuite/UserAPIReq ./tests/...
 
 tests-order:
 	echo "TODO: test mgmtorder"
@@ -34,3 +42,4 @@ tests:
 
 clean:
 	rm -rf bin
+	lsof -ti tcp:8080
