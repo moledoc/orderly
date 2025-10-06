@@ -3,6 +3,7 @@ package errwrap
 import "fmt"
 
 type Error interface {
+	Error() string
 	String() string
 	GetStatusCode() int
 	GetStatusMessage() string
@@ -11,6 +12,10 @@ type Error interface {
 type err struct {
 	Code    int    `json:"code,omitempty"`
 	Message string `json:"message,omitempty"`
+}
+
+func (e *err) Error() string {
+	return e.String()
 }
 
 func (e *err) String() string {
