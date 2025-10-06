@@ -9,28 +9,28 @@ type Error interface {
 	GetStatusMessage() string
 }
 
-type err struct {
+type Err struct {
 	Code    int    `json:"code,omitempty"`
 	Message string `json:"message,omitempty"`
 }
 
-func (e *err) Error() string {
+func (e Err) Error() string {
 	return e.String()
 }
 
-func (e *err) String() string {
+func (e Err) String() string {
 	return fmt.Sprintf(`{"code": %d, "message": %q}`, e.Code, e.Message)
 }
 
-func (e *err) GetStatusCode() int {
+func (e Err) GetStatusCode() int {
 	return e.Code
 }
-func (e *err) GetStatusMessage() string {
+func (e Err) GetStatusMessage() string {
 	return e.Message
 }
 
 func NewError(code uint, format string, a ...any) Error {
-	return &err{
+	return Err{
 		Code:    int(code),
 		Message: fmt.Sprintf(format, a...),
 	}

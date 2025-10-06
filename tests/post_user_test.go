@@ -63,15 +63,23 @@ func (api *UserAPIReq) PostUser(t *testing.T, ctx context.Context, req *request.
 	if err != nil {
 		return nil, errwrap.NewError(http.StatusBadRequest, "marshaling request failed: %s", err)
 	}
-	respHttp, err := api.HttpClient.Post("http://localhost:8080/user", "application/json", bytes.NewBuffer(reqBytes))
+	respHttp, err := api.HttpClient.Post(fmt.Sprintf("%s/v1/mgmt/user", api.BaseURL), "application/json", bytes.NewBuffer(reqBytes))
 	if err != nil {
 		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
 	}
-	var resp response.PostUserResponse
-	if err := json.NewDecoder(respHttp.Body).Decode(&resp); err != nil {
+
+	if respHttp.StatusCode == http.StatusOK || respHttp.StatusCode == http.StatusCreated {
+		var resp response.PostUserResponse
+		if err := json.NewDecoder(respHttp.Body).Decode(&resp); err != nil {
+			return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
+		}
+		return &resp, nil
+	}
+	var errw errwrap.Err
+	if err := json.NewDecoder(respHttp.Body).Decode(&errw); err != nil {
 		return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
 	}
-	return &resp, nil
+	return nil, errw
 }
 
 func (*UserAPIReq) GetUserByID(t *testing.T, ctx context.Context, req *request.GetUserByIDRequest) (*response.GetUserByIDResponse, errwrap.Error) {

@@ -49,6 +49,7 @@ func writeResponse(ctx context.Context, w http.ResponseWriter, resp any, err err
 		return
 	}
 
+	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(successCode)
 	w.Write(bs)
 }

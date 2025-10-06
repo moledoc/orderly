@@ -28,12 +28,14 @@ func NewUserAPISvc() *UserAPISvc {
 type UserAPIReq struct { // NOTE: tests service through HTTP requests
 	// TODO: local vs db
 	HttpClient *http.Client
+	BaseURL    string
 }
 
 func NewUserAPIReq() *UserAPIReq {
 	// TODO: local vs db
 	return &UserAPIReq{
 		HttpClient: &http.Client{},
+		BaseURL:    "http://127.0.0.1:8080",
 	}
 }
 
@@ -42,12 +44,15 @@ var (
 	_ UserAPI = (*UserAPIReq)(nil)
 )
 
-func TestUserSuite(t *testing.T) {
+func TestUserSvcSuite(t *testing.T) {
 	t.Run("UserAPISvc", func(t *testing.T) {
 		suite.Run(t, &UserSuite{
 			API: NewUserAPISvc(),
 		})
 	})
+}
+
+func TestUserReqSuite(t *testing.T) {
 	t.Run("UserAPIReq", func(t *testing.T) {
 		suite.Run(t, &UserSuite{
 			API: NewUserAPIReq(),
