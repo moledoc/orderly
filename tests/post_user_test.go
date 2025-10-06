@@ -1,189 +1,20 @@
 package tests
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
-	"fmt"
 	"net/http"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/moledoc/orderly/internal/domain/errwrap"
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
 	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/pkg/utils"
-	"github.com/stretchr/testify/assert"
+	"github.com/moledoc/orderly/tests/compare"
 	"github.com/stretchr/testify/require"
 )
-
-type UserAPI interface {
-	PostUser(t *testing.T, ctx context.Context, req *request.PostUserRequest) (*response.PostUserResponse, errwrap.Error)
-	GetUserByID(t *testing.T, ctx context.Context, req *request.GetUserByIDRequest) (*response.GetUserByIDResponse, errwrap.Error)
-	GetUsers(t *testing.T, ctx context.Context, req *request.GetUsersRequest) (*response.GetUsersResponse, errwrap.Error)
-	GetUserSubOrdinates(t *testing.T, ctx context.Context, req *request.GetUserSubOrdinatesRequest) (*response.GetUserSubOrdinatesResponse, errwrap.Error)
-	PatchUser(t *testing.T, ctx context.Context, req *request.PatchUserRequest) (*response.PatchUserResponse, errwrap.Error)
-	DeleteUser(t *testing.T, ctx context.Context, req *request.DeleteUserRequest) (*response.DeleteUserResponse, errwrap.Error)
-}
-
-func (api *UserAPISvc) PostUser(t *testing.T, ctx context.Context, req *request.PostUserRequest) (*response.PostUserResponse, errwrap.Error) {
-	t.Helper()
-	return api.Svc.PostUser(ctx, req)
-}
-
-func (api *UserAPISvc) GetUserByID(t *testing.T, ctx context.Context, req *request.GetUserByIDRequest) (*response.GetUserByIDResponse, errwrap.Error) {
-	t.Helper()
-	return api.Svc.GetUserByID(ctx, req)
-}
-func (api *UserAPISvc) GetUsers(t *testing.T, ctx context.Context, req *request.GetUsersRequest) (*response.GetUsersResponse, errwrap.Error) {
-	t.Helper()
-	return api.Svc.GetUsers(ctx, req)
-}
-func (api *UserAPISvc) GetUserSubOrdinates(t *testing.T, ctx context.Context, req *request.GetUserSubOrdinatesRequest) (*response.GetUserSubOrdinatesResponse, errwrap.Error) {
-	t.Helper()
-	return api.Svc.GetUserSubOrdinates(ctx, req)
-}
-func (api *UserAPISvc) PatchUser(t *testing.T, ctx context.Context, req *request.PatchUserRequest) (*response.PatchUserResponse, errwrap.Error) {
-	t.Helper()
-	return api.Svc.PatchUser(ctx, req)
-}
-func (api *UserAPISvc) DeleteUser(t *testing.T, ctx context.Context, req *request.DeleteUserRequest) (*response.DeleteUserResponse, errwrap.Error) {
-	t.Helper()
-	return api.Svc.DeleteUser(ctx, req)
-}
-
-func (api *UserAPIReq) PostUser(t *testing.T, ctx context.Context, req *request.PostUserRequest) (*response.PostUserResponse, errwrap.Error) {
-	t.Helper()
-	reqBytes, err := json.Marshal(req)
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusBadRequest, "marshaling request failed: %s", err)
-	}
-	respHttp, err := api.HttpClient.Post(fmt.Sprintf("%s/v1/mgmt/user", api.BaseURL), "application/json", bytes.NewBuffer(reqBytes))
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
-	}
-
-	if respHttp.StatusCode == http.StatusOK || respHttp.StatusCode == http.StatusCreated {
-		var resp response.PostUserResponse
-		if err := json.NewDecoder(respHttp.Body).Decode(&resp); err != nil {
-			return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
-		}
-		return &resp, nil
-	}
-	var errw errwrap.Err
-	if err := json.NewDecoder(respHttp.Body).Decode(&errw); err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
-	}
-
-	return nil, &errw
-}
-
-func (*UserAPIReq) GetUserByID(t *testing.T, ctx context.Context, req *request.GetUserByIDRequest) (*response.GetUserByIDResponse, errwrap.Error) {
-	t.Helper()
-	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
-}
-func (*UserAPIReq) GetUsers(t *testing.T, ctx context.Context, req *request.GetUsersRequest) (*response.GetUsersResponse, errwrap.Error) {
-	t.Helper()
-	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
-}
-func (*UserAPIReq) GetUserSubOrdinates(t *testing.T, ctx context.Context, req *request.GetUserSubOrdinatesRequest) (*response.GetUserSubOrdinatesResponse, errwrap.Error) {
-	t.Helper()
-	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
-}
-func (*UserAPIReq) PatchUser(t *testing.T, ctx context.Context, req *request.PatchUserRequest) (*response.PatchUserResponse, errwrap.Error) {
-	t.Helper()
-	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
-}
-func (*UserAPIReq) DeleteUser(t *testing.T, ctx context.Context, req *request.DeleteUserRequest) (*response.DeleteUserResponse, errwrap.Error) {
-	t.Helper()
-	return nil, errwrap.NewError(http.StatusServiceUnavailable, "TODO: implement")
-}
-
-// DiffReporter is a simple custom reporter that only records differences
-// detected during comparison.
-type DiffReporter struct {
-	path  cmp.Path
-	diffs []string
-}
-
-func (r *DiffReporter) PushStep(ps cmp.PathStep) {
-	r.path = append(r.path, ps)
-}
-
-func (r *DiffReporter) Report(rs cmp.Result) {
-	if !rs.Equal() {
-		vx, vy := r.path.Last().Values()
-		r.diffs = append(r.diffs, fmt.Sprintf("%#v:\n\t-: %+v\n\t+: %+v\n", r.path, vx, vy))
-	}
-}
-
-func (r *DiffReporter) PopStep() {
-	r.path = r.path[:len(r.path)-1]
-}
-
-func (r *DiffReporter) String() string {
-	return strings.Join(r.diffs, "\n")
-}
-
-var (
-	IgnoreID = cmp.FilterPath(func(pathsteps cmp.Path) bool {
-		last := pathsteps.Last().String()
-		return last == ".ID"
-	}, cmp.Ignore())
-	IgnoreMeta = cmp.FilterPath(func(pathsteps cmp.Path) bool {
-		last := pathsteps.Last().String()
-		return last == ".Meta"
-	}, cmp.Ignore())
-)
-
-var (
-	IgnorePath = func(paths ...string) cmp.Option {
-		return cmp.FilterPath(func(ppaths cmp.Path) bool {
-			for _, path := range paths {
-				if ppaths[1:].String() == path {
-					return true
-				}
-			}
-			return false
-		}, cmp.Ignore())
-	}
-)
-
-var (
-	SorterString = cmpopts.SortSlices(func(a string, b string) bool {
-		return a < b
-	})
-
-	ComparerUser = func(comparers ...func(a *user.User, b *user.User) bool) cmp.Option {
-		return cmp.Comparer(func(a *user.User, b *user.User) bool {
-			for _, comparer := range comparers {
-				if !comparer(a, b) {
-					return false
-				}
-			}
-			return true
-		})
-	}
-)
-
-func AssertEqual(t *testing.T, expected any, actual any, opts ...cmp.Option) {
-	opts = append(opts, IgnoreMeta)
-	var r DiffReporter
-	opts = append(opts, cmp.Reporter(&r))
-	assert.True(t, cmp.Equal(expected, actual, opts...), r.String())
-}
-
-func RequireEqual(t *testing.T, expected any, actual any, opts ...cmp.Option) {
-	opts = append(opts, IgnoreMeta)
-	var r DiffReporter
-	opts = append(opts, cmp.Reporter(&r))
-	require.True(t, cmp.Equal(expected, actual, opts...), r.String())
-}
 
 func (s *UserSuite) TestPostUser_InputValidation() {
 	t := s.T()
@@ -316,11 +147,11 @@ func (s *UserSuite) TestPostUser_CreateUser() {
 	require.NoError(t, err)
 
 	opts := []cmp.Option{
-		IgnorePath("User.ID", "User.Meta"),
-		ComparerUser(),
+		compare.IgnorePath("User.ID", "User.Meta"),
+		compare.ComparerUser(),
 	}
 	expected := &response.PostUserResponse{
 		User: user,
 	}
-	RequireEqual(t, expected, resp, opts...)
+	compare.RequireEqual(t, expected, resp, opts...)
 }
