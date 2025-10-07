@@ -80,7 +80,14 @@ var (
 		})
 	}
 
+	CompareUser = func(a *user.User, b *user.User) bool {
+		return cmp.Equal(a.Deref(), b.Deref())
+	}
+
 	ComparerUser = func(comparers ...func(a *user.User, b *user.User) bool) cmp.Option {
+		if len(comparers) == 0 {
+			return cmp.Comparer(CompareUser)
+		}
 		return cmp.Comparer(func(a *user.User, b *user.User) bool {
 			for _, comparer := range comparers {
 				if !comparer(a, b) {

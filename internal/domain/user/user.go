@@ -7,6 +7,14 @@ import (
 
 type Email string
 
+type userDerefFields struct {
+	ID         meta.ID
+	Name       string
+	Email      Email
+	Supervisor Email
+	Meta       meta.Meta
+}
+
 type User struct {
 	ID         *meta.ID   `json:"id,omitempty"`
 	Name       *string    `json:"name,omitempty"`
@@ -29,4 +37,20 @@ func (u *User) Clone() *User {
 	}
 
 	return &clone
+}
+
+func (u *User) Deref() *userDerefFields {
+	if u == nil {
+		return nil
+	}
+
+	var deref userDerefFields = userDerefFields{
+		ID:         u.GetID(),
+		Name:       u.GetName(),
+		Email:      u.GetEmail(),
+		Supervisor: u.GetSupervisor(),
+		Meta:       *u.GetMeta().Clone(),
+	}
+
+	return &deref
 }
