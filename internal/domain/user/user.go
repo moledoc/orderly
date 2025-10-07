@@ -49,7 +49,7 @@ func (u *User) Deref() *userDerefFields {
 		Name:       u.GetName(),
 		Email:      u.GetEmail(),
 		Supervisor: u.GetSupervisor(),
-		Meta:       *u.GetMeta().Clone(),
+		Meta:       utils.Deref(u.GetMeta().Clone()),
 	}
 
 	return &deref

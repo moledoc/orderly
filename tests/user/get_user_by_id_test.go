@@ -63,7 +63,7 @@ func (s *UserSuite) TestGetUserByID_InputValidation() {
 }
 
 func (s *UserSuite) TestGetUserByID() {
-	t := s.T()
+	tt := s.T()
 
 	userObj := &user.User{
 		Name:       utils.Ptr("name"),
@@ -71,12 +71,12 @@ func (s *UserSuite) TestGetUserByID() {
 		Supervisor: utils.Ptr(user.Email("example.supervisor@example.com")),
 	}
 
-	user := setup.MustCreateUserWithCleanup(t, context.Background(), s.API, userObj)
+	user := setup.MustCreateUserWithCleanup(tt, context.Background(), s.API, userObj)
 
-	resp, err := s.API.GetUserByID(t, context.Background(), &request.GetUserByIDRequest{
+	resp, err := s.API.GetUserByID(tt, context.Background(), &request.GetUserByIDRequest{
 		ID: utils.Ptr(user.GetID()),
 	})
-	require.NoError(t, err)
+	require.NoError(tt, err)
 
 	opts := []cmp.Option{
 		compare.IgnorePath("User.Meta"),
@@ -86,5 +86,17 @@ func (s *UserSuite) TestGetUserByID() {
 	expected := &response.GetUserByIDResponse{
 		User: user,
 	}
-	compare.RequireEqual(t, expected, resp, opts...)
+	compare.RequireEqual(tt, expected, resp, opts...)
+}
+
+func (s *UserSuite) TestGetUserByID_Failed() {
+	tt := s.T()
+
+	tt.Run("NotFound", func(t *testing.T) {
+		_, err := s.API.GetUserByID(tt, context.Background(), &request.GetUserByIDRequest{
+			ID: utils.Ptr(meta.ID(utils.RandAlphanum())),
+		})
+		require.Error(tt, err)
+		require.Equal(tt, http.StatusNotFound, err.GetStatusCode(), err)
+	})
 }

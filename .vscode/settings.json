@@ -1,0 +1,9 @@
+{
+    "go.testTimeout": "1m",
+    "go.testFlags": [
+        "-test.v",
+        "-test.count=1",
+        "-test.timeout=1m",
+        "-args"
+    ]
+}

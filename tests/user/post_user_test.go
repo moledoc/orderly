@@ -133,8 +133,8 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 	})
 }
 
-func (s *UserSuite) TestPostUser_CreateUser() {
-	t := s.T()
+func (s *UserSuite) TestPostUser() {
+	tt := s.T()
 
 	user := &user.User{
 		Name:       utils.Ptr("name"),
@@ -142,10 +142,10 @@ func (s *UserSuite) TestPostUser_CreateUser() {
 		Supervisor: utils.Ptr(user.Email("example.supervisor@example.com")),
 	}
 
-	resp, err := s.API.PostUser(t, context.Background(), &request.PostUserRequest{
+	resp, err := s.API.PostUser(tt, context.Background(), &request.PostUserRequest{
 		User: user,
 	})
-	require.NoError(t, err)
+	require.NoError(tt, err)
 
 	opts := []cmp.Option{
 		compare.IgnorePath("User.ID", "User.Meta"),
@@ -154,7 +154,7 @@ func (s *UserSuite) TestPostUser_CreateUser() {
 	expected := &response.PostUserResponse{
 		User: user,
 	}
-	compare.RequireEqual(t, expected, resp, opts...)
+	compare.RequireEqual(tt, expected, resp, opts...)
 
-	cleanup.User(t, s.API, resp.GetUser())
+	cleanup.User(tt, s.API, resp.GetUser())
 }

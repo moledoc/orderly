@@ -103,6 +103,7 @@ func (s *UserSuite) TestGetUserSubOrdinates() {
 
 			opts := []cmp.Option{
 				compare.IgnorePath("User.Meta"),
+				compare.SorterUser(compare.SortUserByID),
 				compare.ComparerUser(),
 			}
 
