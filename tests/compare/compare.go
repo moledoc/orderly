@@ -85,6 +85,7 @@ var (
 )
 
 func AssertEqual(t *testing.T, expected any, actual any, opts ...cmp.Option) {
+	t.Helper()
 	opts = append(opts, IgnoreMeta)
 	// var r DiffReporter
 	// opts = append(opts, cmp.Reporter(&r))
@@ -92,6 +93,7 @@ func AssertEqual(t *testing.T, expected any, actual any, opts ...cmp.Option) {
 }
 
 func RequireEqual(t *testing.T, expected any, actual any, opts ...cmp.Option) {
+	t.Helper()
 	opts = append(opts, IgnoreMeta)
 	// var r DiffReporter
 	// opts = append(opts, cmp.Reporter(&r))
