@@ -193,12 +193,8 @@ func (api *UserAPIReq) DeleteUser(t *testing.T, ctx context.Context, req *reques
 	}
 	defer respHttp.Body.Close()
 
-	if respHttp.StatusCode == http.StatusOK || respHttp.StatusCode == http.StatusNoContent {
-		var resp response.DeleteUserResponse
-		if err := json.NewDecoder(respHttp.Body).Decode(&resp); err != nil {
-			return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
-		}
-		return &resp, nil
+	if respHttp.StatusCode == http.StatusNoContent {
+		return &response.DeleteUserResponse{}, nil
 	}
 	var errw errwrap.Err
 	if err := json.NewDecoder(respHttp.Body).Decode(&errw); err != nil {

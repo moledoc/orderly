@@ -78,10 +78,7 @@ func (s *UserSuite) TestGetUserByID() {
 	})
 	require.NoError(tt, err)
 
-	opts := []cmp.Option{
-		compare.IgnorePath("User.Meta"),
-		compare.ComparerUser(),
-	}
+	opts := []cmp.Option{}
 
 	expected := &response.GetUserByIDResponse{
 		User: user,

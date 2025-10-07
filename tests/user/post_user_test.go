@@ -158,13 +158,12 @@ func (s *UserSuite) TestPostUser() {
 	require.NoError(tt, err)
 
 	opts := []cmp.Option{
-		compare.IgnorePath("User.ID", "User.Meta"),
-		compare.ComparerUser(),
+		compare.IgnorePaths("User.ID"),
 	}
+
 	expected := &response.PostUserResponse{
 		User: user,
 	}
-	compare.RequireEqual(tt, expected, resp, opts...)
 
-	cleanup.User(tt, s.API, resp.GetUser())
+	compare.RequireEqual(tt, expected, resp, opts...)
 }

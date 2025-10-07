@@ -102,9 +102,7 @@ func (s *UserSuite) TestGetUserSubOrdinates() {
 			require.NoError(t, err)
 
 			opts := []cmp.Option{
-				compare.IgnorePath("User.Meta"),
 				compare.SorterUser(compare.SortUserByID),
-				compare.ComparerUser(),
 			}
 
 			expected := &response.GetUserSubOrdinatesResponse{

@@ -2,6 +2,7 @@ package compare
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"testing"
 
@@ -37,27 +38,18 @@ func (r *DiffReporter) String() string {
 }
 
 var (
-	IgnoreID = cmp.FilterPath(func(pathsteps cmp.Path) bool {
-		last := pathsteps.Last().String()
-		return last == ".ID"
-	}, cmp.Ignore())
 	IgnoreMeta = cmp.FilterPath(func(pathsteps cmp.Path) bool {
 		last := pathsteps.Last().String()
 		return last == ".Meta"
 	}, cmp.Ignore())
-)
-
-var (
-	IgnorePath = func(paths ...string) cmp.Option {
-		return cmp.FilterPath(func(ppaths cmp.Path) bool {
-			for _, path := range paths {
-				if ppaths[1:].String() == path {
-					return true
-				}
-			}
-			return false
+	IgnorePaths = func(paths ...string) cmp.Option {
+		return cmp.FilterPath(func(path cmp.Path) bool {
+			return slices.Contains(paths, path.String())
 		}, cmp.Ignore())
 	}
+	// IgnoreUserFields = func(fields ...string) cmp.Option {
+	// 	return cmpopts.IgnoreFields(user.User{}, fields...)
+	// }
 )
 
 var (
@@ -80,14 +72,7 @@ var (
 		})
 	}
 
-	CompareUser = func(a *user.User, b *user.User) bool {
-		return cmp.Equal(a, b)
-	}
-
 	ComparerUser = func(comparers ...func(a *user.User, b *user.User) bool) cmp.Option {
-		if len(comparers) == 0 {
-			return cmp.Comparer(CompareUser)
-		}
 		return cmp.Comparer(func(a *user.User, b *user.User) bool {
 			for _, comparer := range comparers {
 				if !comparer(a, b) {
@@ -101,14 +86,14 @@ var (
 
 func AssertEqual(t *testing.T, expected any, actual any, opts ...cmp.Option) {
 	opts = append(opts, IgnoreMeta)
-	var r DiffReporter
-	opts = append(opts, cmp.Reporter(&r))
-	assert.True(t, cmp.Equal(expected, actual, opts...), r.String())
+	// var r DiffReporter
+	// opts = append(opts, cmp.Reporter(&r))
+	assert.Empty(t, cmp.Diff(expected, actual, opts...) /*, r.String()*/)
 }
 
 func RequireEqual(t *testing.T, expected any, actual any, opts ...cmp.Option) {
 	opts = append(opts, IgnoreMeta)
-	var r DiffReporter
-	opts = append(opts, cmp.Reporter(&r))
-	require.True(t, cmp.Equal(expected, actual, opts...), r.String())
+	// var r DiffReporter
+	// opts = append(opts, cmp.Reporter(&r))
+	require.Empty(t, cmp.Diff(expected, actual, opts...) /*, r.String()*/)
 }

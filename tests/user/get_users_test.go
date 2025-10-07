@@ -43,9 +43,7 @@ func (s *UserSuite) TestGetUsers() {
 			require.NoError(t, err)
 
 			opts := []cmp.Option{
-				compare.IgnorePath("User.Meta"),
 				compare.SorterUser(compare.SortUserByID),
-				compare.ComparerUser(),
 			}
 
 			expected := &response.GetUsersResponse{
