@@ -27,12 +27,14 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 	tt.Run("EmptyRequest", func(t *testing.T) {
 		t.Run("nil", func(t *testing.T) {
 			resp, err := s.API.PostUser(t, context.Background(), nil)
+			defer cleanup.User(t, s.API, resp.GetUser())
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		})
 		t.Run("empty", func(t *testing.T) {
 			resp, err := s.API.PostUser(t, context.Background(), &request.PostUserRequest{})
+			defer cleanup.User(t, s.API, resp.GetUser())
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
@@ -46,6 +48,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 					ID: meta.ID(utils.RandAlphanum()),
 				},
 			})
+			defer cleanup.User(t, s.API, resp.GetUser())
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
@@ -63,6 +66,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 					},
 				},
 			})
+			defer cleanup.User(t, s.API, resp.GetUser())
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
@@ -77,6 +81,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 					Supervisor: supervisor,
 				},
 			})
+			defer cleanup.User(t, s.API, resp.GetUser())
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
@@ -88,6 +93,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 					Supervisor: supervisor,
 				},
 			})
+			defer cleanup.User(t, s.API, resp.GetUser())
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
@@ -99,6 +105,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 					Email: email,
 				},
 			})
+			defer cleanup.User(t, s.API, resp.GetUser())
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
@@ -114,6 +121,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 					Supervisor: supervisor,
 				},
 			})
+			defer cleanup.User(t, s.API, resp.GetUser())
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
@@ -126,6 +134,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 					Supervisor: user.Email("this is not an email"),
 				},
 			})
+			defer cleanup.User(t, s.API, resp.GetUser())
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
@@ -145,6 +154,7 @@ func (s *UserSuite) TestPostUser() {
 	resp, err := s.API.PostUser(tt, context.Background(), &request.PostUserRequest{
 		User: user,
 	})
+	defer cleanup.User(tt, s.API, resp.GetUser())
 	require.NoError(tt, err)
 
 	opts := []cmp.Option{

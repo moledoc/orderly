@@ -13,6 +13,9 @@ import (
 func User(t *testing.T, api api.User, u *user.User) {
 	t.Cleanup(func() {
 		id := meta.ID(u.GetID())
+		if len(id) == 0 {
+			return
+		}
 		_, err := api.DeleteUser(t, context.Background(), &request.DeleteUserRequest{
 			ID: id,
 		})

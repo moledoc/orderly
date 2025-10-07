@@ -24,7 +24,7 @@ func (r *DiffReporter) PushStep(ps cmp.PathStep) {
 func (r *DiffReporter) Report(rs cmp.Result) {
 	if !rs.Equal() {
 		vx, vy := r.path.Last().Values()
-		r.diffs = append(r.diffs, fmt.Sprintf("%#v:\n\t-: %+v\n\t+: %+v\n", r.path, vx, vy))
+		r.diffs = append(r.diffs, fmt.Sprintf("%#v:\n\texpected: %+v\n\tactual: %+v\n", r.path, vx, vy))
 	}
 }
 
