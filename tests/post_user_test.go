@@ -12,18 +12,19 @@ import (
 	"github.com/moledoc/orderly/internal/domain/response"
 	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/pkg/utils"
+	"github.com/moledoc/orderly/tests/cleanup"
 	"github.com/moledoc/orderly/tests/compare"
 	"github.com/stretchr/testify/require"
 )
 
 func (s *UserSuite) TestPostUser_InputValidation() {
-	t := s.T()
+	tt := s.T()
 
 	name := utils.Ptr("name")
 	email := utils.Ptr(user.Email("example@example.com"))
 	supervisor := utils.Ptr(user.Email("example.supervisor@example.com"))
 
-	t.Run("EmptyRequest", func(t *testing.T) {
+	tt.Run("EmptyRequest", func(t *testing.T) {
 		t.Run("nil", func(t *testing.T) {
 			resp, err := s.API.PostUser(t, context.Background(), nil)
 			require.Error(t, err)
@@ -38,7 +39,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 		})
 	})
 
-	t.Run("InvalidFieldProvided", func(t *testing.T) {
+	tt.Run("InvalidFieldProvided", func(t *testing.T) {
 		t.Run("user.id", func(t *testing.T) {
 			resp, err := s.API.PostUser(t, context.Background(), &request.PostUserRequest{
 				User: &user.User{
@@ -68,7 +69,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 		})
 	})
 
-	t.Run("MissingRequiredField", func(t *testing.T) {
+	tt.Run("MissingRequiredField", func(t *testing.T) {
 		t.Run("user.name", func(t *testing.T) {
 			resp, err := s.API.PostUser(t, context.Background(), &request.PostUserRequest{
 				User: &user.User{
@@ -104,7 +105,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 		})
 	})
 
-	t.Run("InvalidRequiredField", func(t *testing.T) {
+	tt.Run("InvalidRequiredField", func(t *testing.T) {
 		t.Run("user.email", func(t *testing.T) {
 			resp, err := s.API.PostUser(t, context.Background(), &request.PostUserRequest{
 				User: &user.User{
@@ -154,4 +155,6 @@ func (s *UserSuite) TestPostUser_CreateUser() {
 		User: user,
 	}
 	compare.RequireEqual(t, expected, resp, opts...)
+
+	cleanup.User(t, s.API, resp.GetUser())
 }

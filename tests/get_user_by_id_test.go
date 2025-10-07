@@ -12,13 +12,14 @@ import (
 	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/pkg/utils"
 	"github.com/moledoc/orderly/tests/compare"
+	"github.com/moledoc/orderly/tests/setup"
 	"github.com/stretchr/testify/require"
 )
 
 func (s *UserSuite) TestGetUserByID_InputValidation() {
-	t := s.T()
+	tt := s.T()
 
-	t.Run("EmptyRequest", func(t *testing.T) {
+	tt.Run("EmptyRequest", func(t *testing.T) {
 		t.Run("nil", func(t *testing.T) {
 			resp, err := s.API.GetUserByID(t, context.Background(), nil)
 			require.Error(t, err)
@@ -33,7 +34,7 @@ func (s *UserSuite) TestGetUserByID_InputValidation() {
 		})
 	})
 
-	t.Run("InvalidRequiredField", func(t *testing.T) {
+	tt.Run("InvalidRequiredField", func(t *testing.T) {
 		t.Run("user.id.empty", func(t *testing.T) {
 			resp, err := s.API.GetUserByID(t, context.Background(), &request.GetUserByIDRequest{
 				ID: utils.Ptr(meta.ID("")),
@@ -70,14 +71,10 @@ func (s *UserSuite) TestGetUserByID() {
 		Supervisor: utils.Ptr(user.Email("example.supervisor@example.com")),
 	}
 
-	respPost, err := s.API.PostUser(t, context.Background(), &request.PostUserRequest{
-		User: userObj,
-	})
-	require.NoError(t, err)
-	expectedUser := respPost.GetUser()
+	user := setup.MustCreateUserWithCleanup(t, context.Background(), s.API, userObj)
 
 	resp, err := s.API.GetUserByID(t, context.Background(), &request.GetUserByIDRequest{
-		ID: utils.Ptr(expectedUser.GetID()),
+		ID: utils.Ptr(user.GetID()),
 	})
 	require.NoError(t, err)
 
@@ -87,7 +84,7 @@ func (s *UserSuite) TestGetUserByID() {
 	}
 
 	expected := &response.GetUserByIDResponse{
-		User: expectedUser,
+		User: user,
 	}
 	compare.RequireEqual(t, expected, resp, opts...)
 }

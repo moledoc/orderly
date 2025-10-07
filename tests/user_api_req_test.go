@@ -12,6 +12,7 @@ import (
 	"github.com/moledoc/orderly/internal/domain/errwrap"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
+	"github.com/moledoc/orderly/tests/api"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -30,7 +31,7 @@ func NewUserAPIReq() *UserAPIReq {
 }
 
 var (
-	_ UserAPI = (*UserAPIReq)(nil)
+	_ api.User = (*UserAPIReq)(nil)
 )
 
 func TestUserReqSuite(t *testing.T) {

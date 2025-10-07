@@ -9,6 +9,7 @@ import (
 	"github.com/moledoc/orderly/internal/domain/response"
 	"github.com/moledoc/orderly/internal/repository/local"
 	"github.com/moledoc/orderly/internal/service/mgmtuser"
+	"github.com/moledoc/orderly/tests/api"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -24,7 +25,7 @@ func NewUserAPISvc() *UserAPISvc {
 }
 
 var (
-	_ UserAPI = (*UserAPISvc)(nil)
+	_ api.User = (*UserAPISvc)(nil)
 )
 
 func TestUserSvcSuite(t *testing.T) {
