@@ -8,7 +8,6 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
-	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -38,6 +37,10 @@ func (r *DiffReporter) String() string {
 }
 
 var (
+	IgnoreID = cmp.FilterPath(func(pathsteps cmp.Path) bool {
+		last := pathsteps.Last().String()
+		return last == ".ID"
+	}, cmp.Ignore())
 	IgnoreMeta = cmp.FilterPath(func(pathsteps cmp.Path) bool {
 		last := pathsteps.Last().String()
 		return last == ".Meta"
@@ -56,32 +59,6 @@ var (
 	SorterString = cmpopts.SortSlices(func(a string, b string) bool {
 		return a < b
 	})
-
-	SortUserByID = func(a *user.User, b *user.User) bool {
-		return a.GetID() < b.GetID()
-	}
-
-	SorterUser = func(sorters ...func(a *user.User, b *user.User) bool) cmp.Option {
-		return cmpopts.SortSlices(func(a *user.User, b *user.User) bool {
-			for _, comparer := range sorters {
-				if !comparer(a, b) {
-					return false
-				}
-			}
-			return true
-		})
-	}
-
-	ComparerUser = func(comparers ...func(a *user.User, b *user.User) bool) cmp.Option {
-		return cmp.Comparer(func(a *user.User, b *user.User) bool {
-			for _, comparer := range comparers {
-				if !comparer(a, b) {
-					return false
-				}
-			}
-			return true
-		})
-	}
 )
 
 func AssertEqual(t *testing.T, expected any, actual any, opts ...cmp.Option) {

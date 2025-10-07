@@ -109,18 +109,34 @@ func validateOrder(order *order.Order) errwrap.Error {
 
 func validatePostOrderRequest(req *request.PostOrderRequest) errwrap.Error {
 	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil request")
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 	if req.Order == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil order")
+		return errwrap.NewError(http.StatusBadRequest, "empty order")
 	}
 
 	if req.GetOrder().Task == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil task")
+		return errwrap.NewError(http.StatusBadRequest, "empty task")
 	}
 
 	if len(req.GetOrder().GetTask().GetID()) > 0 {
 		return errwrap.NewError(http.StatusBadRequest, "order.task.id disallowed")
+	}
+
+	for i, delegatedTask := range req.GetOrder().GetDelegatedTasks() {
+		if len(delegatedTask.GetID()) > 0 {
+			return errwrap.NewError(http.StatusBadRequest, "order.delegated.%v.id disallowed", i)
+		}
+	}
+
+	for i, sitrep := range req.GetOrder().GetSitReps() {
+		if len(sitrep.GetID()) > 0 {
+			return errwrap.NewError(http.StatusBadRequest, "order.sitrep.%v.id disallowed", i)
+		}
+	}
+
+	if req.GetOrder().Meta != nil {
+		return errwrap.NewError(http.StatusBadRequest, "order.meta disallowed")
 	}
 
 	return validateOrder(req.GetOrder())
@@ -128,10 +144,10 @@ func validatePostOrderRequest(req *request.PostOrderRequest) errwrap.Error {
 
 func validateGetOrderByIDRequest(req *request.GetOrderByIDRequest) errwrap.Error {
 	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil request")
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 
-	if req.ID == nil {
+	if len(req.GetID()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "nil id")
 	}
 
@@ -148,10 +164,10 @@ func validateGetOrdersRequest(req *request.GetOrdersRequest) errwrap.Error {
 
 func validateGetOrderSubOrdersRequest(req *request.GetOrderSubOrdersRequest) errwrap.Error {
 	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil request")
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 
-	if req.ID == nil {
+	if len(req.GetID()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "nil id")
 	}
 
@@ -164,14 +180,14 @@ func validateGetOrderSubOrdersRequest(req *request.GetOrderSubOrdersRequest) err
 
 func validatePatchOrderRequest(req *request.PatchOrderRequest) errwrap.Error {
 	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil request")
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 	if req.Order == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil order")
+		return errwrap.NewError(http.StatusBadRequest, "empty order")
 	}
 
 	if req.GetOrder().Task == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil task")
+		return errwrap.NewError(http.StatusBadRequest, "empty task")
 	}
 
 	if len(req.GetOrder().GetTask().GetID()) > 0 {
@@ -183,10 +199,10 @@ func validatePatchOrderRequest(req *request.PatchOrderRequest) errwrap.Error {
 
 func validateDeleteOrderRequest(req *request.DeleteOrderRequest) errwrap.Error {
 	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil request")
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 
-	if req.ID == nil {
+	if len(req.GetID()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "nil id")
 	}
 
@@ -201,10 +217,10 @@ func validateDeleteOrderRequest(req *request.DeleteOrderRequest) errwrap.Error {
 
 func validatePutDelegatedTaskRequest(req *request.PutDelegatedTaskRequest) errwrap.Error {
 	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil request")
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 
-	if req.OrderID == nil {
+	if len(req.GetOrderID()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "nil id")
 	}
 
@@ -214,7 +230,7 @@ func validatePutDelegatedTaskRequest(req *request.PutDelegatedTaskRequest) errwr
 	}
 
 	if req.Task == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil task")
+		return errwrap.NewError(http.StatusBadRequest, "empty task")
 	}
 
 	if len(req.GetTask().GetID()) > 0 {
@@ -226,10 +242,10 @@ func validatePutDelegatedTaskRequest(req *request.PutDelegatedTaskRequest) errwr
 
 func validatePatchDelegatedTaskRequest(req *request.PatchDelegatedTaskRequest) errwrap.Error {
 	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil request")
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 
-	if req.OrderID == nil {
+	if len(req.GetOrderID()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "nil id")
 	}
 
@@ -239,7 +255,7 @@ func validatePatchDelegatedTaskRequest(req *request.PatchDelegatedTaskRequest) e
 	}
 
 	if req.Task == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil task")
+		return errwrap.NewError(http.StatusBadRequest, "empty task")
 	}
 
 	if len(req.GetTask().GetID()) > 0 {
@@ -251,10 +267,10 @@ func validatePatchDelegatedTaskRequest(req *request.PatchDelegatedTaskRequest) e
 
 func validateDeleteDelegatedTaskRequest(req *request.DeleteDelegatedTaskRequest) errwrap.Error {
 	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil request")
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 
-	if req.OrderID == nil {
+	if len(req.GetOrderID()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "nil id")
 	}
 
@@ -275,10 +291,10 @@ func validateDeleteDelegatedTaskRequest(req *request.DeleteDelegatedTaskRequest)
 
 func validatePutSitRepRequest(req *request.PutSitRepRequest) errwrap.Error {
 	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil request")
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 
-	if req.OrderID == nil {
+	if len(req.GetOrderID()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "nil id")
 	}
 
@@ -300,10 +316,10 @@ func validatePutSitRepRequest(req *request.PutSitRepRequest) errwrap.Error {
 
 func validatePatchSitRepRequest(req *request.PatchSitRepRequest) errwrap.Error {
 	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil request")
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 
-	if req.OrderID == nil {
+	if len(req.GetOrderID()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "nil id")
 	}
 
@@ -325,10 +341,10 @@ func validatePatchSitRepRequest(req *request.PatchSitRepRequest) errwrap.Error {
 
 func validateDeleteSitRepRequest(req *request.DeleteSitRepRequest) errwrap.Error {
 	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil request")
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 
-	if req.OrderID == nil {
+	if len(req.GetOrderID()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "nil id")
 	}
 

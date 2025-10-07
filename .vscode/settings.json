@@ -4,7 +4,7 @@
         "-test.v",
         "-test.count=1",
         "-test.timeout=1m",
-        "-test.run=TestUserReqSuite/UserAPIReq",
+        // "-test.run=TestUserReqSuite/UserAPIReq",
         "-args"
     ],
     "go.useLanguageServer": true,

@@ -9,7 +9,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
 	"github.com/moledoc/orderly/internal/middleware"
-	"github.com/moledoc/orderly/pkg/utils"
 )
 
 func postOrder(w http.ResponseWriter, r *http.Request) {
@@ -39,7 +38,7 @@ func getOrderByID(w http.ResponseWriter, r *http.Request) {
 	defer middleware.SpanStop(ctx, "getOrderByID")
 
 	resp, err := mgmtordersvc.GetOrderByID(ctx, &request.GetOrderByIDRequest{
-		ID: utils.Ptr(meta.ID(r.PathValue(orderID))),
+		ID: meta.ID(r.PathValue(orderID)),
 	})
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
@@ -63,7 +62,7 @@ func getOrderSubOrders(w http.ResponseWriter, r *http.Request) {
 	defer middleware.SpanStop(ctx, "getOrderSubOrders")
 
 	resp, err := mgmtordersvc.GetOrderSubOrders(ctx, &request.GetOrderSubOrdersRequest{
-		ID: utils.Ptr(meta.ID(r.PathValue(orderID))),
+		ID: meta.ID(r.PathValue(orderID)),
 	})
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
@@ -94,7 +93,7 @@ func deleteOrder(w http.ResponseWriter, r *http.Request) {
 	defer middleware.SpanStop(ctx, "deleteOrder")
 
 	resp, err := mgmtordersvc.DeleteOrder(ctx, &request.DeleteOrderRequest{
-		ID: utils.Ptr(meta.ID(r.PathValue(orderID))),
+		ID: meta.ID(r.PathValue(orderID)),
 	})
 	writeResponse(ctx, w, resp, err, http.StatusNoContent)
 }
@@ -109,7 +108,7 @@ func putDelegatedTask(w http.ResponseWriter, r *http.Request) {
 	defer middleware.SpanStop(ctx, "putDelegatedTask")
 
 	var req request.PutDelegatedTaskRequest = request.PutDelegatedTaskRequest{
-		OrderID: utils.Ptr(meta.ID(r.PathValue(orderID))),
+		OrderID: meta.ID(r.PathValue(orderID)),
 	}
 	var resp *response.PutDelegatedTaskResponse
 	var err errwrap.Error
@@ -129,7 +128,7 @@ func patchDelegatedTask(w http.ResponseWriter, r *http.Request) {
 	defer middleware.SpanStop(ctx, "patchDelegatedTask")
 
 	var req request.PatchDelegatedTaskRequest = request.PatchDelegatedTaskRequest{
-		OrderID: utils.Ptr(meta.ID(r.PathValue(orderID))),
+		OrderID: meta.ID(r.PathValue(orderID)),
 	}
 	var resp *response.PatchDelegatedTaskResponse
 	var err errwrap.Error
@@ -149,8 +148,8 @@ func deleteDelegatedTask(w http.ResponseWriter, r *http.Request) {
 	defer middleware.SpanStop(ctx, "deleteDelegatedTask")
 
 	resp, err := mgmtordersvc.DeleteDelegatedTask(ctx, &request.DeleteDelegatedTaskRequest{
-		OrderID:         utils.Ptr(meta.ID(r.PathValue(orderID))),
-		DelegatedTaskID: utils.Ptr(meta.ID(r.PathValue(delegatedTaskID))),
+		OrderID:         meta.ID(r.PathValue(orderID)),
+		DelegatedTaskID: meta.ID(r.PathValue(delegatedTaskID)),
 	})
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
@@ -165,7 +164,7 @@ func putSitRep(w http.ResponseWriter, r *http.Request) {
 	defer middleware.SpanStop(ctx, "putSitRep")
 
 	var req request.PutSitRepRequest = request.PutSitRepRequest{
-		OrderID: utils.Ptr(meta.ID(r.PathValue(orderID))),
+		OrderID: meta.ID(r.PathValue(orderID)),
 	}
 	var resp *response.PutSitRepResponse
 	var err errwrap.Error
@@ -185,7 +184,7 @@ func patchSitRep(w http.ResponseWriter, r *http.Request) {
 	defer middleware.SpanStop(ctx, "patchSitRep")
 
 	var req request.PatchSitRepRequest = request.PatchSitRepRequest{
-		OrderID: utils.Ptr(meta.ID(r.PathValue(orderID))),
+		OrderID: meta.ID(r.PathValue(orderID)),
 	}
 	var resp *response.PatchSitRepResponse
 	var err errwrap.Error
@@ -205,8 +204,8 @@ func deleteSitRep(w http.ResponseWriter, r *http.Request) {
 	defer middleware.SpanStop(ctx, "deleteSitRep")
 
 	resp, err := mgmtordersvc.DeleteSitRep(ctx, &request.DeleteSitRepRequest{
-		OrderID:  utils.Ptr(meta.ID(r.PathValue(orderID))),
-		SitRepID: utils.Ptr(meta.ID(r.PathValue(sitrepID))),
+		OrderID:  meta.ID(r.PathValue(orderID)),
+		SitRepID: meta.ID(r.PathValue(sitrepID)),
 	})
 
 	writeResponse(ctx, w, resp, err, http.StatusOK)

@@ -28,17 +28,17 @@ up: build
 	./bin/orderly
 
 tests-user: 
-	go test -v -test.count=1 -test.run=TestUserSvcSuite/UserAPISvc ./tests/...
+	go test -v -test.count=1 -test.run=TestUserSvcSuite/UserAPISvc ./tests/user/...
 
 # NOTE: needs mgmtuser-service running
 tests-user-http: 
-	go test -v -test.count=1  -test.run=TestUserReqSuite/UserAPIReq ./tests/...
+	go test -v -test.count=1  -test.run=TestUserReqSuite/UserAPIReq ./tests/user/...
 
 tests-order:
-	echo "TODO: test mgmtorder"
+	go test -v -test.count=1  -test.run=TestOrderSvcSuite/OrderAPISvc ./tests/order/...
 
 tests:
-	echo "TODO: test orderly"
+	go test -v -test.count=1  -test.run=TestOrderReqSuite/OrderAPIReq ./tests/order/...
 
 clean:
 	rm -rf bin
