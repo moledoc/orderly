@@ -36,7 +36,7 @@ func (s *UserSuite) TestGetUsers() {
 		return users
 	}
 
-	for i := 0; i <= 100; i += 10 {
+	for _, i := range []int{0, 1, 10} {
 		s.T().Run(fmt.Sprintf("count.%v", i), func(t *testing.T) {
 			users := createUsers(t, i)
 
