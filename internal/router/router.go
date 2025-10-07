@@ -109,6 +109,11 @@ func RouteUser(svc mgmtuser.ServiceMgmtUserAPI) {
 	http.HandleFunc(fmt.Sprintf("GET /v1/mgmt/user/{%v}/subordinates", userID), getUserSubOrdinates)
 	http.HandleFunc("PATCH /v1/mgmt/user", patchUser)
 	http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/user/{%v}", userID), deleteUser)
+
+	// NOTE: handle empty ids
+	http.HandleFunc("GET /v1/mgmt/user/", getUserByID)
+	http.HandleFunc("GET /v1/mgmt/user/subordinates", getUserSubOrdinates) // MAYBE: FIXME:
+	http.HandleFunc("DELETE /v1/mgmt/user/", deleteUser)
 }
 
 func Route(svcs *Service) {

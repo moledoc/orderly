@@ -38,9 +38,11 @@ func getUserByID(w http.ResponseWriter, r *http.Request) {
 	middleware.SpanStart(ctx, "getUserByID")
 	defer middleware.SpanStop(ctx, "getUserByID")
 
-	resp, err := mgmtusersvc.GetUserByID(ctx, &request.GetUserByIDRequest{
+	req := &request.GetUserByIDRequest{
 		ID: utils.Ptr(meta.ID(r.PathValue(userID))),
-	})
+	}
+	resp, err := mgmtusersvc.GetUserByID(ctx, req)
+
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 

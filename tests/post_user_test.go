@@ -28,13 +28,13 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 			resp, err := s.API.PostUser(t, context.Background(), nil)
 			require.Error(t, err)
 			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode())
+			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		})
 		t.Run("empty", func(t *testing.T) {
 			resp, err := s.API.PostUser(t, context.Background(), &request.PostUserRequest{})
 			require.Error(t, err)
 			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode())
+			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		})
 	})
 
@@ -47,7 +47,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 			})
 			require.Error(t, err)
 			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode())
+			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		})
 		t.Run("user.meta", func(t *testing.T) {
 			resp, err := s.API.PostUser(t, context.Background(), &request.PostUserRequest{
@@ -64,7 +64,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 			})
 			require.Error(t, err)
 			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode())
+			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		})
 	})
 
@@ -78,7 +78,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 			})
 			require.Error(t, err)
 			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode())
+			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		})
 		t.Run("user.email", func(t *testing.T) {
 			resp, err := s.API.PostUser(t, context.Background(), &request.PostUserRequest{
@@ -89,7 +89,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 			})
 			require.Error(t, err)
 			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode())
+			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		})
 		t.Run("user.supervisor", func(t *testing.T) {
 			resp, err := s.API.PostUser(t, context.Background(), &request.PostUserRequest{
@@ -100,7 +100,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 			})
 			require.Error(t, err)
 			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode())
+			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		})
 	})
 
@@ -115,7 +115,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 			})
 			require.Error(t, err)
 			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode())
+			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		})
 		t.Run("user.supervisor", func(t *testing.T) {
 			resp, err := s.API.PostUser(t, context.Background(), &request.PostUserRequest{
@@ -127,7 +127,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 			})
 			require.Error(t, err)
 			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode())
+			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		})
 	})
 }
