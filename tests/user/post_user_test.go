@@ -20,9 +20,9 @@ import (
 func (s *UserSuite) TestPostUser_InputValidation() {
 	tt := s.T()
 
-	name := utils.Ptr("name")
-	email := utils.Ptr(user.Email("example@example.com"))
-	supervisor := utils.Ptr(user.Email("example.supervisor@example.com"))
+	name := "name"
+	email := user.Email("example@example.com")
+	supervisor := user.Email("example.supervisor@example.com")
 
 	tt.Run("EmptyRequest", func(t *testing.T) {
 		t.Run("nil", func(t *testing.T) {
@@ -43,7 +43,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 		t.Run("user.id", func(t *testing.T) {
 			resp, err := s.API.PostUser(t, context.Background(), &request.PostUserRequest{
 				User: &user.User{
-					ID: utils.Ptr(meta.ID(utils.RandAlphanum())),
+					ID: meta.ID(utils.RandAlphanum()),
 				},
 			})
 			require.Error(t, err)
@@ -110,7 +110,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 			resp, err := s.API.PostUser(t, context.Background(), &request.PostUserRequest{
 				User: &user.User{
 					Name:       name,
-					Email:      utils.Ptr(user.Email("this is not an email")),
+					Email:      user.Email("this is not an email"),
 					Supervisor: supervisor,
 				},
 			})
@@ -123,7 +123,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 				User: &user.User{
 					Name:       name,
 					Email:      email,
-					Supervisor: utils.Ptr(user.Email("this is not an email")),
+					Supervisor: user.Email("this is not an email"),
 				},
 			})
 			require.Error(t, err)
@@ -137,9 +137,9 @@ func (s *UserSuite) TestPostUser() {
 	tt := s.T()
 
 	user := &user.User{
-		Name:       utils.Ptr("name"),
-		Email:      utils.Ptr(user.Email("example@example.com")),
-		Supervisor: utils.Ptr(user.Email("example.supervisor@example.com")),
+		Name:       "name",
+		Email:      user.Email("example@example.com"),
+		Supervisor: user.Email("example.supervisor@example.com"),
 	}
 
 	resp, err := s.API.PostUser(tt, context.Background(), &request.PostUserRequest{

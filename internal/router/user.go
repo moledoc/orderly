@@ -9,7 +9,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
 	"github.com/moledoc/orderly/internal/middleware"
-	"github.com/moledoc/orderly/pkg/utils"
 )
 
 func postUser(w http.ResponseWriter, r *http.Request) {
@@ -39,7 +38,7 @@ func getUserByID(w http.ResponseWriter, r *http.Request) {
 	defer middleware.SpanStop(ctx, "getUserByID")
 
 	req := &request.GetUserByIDRequest{
-		ID: utils.Ptr(meta.ID(r.PathValue(userID))),
+		ID: meta.ID(r.PathValue(userID)),
 	}
 	resp, err := mgmtusersvc.GetUserByID(ctx, req)
 
@@ -65,7 +64,7 @@ func getUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
 	defer middleware.SpanStop(ctx, "getUserSubOrdinates")
 
 	resp, err := mgmtusersvc.GetUserSubOrdinates(ctx, &request.GetUserSubOrdinatesRequest{
-		ID: utils.Ptr(meta.ID(r.PathValue(userID))),
+		ID: meta.ID(r.PathValue(userID)),
 	})
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
@@ -97,7 +96,7 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	defer middleware.SpanStop(ctx, "deleteUser")
 
 	resp, err := mgmtusersvc.DeleteUser(ctx, &request.DeleteUserRequest{
-		ID: utils.Ptr(meta.ID(r.PathValue(userID))),
+		ID: meta.ID(r.PathValue(userID)),
 	})
 	writeResponse(ctx, w, resp, err, http.StatusNoContent)
 }

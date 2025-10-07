@@ -21,7 +21,7 @@ func (s *serviceMgmtUser) PostUser(ctx context.Context, req *request.PostUserReq
 	}
 
 	u := req.GetUser()
-	u.ID = utils.Ptr(meta.ID(utils.RandAlphanum()))
+	u.ID = meta.ID(utils.RandAlphanum())
 
 	now := time.Now().UTC()
 	u.Meta = &meta.Meta{
@@ -108,15 +108,15 @@ func (s *serviceMgmtUser) PatchUser(ctx context.Context, req *request.PatchUserR
 	reqUser := req.GetUser()
 	hasChanges := false
 
-	if reqUser.Name != nil && reqUser.GetName() != patchedUser.GetName() {
+	if reqUser.GetName() != patchedUser.GetName() {
 		patchedUser.SetName(reqUser.GetName())
 		hasChanges = true
 	}
-	if reqUser.Email != nil && reqUser.GetEmail() != patchedUser.GetEmail() {
+	if reqUser.GetEmail() != patchedUser.GetEmail() {
 		patchedUser.SetEmail(reqUser.GetEmail())
 		hasChanges = true
 	}
-	if reqUser.Supervisor != nil && reqUser.GetSupervisor() != patchedUser.GetSupervisor() {
+	if reqUser.GetSupervisor() != patchedUser.GetSupervisor() {
 		patchedUser.SetSupervisor(reqUser.GetSupervisor())
 		hasChanges = true
 	}

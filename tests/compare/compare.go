@@ -81,7 +81,7 @@ var (
 	}
 
 	CompareUser = func(a *user.User, b *user.User) bool {
-		return cmp.Equal(a.Deref(), b.Deref())
+		return cmp.Equal(a, b)
 	}
 
 	ComparerUser = func(comparers ...func(a *user.User, b *user.User) bool) cmp.Option {

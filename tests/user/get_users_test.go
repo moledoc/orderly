@@ -9,7 +9,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
 	"github.com/moledoc/orderly/internal/domain/user"
-	"github.com/moledoc/orderly/pkg/utils"
 	"github.com/moledoc/orderly/tests/compare"
 	"github.com/moledoc/orderly/tests/setup"
 	"github.com/stretchr/testify/require"
@@ -24,9 +23,9 @@ func (s *UserSuite) TestGetUsers() {
 		users := make([]*user.User, count)
 		for i := 1; i <= count; i++ {
 			userObj := &user.User{
-				Name:       utils.Ptr(fmt.Sprintf("name-%d", count)),
-				Email:      utils.Ptr(user.Email(fmt.Sprintf("example.%d@example.com", count))),
-				Supervisor: utils.Ptr(user.Email(fmt.Sprintf("example.supervisor.%d@example.com", count))),
+				Name:       fmt.Sprintf("name-%d", count),
+				Email:      user.Email(fmt.Sprintf("example.%d@example.com", count)),
+				Supervisor: user.Email(fmt.Sprintf("example.supervisor.%d@example.com", count)),
 			}
 
 			user := setup.MustCreateUserWithCleanup(t, context.Background(), s.API, userObj)

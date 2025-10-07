@@ -3,31 +3,31 @@ package user
 import "github.com/moledoc/orderly/internal/domain/meta"
 
 func (u *User) SetID(id meta.ID) {
-	if u == nil || u.ID == nil {
+	if u == nil {
 		return
 	}
-	*u.ID = id
+	u.ID = id
 }
 
 func (u *User) SetName(name string) {
-	if u == nil || u.Name == nil {
+	if u == nil {
 		return
 	}
-	*u.Name = name
+	u.Name = name
 }
 
 func (u *User) SetEmail(email Email) {
-	if u == nil || u.Email == nil {
+	if u == nil {
 		return
 	}
-	*u.Email = email
+	u.Email = email
 }
 
 func (u *User) SetSupervisor(supervisor Email) {
-	if u == nil || u.Supervisor == nil {
+	if u == nil {
 		return
 	}
-	*u.Supervisor = supervisor
+	u.Supervisor = supervisor
 }
 
 func (u *User) SetMeta(meta *meta.Meta) {

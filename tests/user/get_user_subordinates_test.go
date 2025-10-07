@@ -38,7 +38,7 @@ func (s *UserSuite) TestGetUserSubOrdinates_InputValidation() {
 	tt.Run("InvalidRequiredField", func(t *testing.T) {
 		t.Run("user.id.empty", func(t *testing.T) {
 			resp, err := s.API.GetUserSubOrdinates(t, context.Background(), &request.GetUserSubOrdinatesRequest{
-				ID: utils.Ptr(meta.ID("")),
+				ID: meta.ID(""),
 			})
 			require.Error(t, err)
 			require.Empty(t, resp)
@@ -46,7 +46,7 @@ func (s *UserSuite) TestGetUserSubOrdinates_InputValidation() {
 		})
 		t.Run("user.id.shorter", func(t *testing.T) {
 			resp, err := s.API.GetUserSubOrdinates(t, context.Background(), &request.GetUserSubOrdinatesRequest{
-				ID: utils.Ptr(meta.ID(utils.RandAlphanum()[:10])),
+				ID: meta.ID(utils.RandAlphanum()[:10]),
 			})
 			require.Error(t, err)
 			require.Empty(t, resp)
@@ -54,7 +54,7 @@ func (s *UserSuite) TestGetUserSubOrdinates_InputValidation() {
 		})
 		t.Run("user.id.longer", func(t *testing.T) {
 			resp, err := s.API.GetUserSubOrdinates(t, context.Background(), &request.GetUserSubOrdinatesRequest{
-				ID: utils.Ptr(meta.ID(utils.RandAlphanum() + utils.RandAlphanum())),
+				ID: meta.ID(utils.RandAlphanum() + utils.RandAlphanum()),
 			})
 			require.Error(t, err)
 			require.Empty(t, resp)
@@ -67,9 +67,9 @@ func (s *UserSuite) TestGetUserSubOrdinates() {
 	tt := s.T()
 
 	supervisor := setup.MustCreateUserWithCleanup(tt, context.Background(), s.API, &user.User{
-		Name:       utils.Ptr("name"),
-		Email:      utils.Ptr(user.Email("example.supervisor.1@example.com")),
-		Supervisor: utils.Ptr(user.Email("example.supervisor.0@example.com")),
+		Name:       "name",
+		Email:      user.Email("example.supervisor.1@example.com"),
+		Supervisor: user.Email("example.supervisor.0@example.com"),
 	})
 
 	createSubOrdinates := func(t *testing.T, count int) []*user.User {
@@ -79,9 +79,9 @@ func (s *UserSuite) TestGetUserSubOrdinates() {
 		users := make([]*user.User, count)
 		for i := 1; i <= count; i++ {
 			userObj := &user.User{
-				Name:       utils.Ptr(fmt.Sprintf("name-%d", count)),
-				Email:      utils.Ptr(user.Email(fmt.Sprintf("example.%d@example.com", count))),
-				Supervisor: utils.Ptr(supervisor.GetEmail()),
+				Name:       fmt.Sprintf("name-%d", count),
+				Email:      user.Email(fmt.Sprintf("example.%d@example.com", count)),
+				Supervisor: supervisor.GetEmail(),
 			}
 
 			user := setup.MustCreateUserWithCleanup(t, context.Background(), s.API, userObj)
@@ -97,7 +97,7 @@ func (s *UserSuite) TestGetUserSubOrdinates() {
 			users := createSubOrdinates(t, i)
 
 			resp, err := s.API.GetUserSubOrdinates(t, context.Background(), &request.GetUserSubOrdinatesRequest{
-				ID: utils.Ptr(supervisor.GetID()),
+				ID: supervisor.GetID(),
 			})
 			require.NoError(t, err)
 

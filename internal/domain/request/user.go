@@ -10,13 +10,13 @@ type PostUserRequest struct {
 }
 
 type GetUserByIDRequest struct {
-	ID *meta.ID `json:"id"`
+	ID meta.ID `json:"id"`
 }
 
 type GetUsersRequest struct{}
 
 type GetUserSubOrdinatesRequest struct {
-	ID *meta.ID `json:"id"`
+	ID meta.ID `json:"id"`
 }
 
 type PatchUserRequest struct {
@@ -24,5 +24,5 @@ type PatchUserRequest struct {
 }
 
 type DeleteUserRequest struct {
-	ID *meta.ID `json:"id"`
+	ID meta.ID `json:"id"`
 }

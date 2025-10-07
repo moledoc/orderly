@@ -37,7 +37,7 @@ func (s *UserSuite) TestGetUserByID_InputValidation() {
 	tt.Run("InvalidRequiredField", func(t *testing.T) {
 		t.Run("user.id.empty", func(t *testing.T) {
 			resp, err := s.API.GetUserByID(t, context.Background(), &request.GetUserByIDRequest{
-				ID: utils.Ptr(meta.ID("")),
+				ID: meta.ID(""),
 			})
 			require.Error(t, err)
 			require.Empty(t, resp)
@@ -45,7 +45,7 @@ func (s *UserSuite) TestGetUserByID_InputValidation() {
 		})
 		t.Run("user.id.shorter", func(t *testing.T) {
 			resp, err := s.API.GetUserByID(t, context.Background(), &request.GetUserByIDRequest{
-				ID: utils.Ptr(meta.ID(utils.RandAlphanum()[:10])),
+				ID: meta.ID(utils.RandAlphanum()[:10]),
 			})
 			require.Error(t, err)
 			require.Empty(t, resp)
@@ -53,7 +53,7 @@ func (s *UserSuite) TestGetUserByID_InputValidation() {
 		})
 		t.Run("user.id.longer", func(t *testing.T) {
 			resp, err := s.API.GetUserByID(t, context.Background(), &request.GetUserByIDRequest{
-				ID: utils.Ptr(meta.ID(utils.RandAlphanum() + utils.RandAlphanum())),
+				ID: meta.ID(utils.RandAlphanum() + utils.RandAlphanum()),
 			})
 			require.Error(t, err)
 			require.Empty(t, resp)
@@ -66,15 +66,15 @@ func (s *UserSuite) TestGetUserByID() {
 	tt := s.T()
 
 	userObj := &user.User{
-		Name:       utils.Ptr("name"),
-		Email:      utils.Ptr(user.Email("example@example.com")),
-		Supervisor: utils.Ptr(user.Email("example.supervisor@example.com")),
+		Name:       "name",
+		Email:      user.Email("example@example.com"),
+		Supervisor: user.Email("example.supervisor@example.com"),
 	}
 
 	user := setup.MustCreateUserWithCleanup(tt, context.Background(), s.API, userObj)
 
 	resp, err := s.API.GetUserByID(tt, context.Background(), &request.GetUserByIDRequest{
-		ID: utils.Ptr(user.GetID()),
+		ID: user.GetID(),
 	})
 	require.NoError(tt, err)
 
@@ -94,7 +94,7 @@ func (s *UserSuite) TestGetUserByID_Failed() {
 
 	tt.Run("NotFound", func(t *testing.T) {
 		_, err := s.API.GetUserByID(tt, context.Background(), &request.GetUserByIDRequest{
-			ID: utils.Ptr(meta.ID(utils.RandAlphanum())),
+			ID: meta.ID(utils.RandAlphanum()),
 		})
 		require.Error(tt, err)
 		require.Equal(tt, http.StatusNotFound, err.GetStatusCode(), err)
