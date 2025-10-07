@@ -11,7 +11,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
 	"github.com/moledoc/orderly/internal/domain/user"
-	"github.com/moledoc/orderly/pkg/utils"
 	"github.com/moledoc/orderly/tests/compare"
 	"github.com/moledoc/orderly/tests/setup"
 	"github.com/stretchr/testify/require"
@@ -38,7 +37,7 @@ func (s *UserSuite) TestGetUserSubOrdinates_InputValidation() {
 	tt.Run("InvalidRequiredField", func(t *testing.T) {
 		t.Run("user.id.empty", func(t *testing.T) {
 			resp, err := s.API.GetUserSubOrdinates(t, context.Background(), &request.GetUserSubOrdinatesRequest{
-				ID: meta.ID(""),
+				ID: meta.EmptyID(),
 			})
 			require.Error(t, err)
 			require.Empty(t, resp)
@@ -46,7 +45,7 @@ func (s *UserSuite) TestGetUserSubOrdinates_InputValidation() {
 		})
 		t.Run("user.id.shorter", func(t *testing.T) {
 			resp, err := s.API.GetUserSubOrdinates(t, context.Background(), &request.GetUserSubOrdinatesRequest{
-				ID: meta.ID(utils.RandAlphanum()[:10]),
+				ID: meta.NewID()[:10],
 			})
 			require.Error(t, err)
 			require.Empty(t, resp)
@@ -54,7 +53,7 @@ func (s *UserSuite) TestGetUserSubOrdinates_InputValidation() {
 		})
 		t.Run("user.id.longer", func(t *testing.T) {
 			resp, err := s.API.GetUserSubOrdinates(t, context.Background(), &request.GetUserSubOrdinatesRequest{
-				ID: meta.ID(utils.RandAlphanum() + utils.RandAlphanum()),
+				ID: meta.NewID() + meta.NewID(),
 			})
 			require.Error(t, err)
 			require.Empty(t, resp)

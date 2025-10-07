@@ -28,11 +28,11 @@ up: build
 	./bin/orderly
 
 tests-user: 
-	go test -v -test.run=TestUserSvcSuite/UserAPISvc ./tests/...
+	go test -v -test.count=1 -test.run=TestUserSvcSuite/UserAPISvc ./tests/...
 
 # NOTE: needs mgmtuser-service running
 tests-user-http: 
-	go test -v -test.run=TestUserReqSuite/UserAPIReq ./tests/...
+	go test -v -test.count=1  -test.run=TestUserReqSuite/UserAPIReq ./tests/...
 
 tests-order:
 	echo "TODO: test mgmtorder"

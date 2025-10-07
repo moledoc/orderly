@@ -11,7 +11,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
 	"github.com/moledoc/orderly/internal/domain/user"
-	"github.com/moledoc/orderly/pkg/utils"
 	"github.com/moledoc/orderly/tests/cleanup"
 	"github.com/moledoc/orderly/tests/compare"
 	"github.com/stretchr/testify/require"
@@ -45,7 +44,7 @@ func (s *UserSuite) TestPostUser_InputValidation() {
 		t.Run("user.id", func(t *testing.T) {
 			resp, err := s.API.PostUser(t, context.Background(), &request.PostUserRequest{
 				User: &user.User{
-					ID: meta.ID(utils.RandAlphanum()),
+					ID: meta.NewID(),
 				},
 			})
 			defer cleanup.User(t, s.API, resp.GetUser())
