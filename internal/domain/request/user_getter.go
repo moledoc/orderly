@@ -15,19 +15,19 @@ func (r *PostUserRequest) GetUser() *user.User {
 ////////////////
 
 func (r *GetUserByIDRequest) GetID() meta.ID {
-	if r == nil || r.ID == nil {
+	if r == nil {
 		return ""
 	}
-	return *r.ID
+	return r.ID
 }
 
 ////////////////
 
 func (r *GetUserSubOrdinatesRequest) GetID() meta.ID {
-	if r == nil || r.ID == nil {
+	if r == nil {
 		return ""
 	}
-	return *r.ID
+	return r.ID
 }
 
 ////////////////
@@ -42,8 +42,8 @@ func (r *PatchUserRequest) GetUser() *user.User {
 ////////////////
 
 func (r *DeleteUserRequest) GetID() meta.ID {
-	if r == nil || r.ID == nil {
+	if r == nil {
 		return ""
 	}
-	return *r.ID
+	return r.ID
 }

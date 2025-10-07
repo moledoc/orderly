@@ -10,6 +10,7 @@ import (
 	"github.com/moledoc/orderly/internal/middleware"
 	"github.com/moledoc/orderly/internal/service/mgmtorder"
 	"github.com/moledoc/orderly/internal/service/mgmtuser"
+	"github.com/moledoc/orderly/pkg/consts"
 )
 
 var (
@@ -36,6 +37,14 @@ func writeResponse(ctx context.Context, w http.ResponseWriter, resp any, err err
 	defer middleware.SpanStop(ctx, "WriteResponse")
 
 	if err != nil {
+
+		var traceID string
+		ctxTraceID := ctx.Value(consts.CtxKeyTrace)
+		if ctxTraceID != nil {
+			traceID = ctxTraceID.(string)
+		}
+		err.SetTraceID(traceID)
+
 		w.WriteHeader(err.GetStatusCode())
 		w.Write([]byte(err.String()))
 		return
@@ -49,6 +58,7 @@ func writeResponse(ctx context.Context, w http.ResponseWriter, resp any, err err
 		return
 	}
 
+	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(successCode)
 	w.Write(bs)
 }
@@ -99,6 +109,11 @@ func RouteUser(svc mgmtuser.ServiceMgmtUserAPI) {
 	http.HandleFunc(fmt.Sprintf("GET /v1/mgmt/user/{%v}/subordinates", userID), getUserSubOrdinates)
 	http.HandleFunc("PATCH /v1/mgmt/user", patchUser)
 	http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/user/{%v}", userID), deleteUser)
+
+	// NOTE: handle empty ids
+	http.HandleFunc("GET /v1/mgmt/user/", getUserByID)
+	http.HandleFunc("GET /v1/mgmt/user/subordinates", getUserSubOrdinates) // MAYBE: FIXME:
+	http.HandleFunc("DELETE /v1/mgmt/user/", deleteUser)
 }
 
 func Route(svcs *Service) {

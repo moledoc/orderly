@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"runtime"
 	"sync"
@@ -17,29 +16,49 @@ var (
 	spansMutex sync.Mutex
 )
 
-func SpanFlushTrace(ctx context.Context) {
+func fixTraceSpanEndTimes(spans []*span.Span) {
 	spansMutex.Lock()
 	defer spansMutex.Unlock()
 
-	trace := ctx.Value(consts.CtxKeyTrace).(string)
-	spans := spanss[trace]
 	emptyTime := time.Time{}
 	var prevEnd time.Time
-	for _, span := range spans {
-		if span.End.Equal(emptyTime) {
+	for _, spn := range spans {
+		if spn.End.Equal(emptyTime) {
 			if prevEnd.Equal(emptyTime) {
-				span.End = time.Now().UTC()
+				spn.End = time.Now().UTC()
 			} else {
-				span.End = prevEnd
+				spn.End = prevEnd
 			}
-			prevEnd = span.End
-		}
-		bs, err := json.Marshal(span)
-		if err == nil {
-			fmt.Println(string(bs))
+			prevEnd = spn.End
+			spn.Duration = span.SpanDuration(spn.End.Sub(spn.Start))
 		}
 	}
-	delete(spanss, trace)
+}
+
+func GetSpansByTrace(traceID string) []*span.Span {
+	spans := spanss[traceID]
+	fixTraceSpanEndTimes(spans)
+	return spans
+}
+
+func SpanFlushTrace(ctx context.Context) {
+
+	var traceID string
+	ctxTraceID := ctx.Value(consts.CtxKeyTrace)
+	if ctxTraceID != nil {
+		traceID = ctxTraceID.(string)
+	}
+
+	spans := GetSpansByTrace(traceID)
+
+	spansMutex.Lock()
+	delete(spanss, traceID)
+	spansMutex.Unlock()
+
+	for _, s := range spans {
+		fmt.Println(s)
+	}
+
 }
 
 func SpanStart(ctx context.Context, desc string) {
@@ -48,16 +67,22 @@ func SpanStart(ctx context.Context, desc string) {
 
 	pc, file, line, _ := runtime.Caller(1)
 	fn := runtime.FuncForPC(pc)
-	trace := ctx.Value(consts.CtxKeyTrace).(string)
+
+	var traceID string
+	ctxTraceID := ctx.Value(consts.CtxKeyTrace)
+	if ctxTraceID != nil {
+		traceID = ctxTraceID.(string)
+	}
+
 	s := &span.Span{
 		FuncName: fn.Name(),
 		Filename: file,
 		Line:     line,
-		TraceID:  trace,
+		TraceID:  traceID,
 		Start:    time.Now().UTC(),
 		Desc:     desc,
 	}
-	spanss[trace] = append(spanss[trace], s)
+	spanss[traceID] = append(spanss[traceID], s)
 }
 
 func SpanStop(ctx context.Context, desc string) {
@@ -66,14 +91,21 @@ func SpanStop(ctx context.Context, desc string) {
 
 	pc, file, _, _ := runtime.Caller(1)
 	fn := runtime.FuncForPC(pc)
-	trace := ctx.Value(consts.CtxKeyTrace).(string)
-	spans, ok := spanss[trace]
+
+	var traceID string
+	ctxTraceID := ctx.Value(consts.CtxKeyTrace)
+	if ctxTraceID != nil {
+		traceID = ctxTraceID.(string)
+	}
+
+	spans, ok := spanss[traceID]
 	if !ok {
 		return
 	}
-	for _, span := range spans {
-		if span.Filename == file && span.FuncName == fn.Name() && span.Desc == desc {
-			span.End = time.Now().UTC()
+	for _, spn := range spans {
+		if spn.Filename == file && spn.FuncName == fn.Name() && spn.Desc == desc {
+			spn.End = time.Now().UTC()
+			spn.Duration = span.SpanDuration(spn.End.Sub(spn.Start))
 			break
 		}
 	}

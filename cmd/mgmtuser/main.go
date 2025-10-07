@@ -14,5 +14,5 @@ func main() {
 	router.RouteUser(mgmtuser.NewServiceMgmtUser(local.NewLocalRepositoryUser()))
 
 	fmt.Println("Server running on http://localhost:8080")
-	http.ListenAndServe(":8080", nil)
+	fmt.Println(http.ListenAndServe(":8080", nil))
 }

@@ -14,7 +14,7 @@ func validateUser(user *user.User) errwrap.Error {
 		return nil
 	}
 
-	if user.ID != nil { // NOTE: ID is required, but when creating we don't allow ID; relevant ID check is done one level up in validation
+	if len(user.GetID()) > 0 { // NOTE: ID is required, but when creating we don't allow ID; relevant ID check is done one level up in validation
 		err := validation.ValidateID(user.GetID())
 		if err != nil {
 			return err
@@ -45,14 +45,18 @@ func validateUser(user *user.User) errwrap.Error {
 
 func validatePostUserRequest(req *request.PostUserRequest) errwrap.Error {
 	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil request")
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 	if req.User == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil user")
+		return errwrap.NewError(http.StatusBadRequest, "empty user")
 	}
 
-	if req.GetUser().ID != nil {
+	if len(req.GetUser().GetID()) > 0 {
 		return errwrap.NewError(http.StatusBadRequest, "user.id disallowed")
+	}
+
+	if req.GetUser().Meta != nil {
+		return errwrap.NewError(http.StatusBadRequest, "user.meta disallowed")
 	}
 
 	return validateUser(req.GetUser())
@@ -60,11 +64,11 @@ func validatePostUserRequest(req *request.PostUserRequest) errwrap.Error {
 
 func validateGetUserByIDRequest(req *request.GetUserByIDRequest) errwrap.Error {
 	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil request")
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 
-	if req.ID == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil id")
+	if len(req.GetID()) == 0 {
+		return errwrap.NewError(http.StatusBadRequest, "empty id")
 	}
 
 	err := validation.ValidateID(req.GetID())
@@ -75,17 +79,17 @@ func validateGetUserByIDRequest(req *request.GetUserByIDRequest) errwrap.Error {
 	return nil
 }
 
-func validateGetUsersRequest(req *request.GetUsersRequest) errwrap.Error {
+func validateGetUsersRequest(*request.GetUsersRequest) errwrap.Error {
 	return nil
 }
 
 func validateGetUserSubOrdinatesRequest(req *request.GetUserSubOrdinatesRequest) errwrap.Error {
 	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil request")
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 
-	if req.ID == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil id")
+	if len(req.GetID()) == 0 {
+		return errwrap.NewError(http.StatusBadRequest, "empty id")
 	}
 
 	err := validation.ValidateID(req.GetID())
@@ -98,13 +102,13 @@ func validateGetUserSubOrdinatesRequest(req *request.GetUserSubOrdinatesRequest)
 
 func validatePatchUserRequest(req *request.PatchUserRequest) errwrap.Error {
 	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil request")
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 	if req.User == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil user")
+		return errwrap.NewError(http.StatusBadRequest, "empty user")
 	}
 
-	if req.GetUser().ID == nil {
+	if len(req.GetUser().GetID()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "user.id missing")
 	}
 
@@ -117,11 +121,11 @@ func validatePatchUserRequest(req *request.PatchUserRequest) errwrap.Error {
 
 func validateDeleteUserRequest(req *request.DeleteUserRequest) errwrap.Error {
 	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil request")
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 
-	if req.ID == nil {
-		return errwrap.NewError(http.StatusBadRequest, "nil id")
+	if len(req.GetID()) == 0 {
+		return errwrap.NewError(http.StatusBadRequest, "empty id")
 	}
 
 	err := validation.ValidateID(req.GetID())

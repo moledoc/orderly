@@ -17,7 +17,7 @@ const (
 )
 
 const (
-	TraceID string = "Trace-ID"
+	TraceID string = "Trace-Id"
 )
 
 var (

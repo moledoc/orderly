@@ -28,11 +28,11 @@
 * user UI
     * idea to use htmx, so there might be some UI related endpoints
         * POST/GET/PATCH/DELETE /ui/<endpoint>
-* input validation
+- [x] input validation
 * accept correct Content-Type
 * login(?)
-* optimize versioning
 * testing (functional, performance)?
+    * refactor the structure
 * deploying (docker)
 * documentation (README, swagger)
 * MAYBE: TODO: pagination
