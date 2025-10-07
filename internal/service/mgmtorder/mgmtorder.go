@@ -23,7 +23,7 @@ func (s *serviceMgmtOrder) PostOrder(ctx context.Context, req *request.PostOrder
 	}
 
 	o := req.GetOrder()
-	o.Task.ID = utils.Ptr(meta.ID(utils.RandAlphanum()))
+	o.Task.ID = meta.ID(utils.RandAlphanum())
 
 	now := time.Now().UTC()
 	o.SetMeta(&meta.Meta{
@@ -130,7 +130,7 @@ func (s *serviceMgmtOrder) PatchOrder(ctx context.Context, req *request.PatchOrd
 			}
 		}
 	}
-	if req.GetOrder().ParentOrderID != nil && req.Order.GetParentOrderID() != patchedOrder.GetParentOrderID() {
+	if req.GetOrder().GetParentOrderID() != patchedOrder.GetParentOrderID() {
 		patchedOrder.SetParentOrderID(req.GetOrder().GetParentOrderID())
 		hasChanges = true
 	}
@@ -200,19 +200,19 @@ func (s *serviceMgmtOrder) PutDelegatedTask(ctx context.Context, req *request.Pu
 func patchTask(reqTask *order.Task, patchedTask *order.Task) bool {
 	hasChanges := false
 
-	if reqTask.State != nil && reqTask.GetState() != patchedTask.GetState() {
+	if reqTask.GetState() != patchedTask.GetState() {
 		patchedTask.SetState(reqTask.GetState())
 		hasChanges = true
 	}
-	if reqTask.Accountable != nil && reqTask.GetAccountable() != patchedTask.GetAccountable() {
+	if reqTask.GetAccountable() != patchedTask.GetAccountable() {
 		patchedTask.SetAccountable(reqTask.GetAccountable())
 		hasChanges = true
 	}
-	if reqTask.Objective != nil && reqTask.GetObjective() != patchedTask.GetObjective() {
+	if reqTask.GetObjective() != patchedTask.GetObjective() {
 		patchedTask.SetObjective(reqTask.GetObjective())
 		hasChanges = true
 	}
-	if reqTask.Deadline != nil && reqTask.GetDeadline() != patchedTask.GetDeadline() {
+	if reqTask.GetDeadline() != patchedTask.GetDeadline() {
 		patchedTask.SetDeadline(reqTask.GetDeadline())
 		hasChanges = true
 	}
@@ -321,7 +321,7 @@ func (s *serviceMgmtOrder) PutSitRep(ctx context.Context, req *request.PutSitRep
 
 	sitrep := req.GetSitRep()
 	now := time.Now().UTC()
-	sitrep.ID = utils.Ptr(meta.ID(utils.RandAlphanum()))
+	sitrep.ID = meta.ID(utils.RandAlphanum())
 
 	patchedOrder.GetMeta().SetUpdated(now)
 	patchedOrder.GetMeta().VersionIncr()
@@ -340,15 +340,15 @@ func (s *serviceMgmtOrder) PutSitRep(ctx context.Context, req *request.PutSitRep
 func patchSitRep(reqSitRep *order.SitRep, patchedSitRep *order.SitRep) bool {
 	hasChanges := false
 
-	if reqSitRep.State != nil && reqSitRep.GetState() != patchedSitRep.GetState() {
+	if reqSitRep.GetState() != patchedSitRep.GetState() {
 		patchedSitRep.SetState(reqSitRep.GetState())
 		hasChanges = true
 	}
-	if reqSitRep.WorkCompleted != nil && reqSitRep.GetWorkCompleted() != patchedSitRep.GetWorkCompleted() {
+	if reqSitRep.GetWorkCompleted() != patchedSitRep.GetWorkCompleted() {
 		patchedSitRep.SetWorkCompleted(reqSitRep.GetWorkCompleted())
 		hasChanges = true
 	}
-	if reqSitRep.Summary != nil && reqSitRep.GetSummary() != patchedSitRep.GetSummary() {
+	if reqSitRep.GetSummary() != patchedSitRep.GetSummary() {
 		patchedSitRep.SetSummary(reqSitRep.GetSummary())
 		hasChanges = true
 	}

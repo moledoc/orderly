@@ -2,6 +2,7 @@ package mgmtorder
 
 import (
 	"net/http"
+	"time"
 
 	"github.com/moledoc/orderly/internal/domain/errwrap"
 	"github.com/moledoc/orderly/internal/domain/order"
@@ -14,7 +15,7 @@ func validateTask(task *order.Task) errwrap.Error {
 		return nil
 	}
 
-	if task.ID != nil { // NOTE: ID is required, but when creating we don't allow ID; relevant ID check is done one level up in validation
+	if len(task.ID) > 0 { // NOTE: ID is required, but when creating we don't allow ID; relevant ID check is done one level up in validation
 		err := validation.ValidateID(task.GetID())
 		if err != nil {
 			return err
@@ -34,7 +35,7 @@ func validateTask(task *order.Task) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "invalid task.objective")
 	}
 
-	if task.Deadline == nil {
+	if task.Deadline.Equal(time.Time{}) {
 		return errwrap.NewError(http.StatusBadRequest, "invalid task.deadline")
 	}
 
@@ -47,7 +48,7 @@ func validateSitRep(sitrep *order.SitRep) errwrap.Error {
 		return nil
 	}
 
-	if sitrep.ID != nil { // NOTE: ID is required, but when creating we don't allow ID; relevant ID check is done one level up in validation
+	if len(sitrep.ID) > 0 { // NOTE: ID is required, but when creating we don't allow ID; relevant ID check is done one level up in validation
 		err := validation.ValidateID(sitrep.GetID())
 		if err != nil {
 			return err
@@ -118,7 +119,7 @@ func validatePostOrderRequest(req *request.PostOrderRequest) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "nil task")
 	}
 
-	if req.GetOrder().GetTask().ID != nil {
+	if len(req.GetOrder().GetTask().GetID()) > 0 {
 		return errwrap.NewError(http.StatusBadRequest, "order.task.id disallowed")
 	}
 
@@ -173,7 +174,7 @@ func validatePatchOrderRequest(req *request.PatchOrderRequest) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "nil task")
 	}
 
-	if req.GetOrder().GetTask().ID == nil {
+	if len(req.GetOrder().GetTask().GetID()) > 0 {
 		return errwrap.NewError(http.StatusBadRequest, "order.task.id required")
 	}
 
@@ -216,7 +217,7 @@ func validatePutDelegatedTaskRequest(req *request.PutDelegatedTaskRequest) errwr
 		return errwrap.NewError(http.StatusBadRequest, "nil task")
 	}
 
-	if req.GetTask().ID != nil {
+	if len(req.GetTask().GetID()) > 0 {
 		return errwrap.NewError(http.StatusBadRequest, "task.id disallowed")
 	}
 
@@ -241,7 +242,7 @@ func validatePatchDelegatedTaskRequest(req *request.PatchDelegatedTaskRequest) e
 		return errwrap.NewError(http.StatusBadRequest, "nil task")
 	}
 
-	if req.GetTask().ID == nil {
+	if len(req.GetTask().GetID()) > 0 {
 		return errwrap.NewError(http.StatusBadRequest, "task.id required")
 	}
 
@@ -290,7 +291,7 @@ func validatePutSitRepRequest(req *request.PutSitRepRequest) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "nil sitrep")
 	}
 
-	if req.GetSitRep().ID != nil {
+	if len(req.GetSitRep().GetID()) > 0 {
 		return errwrap.NewError(http.StatusBadRequest, "sitrep.id disallowed")
 	}
 
@@ -315,7 +316,7 @@ func validatePatchSitRepRequest(req *request.PatchSitRepRequest) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "nil sitrep")
 	}
 
-	if req.GetSitRep().ID == nil {
+	if len(req.GetSitRep().GetID()) > 0 {
 		return errwrap.NewError(http.StatusBadRequest, "sitrep.id required")
 	}
 

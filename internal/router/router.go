@@ -94,6 +94,19 @@ func RouteOrder(svc mgmtorder.ServiceMgmtOrderAPI) {
 	http.HandleFunc(fmt.Sprintf("PUT /v1/mgmt/order/{%v}/sitrep", orderID), putSitRep)
 	http.HandleFunc(fmt.Sprintf("PATCH /v1/mgmt/order/{%v}/sitrep", orderID), patchSitRep)
 	http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/order/{%v}/sitrep/{%v}", orderID, sitrepID), deleteSitRep)
+
+	// NOTE: handle empty ids
+	http.HandleFunc("GET /v1/mgmt/order", getOrderByID)
+	http.HandleFunc("GET /v1/mgmt/order/suborders", getOrderSubOrders)
+	http.HandleFunc("DELETE /v1/mgmt/order", deleteOrder)
+
+	http.HandleFunc("PUT /v1/mgmt/order/delegated_task", putDelegatedTask)
+	http.HandleFunc("PATCH /v1/mgmt/order/delegated_task", patchDelegatedTask)
+	http.HandleFunc("DELETE /v1/mgmt/order/delegated_task/", deleteDelegatedTask)
+
+	http.HandleFunc("PUT /v1/mgmt/order/sitrep", putSitRep)
+	http.HandleFunc("PATCH /v1/mgmt/order/sitrep", patchSitRep)
+	http.HandleFunc("DELETE /v1/mgmt/order/sitrep/", deleteSitRep)
 }
 
 func RouteUser(svc mgmtuser.ServiceMgmtUserAPI) {

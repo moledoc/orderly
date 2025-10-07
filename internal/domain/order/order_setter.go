@@ -8,68 +8,68 @@ import (
 )
 
 func (tt *Task) SetID(id meta.ID) {
-	if tt == nil || tt.ID == nil {
+	if tt == nil {
 		return
 	}
-	*tt.ID = id
+	tt.ID = id
 }
 
 func (tt *Task) SetState(state State) {
-	if tt == nil || tt.State == nil {
+	if tt == nil {
 		return
 	}
-	*tt.State = state
+	tt.State = state
 }
 
 func (tt *Task) SetAccountable(accountable user.Email) {
-	if tt == nil || tt.Accountable == nil {
+	if tt == nil {
 		return
 	}
-	*tt.Accountable = accountable
+	tt.Accountable = accountable
 }
 
 func (tt *Task) SetObjective(objective string) {
-	if tt == nil || tt.Objective == nil {
+	if tt == nil {
 		return
 	}
-	*tt.Objective = objective
+	tt.Objective = objective
 }
 
 func (tt *Task) SetDeadline(deadline time.Time) {
-	if tt == nil || tt.Deadline == nil {
+	if tt == nil {
 		return
 	}
-	*tt.Deadline = deadline
+	tt.Deadline = deadline
 }
 
 ////////////
 
 func (sr *SitRep) SetID(id meta.ID) {
-	if sr == nil || sr.ID == nil {
+	if sr == nil {
 		return
 	}
-	*sr.ID = id
+	sr.ID = id
 }
 
 func (sr *SitRep) SetState(state State) {
-	if sr == nil || sr.State == nil {
+	if sr == nil {
 		return
 	}
-	*sr.State = state
+	sr.State = state
 }
 
 func (sr *SitRep) SetWorkCompleted(workcompleted uint) {
-	if sr == nil || sr.WorkCompleted == nil {
+	if sr == nil {
 		return
 	}
-	*sr.WorkCompleted = workcompleted
+	sr.WorkCompleted = workcompleted
 }
 
 func (sr *SitRep) SetSummary(summary string) {
-	if sr == nil || sr.Summary == nil {
+	if sr == nil {
 		return
 	}
-	*sr.Summary = summary
+	sr.Summary = summary
 }
 
 ////////////
@@ -89,14 +89,14 @@ func (o *Order) SetDelegatedTasks(delegatedTask []*Task) {
 }
 
 func (o *Order) SetParentOrderID(parentorderid meta.ID) {
-	if o == nil || o.ParentOrderID == nil {
+	if o == nil {
 		return
 	}
-	*o.ParentOrderID = parentorderid
+	o.ParentOrderID = parentorderid
 }
 
 func (o *Order) SetSitReps(sitreps []*SitRep) {
-	if o == nil || o.SitReps == nil {
+	if o == nil {
 		return
 	}
 	o.SitReps = sitreps
