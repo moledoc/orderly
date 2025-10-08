@@ -194,12 +194,8 @@ func (api *OrderAPIReq) DeleteOrder(t *testing.T, ctx context.Context, req *requ
 	}
 	defer respHttp.Body.Close()
 
-	if respHttp.StatusCode == http.StatusOK {
-		var resp response.DeleteOrderResponse
-		if err := json.NewDecoder(respHttp.Body).Decode(&resp); err != nil {
-			return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
-		}
-		return &resp, nil
+	if respHttp.StatusCode == http.StatusNoContent {
+		return &response.DeleteOrderResponse{}, nil
 	}
 	var errw errwrap.Err
 	if err := json.NewDecoder(respHttp.Body).Decode(&errw); err != nil {
@@ -304,12 +300,8 @@ func (api *OrderAPIReq) DeleteDelegatedTask(t *testing.T, ctx context.Context, r
 	}
 	defer respHttp.Body.Close()
 
-	if respHttp.StatusCode == http.StatusOK {
-		var resp response.DeleteDelegatedTaskResponse
-		if err := json.NewDecoder(respHttp.Body).Decode(&resp); err != nil {
-			return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
-		}
-		return &resp, nil
+	if respHttp.StatusCode == http.StatusNoContent {
+		return &response.DeleteDelegatedTaskResponse{}, nil
 	}
 	var errw errwrap.Err
 	if err := json.NewDecoder(respHttp.Body).Decode(&errw); err != nil {
@@ -414,12 +406,8 @@ func (api *OrderAPIReq) DeleteSitRep(t *testing.T, ctx context.Context, req *req
 	}
 	defer respHttp.Body.Close()
 
-	if respHttp.StatusCode == http.StatusOK {
-		var resp response.DeleteSitRepResponse
-		if err := json.NewDecoder(respHttp.Body).Decode(&resp); err != nil {
-			return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
-		}
-		return &resp, nil
+	if respHttp.StatusCode == http.StatusNoContent {
+		return &response.DeleteSitRepResponse{}, nil
 	}
 	var errw errwrap.Err
 	if err := json.NewDecoder(respHttp.Body).Decode(&errw); err != nil {

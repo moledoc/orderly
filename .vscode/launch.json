@@ -12,7 +12,7 @@
             "program": "${fileDirname}",
             "env": {},
             "args": [
-                "-test.run", "TestUserReqSuite/UserAPIReq/DeleteUser",
+                // "-test.run", "TestUserReqSuite/UserAPIReq/DeleteUser",
                 "-test.v",
                 "test.timeout", "1m"
             ]

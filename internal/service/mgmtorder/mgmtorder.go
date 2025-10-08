@@ -18,7 +18,7 @@ func (s *serviceMgmtOrder) PostOrder(ctx context.Context, req *request.PostOrder
 	middleware.SpanStart(ctx, "PostOrder")
 	defer middleware.SpanStop(ctx, "PostOrder")
 
-	if err := validatePostOrderRequest(req); err != nil {
+	if err := ValidatePostOrderRequest(req); err != nil {
 		return nil, err
 	}
 
@@ -45,7 +45,7 @@ func (s *serviceMgmtOrder) GetOrderByID(ctx context.Context, req *request.GetOrd
 	middleware.SpanStart(ctx, "GetOrderByID")
 	defer middleware.SpanStop(ctx, "GetOrderByID")
 
-	if err := validateGetOrderByIDRequest(req); err != nil {
+	if err := ValidateGetOrderByIDRequest(req); err != nil {
 		return nil, err
 	}
 
@@ -62,7 +62,7 @@ func (s *serviceMgmtOrder) GetOrders(ctx context.Context, req *request.GetOrders
 	middleware.SpanStart(ctx, "GetOrders")
 	defer middleware.SpanStop(ctx, "GetOrders")
 
-	if err := validateGetOrdersRequest(req); err != nil {
+	if err := ValidateGetOrdersRequest(req); err != nil {
 		return nil, err
 	}
 
@@ -79,7 +79,7 @@ func (s *serviceMgmtOrder) GetOrderSubOrders(ctx context.Context, req *request.G
 	middleware.SpanStart(ctx, "GetOrderSubOrders")
 	defer middleware.SpanStop(ctx, "GetOrderSubOrders")
 
-	if err := validateGetOrderSubOrdersRequest(req); err != nil {
+	if err := ValidateGetOrderSubOrdersRequest(req); err != nil {
 		return nil, err
 	}
 
@@ -96,7 +96,7 @@ func (s *serviceMgmtOrder) PatchOrder(ctx context.Context, req *request.PatchOrd
 	middleware.SpanStart(ctx, "PatchOrder")
 	defer middleware.SpanStop(ctx, "PatchOrder")
 
-	if err := validatePatchOrderRequest(req); err != nil {
+	if err := ValidatePatchOrderRequest(req); err != nil {
 		return nil, err
 	}
 
@@ -157,7 +157,7 @@ func (s *serviceMgmtOrder) DeleteOrder(ctx context.Context, req *request.DeleteO
 	middleware.SpanStart(ctx, "DeleteOrder")
 	defer middleware.SpanStop(ctx, "DeleteOrder")
 
-	if err := validateDeleteOrderRequest(req); err != nil {
+	if err := ValidateDeleteOrderRequest(req); err != nil {
 		return nil, err
 	}
 
@@ -168,7 +168,7 @@ func (s *serviceMgmtOrder) PutDelegatedTask(ctx context.Context, req *request.Pu
 	middleware.SpanStart(ctx, "PutDelegatedTask")
 	defer middleware.SpanStop(ctx, "PutDelegatedTask")
 
-	if err := validatePutDelegatedTaskRequest(req); err != nil {
+	if err := ValidatePutDelegatedTaskRequest(req); err != nil {
 		return nil, err
 	}
 
@@ -223,7 +223,7 @@ func (s *serviceMgmtOrder) PatchDelegatedTask(ctx context.Context, req *request.
 	middleware.SpanStart(ctx, "PatchDelegatedTask")
 	defer middleware.SpanStop(ctx, "PatchDelegatedTask")
 
-	if err := validatePatchDelegatedTaskRequest(req); err != nil {
+	if err := ValidatePatchDelegatedTaskRequest(req); err != nil {
 		return nil, err
 	}
 
@@ -270,7 +270,7 @@ func (s *serviceMgmtOrder) DeleteDelegatedTask(ctx context.Context, req *request
 	middleware.SpanStart(ctx, "DeleteDelegatedTask")
 	defer middleware.SpanStop(ctx, "DeleteDelegatedTask")
 
-	if err := validateDeleteDelegatedTaskRequest(req); err != nil {
+	if err := ValidateDeleteDelegatedTaskRequest(req); err != nil {
 		return nil, err
 	}
 
@@ -308,7 +308,7 @@ func (s *serviceMgmtOrder) PutSitRep(ctx context.Context, req *request.PutSitRep
 	middleware.SpanStart(ctx, "PutSitRep")
 	defer middleware.SpanStop(ctx, "PutSitRep")
 
-	if err := validatePutSitRepRequest(req); err != nil {
+	if err := ValidatePutSitRepRequest(req); err != nil {
 		return nil, err
 	}
 
@@ -358,7 +358,7 @@ func (s *serviceMgmtOrder) PatchSitRep(ctx context.Context, req *request.PatchSi
 	middleware.SpanStart(ctx, "PatchSitRep")
 	defer middleware.SpanStop(ctx, "PatchSitRep")
 
-	if err := validatePatchSitRepRequest(req); err != nil {
+	if err := ValidatePatchSitRepRequest(req); err != nil {
 		return nil, err
 	}
 
@@ -404,7 +404,7 @@ func (s *serviceMgmtOrder) DeleteSitRep(ctx context.Context, req *request.Delete
 	middleware.SpanStart(ctx, "DeleteSitRep")
 	defer middleware.SpanStop(ctx, "DeleteSitRep")
 
-	if err := validateDeleteSitRepRequest(req); err != nil {
+	if err := ValidateDeleteSitRepRequest(req); err != nil {
 		return nil, err
 	}
 

@@ -22,7 +22,7 @@ up-user: build
 	./bin/mgmtuser
 
 up-order: build
-	./bin/mgmtuser
+	./bin/mgmtorder
 
 up: build
 	./bin/orderly
@@ -37,7 +37,8 @@ tests-user-http:
 tests-order:
 	go test -v -test.count=1  -test.run=TestOrderSvcSuite/OrderAPISvc ./tests/order/...
 
-tests:
+# NOTE: needs mgmtorder-service running
+tests-order-http:
 	go test -v -test.count=1  -test.run=TestOrderReqSuite/OrderAPIReq ./tests/order/...
 
 clean:

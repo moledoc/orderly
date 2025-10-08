@@ -72,6 +72,55 @@ func (sr *SitRep) GetSummary() string {
 	return sr.Summary
 }
 
+func (sr *SitRep) GetDateTime() time.Time {
+	if sr == nil {
+		return time.Time{}
+	}
+	return sr.DateTime
+}
+
+func (sr *SitRep) GetBy() user.Email {
+	if sr == nil {
+		return ""
+	}
+	return sr.By
+}
+
+func (sr *SitRep) GetPing() []user.Email {
+	if sr == nil {
+		return []user.Email{}
+	}
+	return sr.Ping
+}
+
+func (sr *SitRep) GetSituation() string {
+	if sr == nil {
+		return ""
+	}
+	return sr.Situation
+}
+
+func (sr *SitRep) GetActions() string {
+	if sr == nil {
+		return ""
+	}
+	return sr.Actions
+}
+
+func (sr *SitRep) GetTBD() string {
+	if sr == nil {
+		return ""
+	}
+	return sr.TBD
+}
+
+func (sr *SitRep) GetIssues() string {
+	if sr == nil {
+		return ""
+	}
+	return sr.Issues
+}
+
 ////////////
 
 func (o *Order) GetTask() *Task {
