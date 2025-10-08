@@ -95,7 +95,7 @@ func RouteOrder(svc mgmtorder.ServiceMgmtOrderAPI) {
 	http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/order/{%v}/sitrep/{%v}", orderID, sitrepID), deleteSitRep)
 
 	// NOTE: handle empty ids
-	http.HandleFunc("GET /v1/mgmt/order", getOrderByID)
+	http.HandleFunc("GET /v1/mgmt/order/", getOrderByID)
 	http.HandleFunc("GET /v1/mgmt/order/suborders", getOrderSubOrders)
 	http.HandleFunc("DELETE /v1/mgmt/order", deleteOrder)
 

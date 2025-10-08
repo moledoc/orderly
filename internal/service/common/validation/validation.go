@@ -10,6 +10,17 @@ import (
 	"github.com/moledoc/orderly/pkg/utils"
 )
 
+type IgnoreField int
+
+const (
+	IgnoreNothing IgnoreField = 0
+	IgnoreID      IgnoreField = 1 << iota
+)
+
+func IsFieldIgnored(field IgnoreField, bitmask IgnoreField) bool {
+	return field&bitmask == field
+}
+
 func ValidateID(id meta.ID) errwrap.Error {
 	if len(id) != utils.RandAlphanumLen {
 		return errwrap.NewError(http.StatusBadRequest, "invalid id length")
