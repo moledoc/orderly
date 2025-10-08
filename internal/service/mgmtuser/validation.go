@@ -25,14 +25,12 @@ func ValidateUser(user *user.User) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "invalid user.name length")
 	}
 
-	err := validation.ValidateEmail(user.GetEmail())
-	if err != nil {
-		return err
+	if err := validation.ValidateEmail(user.GetEmail()); err != nil {
+		return errwrap.NewError(http.StatusBadRequest, "invalid user.email: %s", err.GetStatusMessage())
 	}
 
-	err = validation.ValidateEmail(user.GetSupervisor())
-	if err != nil {
-		return err
+	if err := validation.ValidateEmail(user.GetSupervisor()); err != nil {
+		return errwrap.NewError(http.StatusBadRequest, "invalid user.supervisor: %s", err.GetStatusMessage())
 	}
 
 	return nil
@@ -40,7 +38,7 @@ func ValidateUser(user *user.User) errwrap.Error {
 
 func ValidatePostUserRequest(req *request.PostUserRequest) errwrap.Error {
 	if req.User == nil {
-		return errwrap.NewError(http.StatusBadRequest, "empty user")
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 
 	if len(req.GetUser().GetID()) > 0 {

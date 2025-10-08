@@ -55,7 +55,7 @@ func (s *UserSuite) TestValidation_User() {
 		err := mgmtuser.ValidateUser(u)
 		require.Error(t, err)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid email length", err.GetStatusMessage())
+		require.Equal(t, "invalid user.email: invalid email length", err.GetStatusMessage())
 	})
 
 	tt.Run("user.supervisor", func(t *testing.T) {
@@ -64,7 +64,7 @@ func (s *UserSuite) TestValidation_User() {
 		err := mgmtuser.ValidateUser(u)
 		require.Error(t, err)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid email length", err.GetStatusMessage())
+		require.Equal(t, "invalid user.supervisor: invalid email length", err.GetStatusMessage())
 	})
 
 	tt.Run("user.meta", func(t *testing.T) {
@@ -88,7 +88,7 @@ func (s *UserSuite) TestValidation_PostUserRequest() {
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "empty user", err.GetStatusMessage())
+		require.Equal(t, "empty request", err.GetStatusMessage())
 	})
 
 	tt.Run("user.id.provided", func(t *testing.T) {
