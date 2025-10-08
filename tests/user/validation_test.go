@@ -11,6 +11,7 @@ import (
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/user"
+	"github.com/moledoc/orderly/internal/service/common/validation"
 	"github.com/moledoc/orderly/internal/service/mgmtuser"
 	"github.com/moledoc/orderly/tests/cleanup"
 	"github.com/stretchr/testify/require"
@@ -36,14 +37,15 @@ func (s *UserSuite) TestValidation_User() {
 	tt.Run("user.id", func(t *testing.T) {
 		u := userObj()
 		u.SetID("")
-		err := mgmtuser.ValidateUser(u)
-		require.NoError(t, err) // NOTE: only being validated if len(user.id) > 0; it's to enable to use common user validation func across endpoints. user.ID checks are done in request validation
+		err := mgmtuser.ValidateUser(u, validation.IgnoreNothing)
+		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+		require.Equal(t, "invalid user.id: invalid id length", err.GetStatusMessage())
 	})
 
 	tt.Run("user.name", func(t *testing.T) {
 		u := userObj()
 		u.SetName("")
-		err := mgmtuser.ValidateUser(u)
+		err := mgmtuser.ValidateUser(u, validation.IgnoreNothing)
 		require.Error(t, err)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid user.name length", err.GetStatusMessage())
@@ -52,7 +54,7 @@ func (s *UserSuite) TestValidation_User() {
 	tt.Run("user.email", func(t *testing.T) {
 		u := userObj()
 		u.SetEmail("")
-		err := mgmtuser.ValidateUser(u)
+		err := mgmtuser.ValidateUser(u, validation.IgnoreNothing)
 		require.Error(t, err)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid user.email: invalid email length", err.GetStatusMessage())
@@ -61,7 +63,7 @@ func (s *UserSuite) TestValidation_User() {
 	tt.Run("user.supervisor", func(t *testing.T) {
 		u := userObj()
 		u.SetSupervisor("")
-		err := mgmtuser.ValidateUser(u)
+		err := mgmtuser.ValidateUser(u, validation.IgnoreNothing)
 		require.Error(t, err)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid user.supervisor: invalid email length", err.GetStatusMessage())
@@ -74,7 +76,7 @@ func (s *UserSuite) TestValidation_User() {
 			Created: time.Now().UTC(),
 			Updated: time.Now().UTC(),
 		})
-		err := mgmtuser.ValidateUser(u)
+		err := mgmtuser.ValidateUser(u, validation.IgnoreNothing)
 		require.NoError(t, err) // NOTE: meta is not validated, as input.meta is ignored throughout the service
 	})
 }

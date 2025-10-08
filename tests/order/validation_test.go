@@ -389,7 +389,24 @@ func (s *OrderSuite) TestValidation_PatchOrderRequest() {
 	})
 }
 
-// DeleteOrder
+func (s *OrderSuite) TestValidation_DeleteOrderRequest() {
+	tt := s.T()
+	tt.Run("nil.request", func(t *testing.T) {
+		resp, err := s.API.DeleteOrder(t, context.Background(), nil)
+		require.Error(t, err)
+		require.Empty(t, resp)
+		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+		require.Equal(t, "empty request", err.GetStatusMessage())
+	})
+	tt.Run("empty.request", func(t *testing.T) {
+		resp, err := s.API.DeleteOrder(t, context.Background(), &request.DeleteOrderRequest{})
+		require.Error(t, err)
+		require.Empty(t, resp)
+		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+		require.Equal(t, "empty request", err.GetStatusMessage())
+	})
+}
+
 // PutDelegatedTask
 // PatchDelegatedTask
 // DeleteDelegatedTask

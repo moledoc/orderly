@@ -9,16 +9,14 @@ import (
 	"github.com/moledoc/orderly/internal/service/common/validation"
 )
 
-func ValidateUser(user *user.User) errwrap.Error {
+func ValidateUser(user *user.User, ignore validation.IgnoreField) errwrap.Error {
 	if user == nil {
 		return nil
 	}
 
-	if len(user.GetID()) > 0 { // NOTE: ID is required, but when creating we don't allow ID; relevant ID check is done one level up in validation
-		err := validation.ValidateID(user.GetID())
-		if err != nil {
-			return err
-		}
+	err := validation.ValidateID(user.GetID())
+	if !validation.IsFieldIgnored(validation.IgnoreID, ignore) && err != nil {
+		return errwrap.NewError(http.StatusBadRequest, "invalid user.id: %s", err.GetStatusMessage())
 	}
 
 	if len(user.GetName()) == 0 {
@@ -49,7 +47,7 @@ func ValidatePostUserRequest(req *request.PostUserRequest) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "user.meta disallowed")
 	}
 
-	return ValidateUser(req.GetUser())
+	return ValidateUser(req.GetUser(), validation.IgnoreID)
 }
 
 func ValidateGetUserByIDRequest(req *request.GetUserByIDRequest) errwrap.Error {
@@ -92,7 +90,7 @@ func ValidatePatchUserRequest(req *request.PatchUserRequest) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "user.id missing")
 	}
 
-	return nil
+	return ValidateUser(req.GetUser(), validation.IgnoreNothing)
 }
 
 func ValidateDeleteUserRequest(req *request.DeleteUserRequest) errwrap.Error {
