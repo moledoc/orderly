@@ -10,7 +10,7 @@ import (
 type State int
 
 const (
-	NotStarted State = iota
+	NotStarted State = iota + 1
 	InProgress
 	HavingIssues
 	Blocked

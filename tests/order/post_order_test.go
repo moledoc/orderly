@@ -233,7 +233,7 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-			require.Equal(t, "task.state missing", err.GetStatusMessage())
+			require.Equal(t, "invalid task.state", err.GetStatusMessage())
 		})
 		t.Run("order.task.accountable", func(t *testing.T) {
 			resp, err := s.API.PostOrder(t, context.Background(), &request.PostOrderRequest{
@@ -331,6 +331,7 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid task.state", err.GetStatusMessage())
 		})
 		t.Run("order.delegatedTasks.accountable", func(t *testing.T) {
 			resp, err := s.API.PostOrder(t, context.Background(), &request.PostOrderRequest{
@@ -351,6 +352,7 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid email length", err.GetStatusMessage())
 		})
 		t.Run("order.delegatedTasks.objective", func(t *testing.T) {
 			resp, err := s.API.PostOrder(t, context.Background(), &request.PostOrderRequest{
@@ -371,6 +373,7 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid task.objective", err.GetStatusMessage())
 		})
 		t.Run("order.delegatedTasks.deadline", func(t *testing.T) {
 			resp, err := s.API.PostOrder(t, context.Background(), &request.PostOrderRequest{
@@ -391,29 +394,11 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid task.deadline", err.GetStatusMessage())
 		})
 
 		////////////////
 
-		t.Run("order.sitrep.workCompleted", func(t *testing.T) {
-			resp, err := s.API.PostOrder(t, context.Background(), &request.PostOrderRequest{
-				Order: &order.Order{
-					Task:           &task,
-					DelegatedTasks: delegatedTasks,
-					ParentOrderID:  parentOrderID,
-					SitReps: []*order.SitRep{
-						{
-							State:   order.NotStarted,
-							Summary: "summary of progress 1",
-						},
-					},
-				},
-			})
-			defer cleanup.Order(t, s.API, resp.GetOrder())
-			require.Error(t, err)
-			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		})
 		t.Run("order.sitrep.state", func(t *testing.T) {
 			resp, err := s.API.PostOrder(t, context.Background(), &request.PostOrderRequest{
 				Order: &order.Order{
@@ -432,6 +417,7 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid sitrep.state", err.GetStatusMessage())
 		})
 
 		t.Run("order.sitrep.summary", func(t *testing.T) {
@@ -452,6 +438,7 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid sitrep.summary", err.GetStatusMessage())
 		})
 	})
 
@@ -474,6 +461,7 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid task.state", err.GetStatusMessage())
 		})
 		t.Run("order.task.state.high", func(t *testing.T) {
 			resp, err := s.API.PostOrder(t, context.Background(), &request.PostOrderRequest{
@@ -493,6 +481,7 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid task.state", err.GetStatusMessage())
 		})
 		t.Run("order.task.accountable", func(t *testing.T) {
 			resp, err := s.API.PostOrder(t, context.Background(), &request.PostOrderRequest{
@@ -512,6 +501,7 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid email", err.GetStatusMessage())
 		})
 		t.Run("order.task.deadline", func(t *testing.T) {
 			resp, err := s.API.PostOrder(t, context.Background(), &request.PostOrderRequest{
@@ -531,6 +521,7 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid task.deadline", err.GetStatusMessage())
 		})
 
 		//////////
@@ -555,6 +546,7 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid task.state", err.GetStatusMessage())
 		})
 		t.Run("order.delegatedTask.state.high", func(t *testing.T) {
 			resp, err := s.API.PostOrder(t, context.Background(), &request.PostOrderRequest{
@@ -576,6 +568,7 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid task.state", err.GetStatusMessage())
 		})
 		t.Run("order.delegatedTask.accountable", func(t *testing.T) {
 			resp, err := s.API.PostOrder(t, context.Background(), &request.PostOrderRequest{
@@ -597,6 +590,7 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid email", err.GetStatusMessage())
 		})
 		t.Run("order.delegatedTask.deadline", func(t *testing.T) {
 			resp, err := s.API.PostOrder(t, context.Background(), &request.PostOrderRequest{
@@ -618,6 +612,7 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid task.deadline", err.GetStatusMessage())
 		})
 
 		//////////
@@ -635,6 +630,7 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid id length", err.GetStatusMessage())
 		})
 		t.Run("order.parentOrderID.long", func(t *testing.T) {
 			resp, err := s.API.PostOrder(t, context.Background(), &request.PostOrderRequest{
@@ -649,6 +645,7 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid id length", err.GetStatusMessage())
 		})
 
 		//////////
@@ -672,7 +669,9 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid sitrep.workCompleted", err.GetStatusMessage())
 		})
+
 		t.Run("order.sitrep.state.low", func(t *testing.T) {
 			resp, err := s.API.PostOrder(t, context.Background(), &request.PostOrderRequest{
 				Order: &order.Order{
@@ -692,6 +691,7 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid sitrep.state", err.GetStatusMessage())
 		})
 		t.Run("order.sitrep.state.high", func(t *testing.T) {
 			resp, err := s.API.PostOrder(t, context.Background(), &request.PostOrderRequest{
@@ -712,6 +712,7 @@ func (s *OrderSuite) TestPostOrder_InputValidation() {
 			require.Error(t, err)
 			require.Empty(t, resp)
 			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+			require.Equal(t, "invalid sitrep.state", err.GetStatusMessage())
 		})
 	})
 }

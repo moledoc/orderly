@@ -22,7 +22,7 @@ func validateTask(task *order.Task) errwrap.Error {
 		}
 	}
 
-	if task.GetState() < 0 || order.Completed < task.GetState() {
+	if task.GetState() < order.NotStarted || order.Completed < task.GetState() {
 		return errwrap.NewError(http.StatusBadRequest, "invalid task.state")
 	}
 
@@ -55,16 +55,16 @@ func validateSitRep(sitrep *order.SitRep) errwrap.Error {
 		}
 	}
 
-	if sitrep.GetState() < 0 || order.Completed < sitrep.GetState() {
+	if sitrep.GetState() < order.NotStarted || order.Completed < sitrep.GetState() {
 		return errwrap.NewError(http.StatusBadRequest, "invalid sitrep.state")
 	}
 
-	if /* sitrep.GetWorkCompleted() < 0 || */ 100 < sitrep.GetWorkCompleted() {
-		return errwrap.NewError(http.StatusBadRequest, "invalid sitrep.WorkCompleted")
+	if 100 < sitrep.GetWorkCompleted() {
+		return errwrap.NewError(http.StatusBadRequest, "invalid sitrep.workCompleted")
 	}
 
 	if len(sitrep.GetSummary()) == 0 {
-		return errwrap.NewError(http.StatusBadRequest, "invalid sitrep.Summary")
+		return errwrap.NewError(http.StatusBadRequest, "invalid sitrep.summary")
 	}
 
 	return nil
