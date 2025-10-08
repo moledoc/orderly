@@ -32,15 +32,3 @@ func ValidateEmail(email user.Email) errwrap.Error {
 	}
 	return nil
 }
-
-func ValidateMeta(m *meta.Meta) errwrap.Error {
-	if m == nil {
-		return nil
-	}
-
-	// if m.Version < 0 {
-	// 	return errwrap.NewError(http.StatusBadGateway, "invalid version")
-	// }
-
-	return nil
-}

@@ -24,6 +24,7 @@ func postUser(w http.ResponseWriter, r *http.Request) {
 
 	err = decodeBody(ctx, r, &req)
 	if err == nil {
+		middleware.SpanLog(ctx, "PostUserRequest", &req)
 		resp, err = mgmtusersvc.PostUser(ctx, &req)
 	}
 
@@ -40,6 +41,7 @@ func getUserByID(w http.ResponseWriter, r *http.Request) {
 	req := &request.GetUserByIDRequest{
 		ID: meta.ID(r.PathValue(userID)),
 	}
+	middleware.SpanLog(ctx, "GetUserByIDRequest", req)
 	resp, err := mgmtusersvc.GetUserByID(ctx, req)
 
 	writeResponse(ctx, w, resp, err, http.StatusOK)
@@ -52,7 +54,9 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	middleware.SpanStart(ctx, "getUsers")
 	defer middleware.SpanStop(ctx, "getUsers")
 
-	resp, err := mgmtusersvc.GetUsers(ctx, &request.GetUsersRequest{})
+	req := &request.GetUsersRequest{}
+	middleware.SpanLog(ctx, "GetUsersRequest", req)
+	resp, err := mgmtusersvc.GetUsers(ctx, req)
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
@@ -63,9 +67,11 @@ func getUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
 	middleware.SpanStart(ctx, "getUserSubOrdinates")
 	defer middleware.SpanStop(ctx, "getUserSubOrdinates")
 
-	resp, err := mgmtusersvc.GetUserSubOrdinates(ctx, &request.GetUserSubOrdinatesRequest{
+	req := &request.GetUserSubOrdinatesRequest{
 		ID: meta.ID(r.PathValue(userID)),
-	})
+	}
+	middleware.SpanLog(ctx, "GetUserSubOrdinatesRequest", req)
+	resp, err := mgmtusersvc.GetUserSubOrdinates(ctx, req)
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
@@ -82,6 +88,7 @@ func patchUser(w http.ResponseWriter, r *http.Request) {
 
 	err = decodeBody(ctx, r, &req)
 	if err == nil {
+		middleware.SpanLog(ctx, "PatchUserRequest", &req)
 		resp, err = mgmtusersvc.PatchUser(ctx, &req)
 	}
 
@@ -95,8 +102,10 @@ func deleteUser(w http.ResponseWriter, r *http.Request) {
 	middleware.SpanStart(ctx, "deleteUser")
 	defer middleware.SpanStop(ctx, "deleteUser")
 
-	resp, err := mgmtusersvc.DeleteUser(ctx, &request.DeleteUserRequest{
+	req := &request.DeleteUserRequest{
 		ID: meta.ID(r.PathValue(userID)),
-	})
+	}
+	middleware.SpanLog(ctx, "DeleteUserRequest", req)
+	resp, err := mgmtusersvc.DeleteUser(ctx, req)
 	writeResponse(ctx, w, resp, err, http.StatusNoContent)
 }

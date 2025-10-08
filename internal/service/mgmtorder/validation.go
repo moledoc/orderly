@@ -99,11 +99,6 @@ func validateOrder(order *order.Order) errwrap.Error {
 		}
 	}
 
-	err = validation.ValidateMeta(order.GetMeta())
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 

@@ -110,3 +110,30 @@ func SpanStop(ctx context.Context, desc string) {
 		}
 	}
 }
+
+func SpanLog(ctx context.Context, desc string, val any) {
+	spansMutex.Lock()
+	defer spansMutex.Unlock()
+
+	pc, file, line, _ := runtime.Caller(1)
+	fn := runtime.FuncForPC(pc)
+
+	var traceID string
+	ctxTraceID := ctx.Value(consts.CtxKeyTrace)
+	if ctxTraceID != nil {
+		traceID = ctxTraceID.(string)
+	}
+
+	now := time.Now().UTC()
+	s := &span.Span{
+		FuncName: fn.Name(),
+		Filename: file,
+		Line:     line,
+		TraceID:  traceID,
+		Start:    now,
+		End:      now,
+		Desc:     desc,
+		Val:      val,
+	}
+	spanss[traceID] = append(spanss[traceID], s)
+}

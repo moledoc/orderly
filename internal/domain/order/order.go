@@ -26,10 +26,24 @@ type Task struct {
 }
 
 type SitRep struct {
-	ID            meta.ID `json:"id,omitempty"`
-	WorkCompleted uint    `json:"work_completed,omitempty"`
-	State         State   `json:"state,omitempty"`
-	Summary       string  `json:"summary,omitempty"`
+	ID meta.ID `json:"id,omitempty"`
+
+	// TODO: START: implement validation, logic
+	DateTime time.Time    `json:"datetime,omitempty"`
+	By       user.Email   `json:"email,omitempty"`
+	Ping     []user.Email `json:"ping"`
+
+	Situation string `json:"situation,omitempty"`
+	Actions   string `json:"actions,omitempty"`
+	TBD       string `json:"tbd,omitempty"`
+	Issues    string `json:"issues,omitempty"`
+	// TODO: END: implement validation, logic
+
+	// REMOVEME: START
+	WorkCompleted uint   `json:"work_completed,omitempty"`
+	State         State  `json:"state,omitempty"`
+	Summary       string `json:"summary,omitempty"`
+	// REMOVEME: END
 }
 
 type Order struct {

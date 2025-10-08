@@ -17,7 +17,6 @@ var (
 	orderID         = "order_id"
 	delegatedTaskID = "delegated_task_id"
 	sitrepID        = "sitrep_id"
-	hardDelete      = "hard_delete"
 	userID          = "user_id"
 )
 

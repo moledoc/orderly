@@ -40,6 +40,7 @@
 * implement changelog
 * MAYBE: soft-delete
 * TODO: assert on error messages in tests
+* MAYBE: ignore meta in input
 
 ## Author
 

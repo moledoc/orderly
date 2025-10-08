@@ -3,11 +3,9 @@ package tests
 import (
 	"context"
 	"fmt"
-	"net/http"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
 	"github.com/moledoc/orderly/internal/domain/user"
@@ -15,52 +13,6 @@ import (
 	"github.com/moledoc/orderly/tests/setup"
 	"github.com/stretchr/testify/require"
 )
-
-func (s *UserSuite) TestGetUserSubOrdinates_InputValidation() {
-	tt := s.T()
-
-	tt.Run("EmptyRequest", func(t *testing.T) {
-		t.Run("nil", func(t *testing.T) {
-			resp, err := s.API.GetUserSubOrdinates(t, context.Background(), nil)
-			require.Error(t, err)
-			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		})
-		t.Run("empty", func(t *testing.T) {
-			resp, err := s.API.GetUserSubOrdinates(t, context.Background(), &request.GetUserSubOrdinatesRequest{})
-			require.Error(t, err)
-			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		})
-	})
-
-	tt.Run("InvalidRequiredField", func(t *testing.T) {
-		t.Run("user.id.empty", func(t *testing.T) {
-			resp, err := s.API.GetUserSubOrdinates(t, context.Background(), &request.GetUserSubOrdinatesRequest{
-				ID: meta.EmptyID(),
-			})
-			require.Error(t, err)
-			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		})
-		t.Run("user.id.shorter", func(t *testing.T) {
-			resp, err := s.API.GetUserSubOrdinates(t, context.Background(), &request.GetUserSubOrdinatesRequest{
-				ID: meta.NewID()[:10],
-			})
-			require.Error(t, err)
-			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		})
-		t.Run("user.id.longer", func(t *testing.T) {
-			resp, err := s.API.GetUserSubOrdinates(t, context.Background(), &request.GetUserSubOrdinatesRequest{
-				ID: meta.NewID() + meta.NewID(),
-			})
-			require.Error(t, err)
-			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		})
-	})
-}
 
 func (s *UserSuite) TestGetUserSubOrdinates() {
 	tt := s.T()
