@@ -97,7 +97,7 @@ func RouteOrder(svc mgmtorder.ServiceMgmtOrderAPI) {
 	// NOTE: handle empty ids
 	http.HandleFunc("GET /v1/mgmt/order/", getOrderByID)
 	http.HandleFunc("GET /v1/mgmt/order/suborders", getOrderSubOrders)
-	http.HandleFunc("DELETE /v1/mgmt/order", deleteOrder)
+	http.HandleFunc("DELETE /v1/mgmt/order/", deleteOrder)
 
 	http.HandleFunc("PUT /v1/mgmt/order/delegated_task", putDelegatedTask)
 	http.HandleFunc("PATCH /v1/mgmt/order/delegated_task", patchDelegatedTask)

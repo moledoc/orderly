@@ -123,6 +123,13 @@ func (sr *SitRep) GetIssues() string {
 
 ////////////
 
+func (o *Order) GetID() meta.ID {
+	if o == nil {
+		return ""
+	}
+	return o.GetTask().GetID()
+}
+
 func (o *Order) GetTask() *Task {
 	if o == nil {
 		return nil

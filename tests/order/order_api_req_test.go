@@ -288,7 +288,7 @@ func (api *OrderAPIReq) DeleteDelegatedTask(t *testing.T, ctx context.Context, r
 		return nil, errwrap.NewError(http.StatusBadRequest, "marshaling request failed: %s", err)
 	}
 
-	reqHttp, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/v1/mgmt/order/%v/delegated_task", api.BaseURL, req.GetOrderID()), bytes.NewBuffer(reqBytes))
+	reqHttp, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/v1/mgmt/order/%v/delegated_task/%v", api.BaseURL, req.GetOrderID(), req.GetDelegatedTaskID()), bytes.NewBuffer(reqBytes))
 	if err != nil {
 		return nil, errwrap.NewError(http.StatusInternalServerError, "new request failed: %s", err)
 	}
@@ -394,7 +394,7 @@ func (api *OrderAPIReq) DeleteSitRep(t *testing.T, ctx context.Context, req *req
 		return nil, errwrap.NewError(http.StatusBadRequest, "marshaling request failed: %s", err)
 	}
 
-	reqHttp, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/v1/mgmt/order/%v/sitrep", api.BaseURL, req.GetOrderID()), bytes.NewBuffer(reqBytes))
+	reqHttp, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/v1/mgmt/order/%v/sitrep/%v", api.BaseURL, req.GetOrderID(), req.GetSitRepID()), bytes.NewBuffer(reqBytes))
 	if err != nil {
 		return nil, errwrap.NewError(http.StatusInternalServerError, "new request failed: %s", err)
 	}
