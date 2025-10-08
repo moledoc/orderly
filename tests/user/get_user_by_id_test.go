@@ -37,6 +37,7 @@ func (s *UserSuite) TestGetUserByID() {
 		User: user,
 	}
 	compare.RequireEqual(tt, expected, resp, opts...)
+	require.NotEmpty(tt, resp.GetUser().GetMeta())
 }
 
 func (s *UserSuite) TestGetUserByID_Failed() {
