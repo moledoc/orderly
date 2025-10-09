@@ -21,7 +21,6 @@ func (s *OrderSuite) TestGetOrderByID() {
 	resp, err := s.API.GetOrderByID(tt, context.Background(), &request.GetOrderByIDRequest{
 		ID: o.GetID(),
 	})
-	defer cleanup.Order(tt, s.API, resp.GetOrder())
 	require.NoError(tt, err)
 
 	opts := []cmp.Option{
