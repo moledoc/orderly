@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/moledoc/orderly/internal/domain/meta"
@@ -9,19 +10,16 @@ import (
 	"github.com/moledoc/orderly/internal/domain/response"
 	"github.com/moledoc/orderly/tests/cleanup"
 	"github.com/moledoc/orderly/tests/compare"
+	"github.com/moledoc/orderly/tests/setup"
 	"github.com/stretchr/testify/require"
 )
 
 func (s *OrderSuite) TestGetOrderByID() {
 	tt := s.T()
-	tt.SkipNow()
 
-	o := orderObj()
-	zeroOrderIDs(o)
-	o.SetDelegatedTasks(nil)
-	o.SetSitReps(nil)
+	o := setup.MustCreateOrderWithCleanup(tt, context.Background(), s.API, orderObj())
 	resp, err := s.API.GetOrderByID(tt, context.Background(), &request.GetOrderByIDRequest{
-		ID: meta.NewID(),
+		ID: o.GetID(),
 	})
 	defer cleanup.Order(tt, s.API, resp.GetOrder())
 	require.NoError(tt, err)
@@ -36,4 +34,18 @@ func (s *OrderSuite) TestGetOrderByID() {
 
 	compare.RequireEqual(tt, expected, resp, opts...)
 	require.NotEmpty(tt, resp.GetOrder().GetMeta())
+}
+
+func (s *OrderSuite) TestGetOrderByID_Failed() {
+
+	tt := s.T()
+
+	tt.Run("NotFound", func(t *testing.T) {
+		resp, err := s.API.GetOrderByID(tt, context.Background(), &request.GetOrderByIDRequest{
+			ID: meta.NewID(),
+		})
+		defer cleanup.Order(tt, s.API, resp.GetOrder())
+		require.Error(t, err)
+		require.Empty(t, resp)
+	})
 }

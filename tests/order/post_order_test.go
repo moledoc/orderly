@@ -15,7 +15,6 @@ func (s *OrderSuite) TestPostOrder_Minimal() {
 	tt := s.T()
 
 	o := orderObj()
-	zeroOrderIDs(o)
 	o.SetDelegatedTasks(nil)
 	o.SetSitReps(nil)
 	resp, err := s.API.PostOrder(tt, context.Background(), &request.PostOrderRequest{
@@ -40,7 +39,6 @@ func (s *OrderSuite) TestPostOrder_WithDelegatedTasks() {
 	tt := s.T()
 
 	o := orderObj()
-	zeroOrderIDs(o)
 	o.SetSitReps(nil)
 	resp, err := s.API.PostOrder(tt, context.Background(), &request.PostOrderRequest{
 		Order: o,
@@ -64,7 +62,6 @@ func (s *OrderSuite) TestPostOrder_WithSitReps() {
 	tt := s.T()
 
 	o := orderObj()
-	zeroOrderIDs(o)
 	o.SetSitReps(nil)
 	resp, err := s.API.PostOrder(tt, context.Background(), &request.PostOrderRequest{
 		Order: o,
@@ -88,7 +85,6 @@ func (s *OrderSuite) TestPostOrder_Full() {
 	tt := s.T()
 
 	o := orderObj()
-	zeroOrderIDs(o)
 	resp, err := s.API.PostOrder(tt, context.Background(), &request.PostOrderRequest{
 		Order: o,
 	})
