@@ -72,7 +72,7 @@ var (
 	mgmtusersvc  mgmtuser.ServiceMgmtUserAPI   = nil
 )
 
-func RouteOrder(svc mgmtorder.ServiceMgmtOrderAPI) {
+func RouteOrder(svc mgmtorder.ServiceMgmtOrderAPI) *http.ServeMux {
 	mgmtordersvc = svc
 
 	if mgmtordersvc == nil {
@@ -108,26 +108,30 @@ func RouteOrder(svc mgmtorder.ServiceMgmtOrderAPI) {
 	http.HandleFunc("PATCH /v1/mgmt/order/sitrep", patchSitRep)
 	http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/order/sitrep/{%v}", sitrepID), deleteSitRep)
 	http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/order/{%v}/sitrep/", orderID), deleteSitRep)
+
+	return http.DefaultServeMux
 }
 
-func RouteUser(svc mgmtuser.ServiceMgmtUserAPI) {
+func RouteUser(svc mgmtuser.ServiceMgmtUserAPI) *http.ServeMux {
 	mgmtusersvc = svc
 
 	if mgmtusersvc == nil {
 		panic("router: user management service is not initialized")
 	}
 
-	http.HandleFunc("POST /v1/mgmt/user", postUser)
-	http.HandleFunc(fmt.Sprintf("GET /v1/mgmt/user/{%v}", userID), getUserByID)
-	http.HandleFunc("GET /v1/mgmt/users", getUsers)
-	http.HandleFunc(fmt.Sprintf("GET /v1/mgmt/user/{%v}/subordinates", userID), getUserSubOrdinates)
-	http.HandleFunc("PATCH /v1/mgmt/user", patchUser)
-	http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/user/{%v}", userID), deleteUser)
+	http.HandleFunc("POST /v1/mgmt/user", handlePostUser)
+	http.HandleFunc(fmt.Sprintf("GET /v1/mgmt/user/{%v}", userID), handleGetUserByID)
+	http.HandleFunc("GET /v1/mgmt/users", handleGetUsers)
+	http.HandleFunc(fmt.Sprintf("GET /v1/mgmt/user/{%v}/subordinates", userID), handleGetUserSubOrdinates)
+	http.HandleFunc("PATCH /v1/mgmt/user", handlePatchUser)
+	http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/user/{%v}", userID), handleDeleteUser)
 
 	// NOTE: handle empty ids
-	http.HandleFunc("GET /v1/mgmt/user/", getUserByID)
-	http.HandleFunc("GET /v1/mgmt/user/subordinates", getUserSubOrdinates) // MAYBE: FIXME:
-	http.HandleFunc("DELETE /v1/mgmt/user/", deleteUser)
+	http.HandleFunc("GET /v1/mgmt/user/", handleGetUserByID)
+	http.HandleFunc("GET /v1/mgmt/user/subordinates", handleGetUserSubOrdinates)
+	http.HandleFunc("DELETE /v1/mgmt/user/", handleDeleteUser)
+
+	return http.DefaultServeMux
 }
 
 func Route(svcs *Service) {

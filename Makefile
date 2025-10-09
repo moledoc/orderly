@@ -27,11 +27,17 @@ up-order: build
 up: build
 	./bin/orderly
 
-tests-user: 
+tests-user-svc: 
 	go test -v -test.count=1 -test.run=TestUserSvcSuite/UserAPISvc ./tests/user/...
 
 # NOTE: needs mgmtuser-service running
 tests-user-http: 
+	go test -v -test.count=1  -test.run=TestUserHTTPTestSuite/UserAPIHTTPTest ./tests/user/...
+
+tests-user: tests-user-svc tests-user-http
+
+# NOTE: needs mgmtuser-service running
+tests-user-http-manual: 
 	go test -v -test.count=1  -test.run=TestUserReqSuite/UserAPIReq ./tests/user/...
 
 tests-order:

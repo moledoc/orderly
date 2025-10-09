@@ -11,7 +11,7 @@ import (
 	"github.com/moledoc/orderly/internal/middleware"
 )
 
-func postUser(w http.ResponseWriter, r *http.Request) {
+func handlePostUser(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
 
@@ -31,7 +31,7 @@ func postUser(w http.ResponseWriter, r *http.Request) {
 	writeResponse(ctx, w, resp, err, http.StatusCreated)
 }
 
-func getUserByID(w http.ResponseWriter, r *http.Request) {
+func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
 
@@ -47,7 +47,7 @@ func getUserByID(w http.ResponseWriter, r *http.Request) {
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func getUsers(w http.ResponseWriter, r *http.Request) {
+func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
 
@@ -60,7 +60,7 @@ func getUsers(w http.ResponseWriter, r *http.Request) {
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func getUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
+func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
 
@@ -75,7 +75,7 @@ func getUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func patchUser(w http.ResponseWriter, r *http.Request) {
+func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
 
@@ -95,7 +95,7 @@ func patchUser(w http.ResponseWriter, r *http.Request) {
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func deleteUser(w http.ResponseWriter, r *http.Request) {
+func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer middleware.SpanFlushTrace(ctx)
 
