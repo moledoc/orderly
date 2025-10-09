@@ -30,21 +30,26 @@ up: build
 tests-user-svc: 
 	go test -v -test.count=1 -test.run=TestUserSvcSuite/UserAPISvc ./tests/user/...
 
-# NOTE: needs mgmtuser-service running
 tests-user-http: 
 	go test -v -test.count=1  -test.run=TestUserHTTPTestSuite/UserAPIHTTPTest ./tests/user/...
 
 tests-user: tests-user-svc tests-user-http
 
+tests-order-svc:
+	go test -v -test.count=1  -test.run=TestOrderSvcSuite/OrderAPISvc ./tests/order/...
+
+tests-order-http:
+	go test -v -test.count=1  -test.run=TestOrderHTTPTestSuite/OrderAPIHTTPTest ./tests/order/...
+
+tests-order: tests-order-svc tests-order-http
+
+
 # NOTE: needs mgmtuser-service running
 tests-user-http-manual: 
 	go test -v -test.count=1  -test.run=TestUserReqSuite/UserAPIReq ./tests/user/...
 
-tests-order:
-	go test -v -test.count=1  -test.run=TestOrderSvcSuite/OrderAPISvc ./tests/order/...
-
 # NOTE: needs mgmtorder-service running
-tests-order-http:
+tests-order-http-manual:
 	go test -v -test.count=1  -test.run=TestOrderReqSuite/OrderAPIReq ./tests/order/...
 
 clean:

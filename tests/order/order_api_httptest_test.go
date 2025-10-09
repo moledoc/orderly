@@ -6,52 +6,59 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"net/http/httputil"
+	"strings"
 	"testing"
 
 	"github.com/moledoc/orderly/internal/domain/errwrap"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
+	"github.com/moledoc/orderly/internal/repository/local"
+	"github.com/moledoc/orderly/internal/router"
+	"github.com/moledoc/orderly/internal/service/mgmtorder"
 	"github.com/moledoc/orderly/tests/api"
 	"github.com/stretchr/testify/suite"
 )
 
-type OrderAPIReq struct { // NOTE: tests service through HTTP requests
+type OrderAPIHTTPTest struct { // NOTE: tests service through HTTP requests
 	// TODO: local vs db
-	HttpClient *http.Client
-	BaseURL    string
+	Mux *http.ServeMux
 }
 
-func NewOrderAPIReq() *OrderAPIReq {
+func NewOrderAPIHTTPTest(mux *http.ServeMux) *OrderAPIHTTPTest {
 	// TODO: local vs db
-	return &OrderAPIReq{
-		HttpClient: &http.Client{},
-		BaseURL:    "http://localhost:8080",
+	return &OrderAPIHTTPTest{
+		Mux: mux,
 	}
 }
 
 var (
-	_ api.Order = (*OrderAPIReq)(nil)
+	_ api.Order = (*OrderAPIHTTPTest)(nil)
 )
 
-func TestOrderReqSuite(t *testing.T) {
-	t.Run("OrderAPIReq", func(t *testing.T) {
+func TestOrderHTTPTestSuite(t *testing.T) {
+	mux := router.RouteOrder(mgmtorder.NewServiceMgmtOrder(local.NewLocalRepositoryOrder()))
+	t.Run("OrderAPIHTTPTest", func(t *testing.T) {
 		suite.Run(t, &OrderSuite{
-			API: NewOrderAPIReq(),
+			API: NewOrderAPIHTTPTest(mux),
 		})
 	})
 }
 
-func (api *OrderAPIReq) PostOrder(t *testing.T, ctx context.Context, req *request.PostOrderRequest) (*response.PostOrderResponse, errwrap.Error) {
+func (api *OrderAPIHTTPTest) PostOrder(t *testing.T, ctx context.Context, req *request.PostOrderRequest) (*response.PostOrderResponse, errwrap.Error) {
 	t.Helper()
 	reqBytes, err := json.Marshal(req)
 	if err != nil {
 		return nil, errwrap.NewError(http.StatusBadRequest, "marshaling request failed: %s", err)
 	}
-	respHttp, err := api.HttpClient.Post(fmt.Sprintf("%s/v1/mgmt/order", api.BaseURL), "application/json", bytes.NewBuffer(reqBytes))
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
-	}
+
+	reqHttp := httptest.NewRequest(http.MethodPost, "/v1/mgmt/order", bytes.NewBuffer(reqBytes))
+	reqHttp.Header.Set("Content-Type", "application/json")
+
+	rr := httptest.NewRecorder()
+	api.Mux.ServeHTTP(rr, reqHttp)
+	respHttp := rr.Result()
 	defer respHttp.Body.Close()
 
 	if respHttp.StatusCode == http.StatusOK || respHttp.StatusCode == http.StatusCreated {
@@ -70,13 +77,14 @@ func (api *OrderAPIReq) PostOrder(t *testing.T, ctx context.Context, req *reques
 	return nil, &errw
 }
 
-func (api *OrderAPIReq) GetOrderByID(t *testing.T, ctx context.Context, req *request.GetOrderByIDRequest) (*response.GetOrderByIDResponse, errwrap.Error) {
+func (api *OrderAPIHTTPTest) GetOrderByID(t *testing.T, ctx context.Context, req *request.GetOrderByIDRequest) (*response.GetOrderByIDResponse, errwrap.Error) {
 	t.Helper()
 
-	respHttp, err := api.HttpClient.Get(fmt.Sprintf("%s/v1/mgmt/order/%v", api.BaseURL, req.GetID()))
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
-	}
+	reqHttp := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/v1/mgmt/order/%v", req.GetID()), nil)
+
+	rr := httptest.NewRecorder()
+	api.Mux.ServeHTTP(rr, reqHttp)
+	respHttp := rr.Result()
 	defer respHttp.Body.Close()
 
 	if respHttp.StatusCode == http.StatusOK {
@@ -95,13 +103,14 @@ func (api *OrderAPIReq) GetOrderByID(t *testing.T, ctx context.Context, req *req
 	return nil, &errw
 }
 
-func (api *OrderAPIReq) GetOrders(t *testing.T, ctx context.Context, req *request.GetOrdersRequest) (*response.GetOrdersResponse, errwrap.Error) {
+func (api *OrderAPIHTTPTest) GetOrders(t *testing.T, ctx context.Context, req *request.GetOrdersRequest) (*response.GetOrdersResponse, errwrap.Error) {
 	t.Helper()
 
-	respHttp, err := api.HttpClient.Get(fmt.Sprintf("%s/v1/mgmt/orders", api.BaseURL))
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
-	}
+	reqHttp := httptest.NewRequest(http.MethodGet, "/v1/mgmt/orders", nil)
+
+	rr := httptest.NewRecorder()
+	api.Mux.ServeHTTP(rr, reqHttp)
+	respHttp := rr.Result()
 	defer respHttp.Body.Close()
 
 	if respHttp.StatusCode == http.StatusOK {
@@ -120,13 +129,14 @@ func (api *OrderAPIReq) GetOrders(t *testing.T, ctx context.Context, req *reques
 	return nil, &errw
 }
 
-func (api *OrderAPIReq) GetOrderSubOrders(t *testing.T, ctx context.Context, req *request.GetOrderSubOrdersRequest) (*response.GetOrderSubOrdersResponse, errwrap.Error) {
+func (api *OrderAPIHTTPTest) GetOrderSubOrders(t *testing.T, ctx context.Context, req *request.GetOrderSubOrdersRequest) (*response.GetOrderSubOrdersResponse, errwrap.Error) {
 	t.Helper()
 
-	respHttp, err := api.HttpClient.Get(fmt.Sprintf("%s/v1/mgmt/order/%v/suborders", api.BaseURL, req.GetID()))
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
-	}
+	reqHttp := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/v1/mgmt/order/%v", req.GetID()), nil)
+
+	rr := httptest.NewRecorder()
+	api.Mux.ServeHTTP(rr, reqHttp)
+	respHttp := rr.Result()
 	defer respHttp.Body.Close()
 
 	if respHttp.StatusCode == http.StatusOK {
@@ -145,23 +155,19 @@ func (api *OrderAPIReq) GetOrderSubOrders(t *testing.T, ctx context.Context, req
 	return nil, &errw
 }
 
-func (api *OrderAPIReq) PatchOrder(t *testing.T, ctx context.Context, req *request.PatchOrderRequest) (*response.PatchOrderResponse, errwrap.Error) {
+func (api *OrderAPIHTTPTest) PatchOrder(t *testing.T, ctx context.Context, req *request.PatchOrderRequest) (*response.PatchOrderResponse, errwrap.Error) {
 	t.Helper()
 	reqBytes, err := json.Marshal(req)
 	if err != nil {
 		return nil, errwrap.NewError(http.StatusBadRequest, "marshaling request failed: %s", err)
 	}
 
-	reqHttp, err := http.NewRequest(http.MethodPatch, fmt.Sprintf("%s/v1/mgmt/order", api.BaseURL), bytes.NewBuffer(reqBytes))
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "new request failed: %s", err)
-	}
-
+	reqHttp := httptest.NewRequest(http.MethodPatch, "/v1/mgmt/order", bytes.NewBuffer(reqBytes))
 	reqHttp.Header.Set("Content-Type", "application/json")
-	respHttp, err := api.HttpClient.Do(reqHttp)
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
-	}
+
+	rr := httptest.NewRecorder()
+	api.Mux.ServeHTTP(rr, reqHttp)
+	respHttp := rr.Result()
 	defer respHttp.Body.Close()
 
 	if respHttp.StatusCode == http.StatusOK {
@@ -180,18 +186,14 @@ func (api *OrderAPIReq) PatchOrder(t *testing.T, ctx context.Context, req *reque
 	return nil, &errw
 }
 
-func (api *OrderAPIReq) DeleteOrder(t *testing.T, ctx context.Context, req *request.DeleteOrderRequest) (*response.DeleteOrderResponse, errwrap.Error) {
+func (api *OrderAPIHTTPTest) DeleteOrder(t *testing.T, ctx context.Context, req *request.DeleteOrderRequest) (*response.DeleteOrderResponse, errwrap.Error) {
 	t.Helper()
 
-	reqHttp, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/v1/mgmt/order/%v", api.BaseURL, req.GetID()), nil)
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "new request failed: %s", err)
-	}
+	reqHttp := httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/v1/mgmt/order/%v", req.GetID()), nil)
 
-	respHttp, err := api.HttpClient.Do(reqHttp)
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
-	}
+	rr := httptest.NewRecorder()
+	api.Mux.ServeHTTP(rr, reqHttp)
+	respHttp := rr.Result()
 	defer respHttp.Body.Close()
 
 	if respHttp.StatusCode == http.StatusNoContent {
@@ -208,7 +210,7 @@ func (api *OrderAPIReq) DeleteOrder(t *testing.T, ctx context.Context, req *requ
 
 ////
 
-func (api *OrderAPIReq) PutDelegatedTask(t *testing.T, ctx context.Context, req *request.PutDelegatedTaskRequest) (*response.PutDelegatedTaskResponse, errwrap.Error) {
+func (api *OrderAPIHTTPTest) PutDelegatedTask(t *testing.T, ctx context.Context, req *request.PutDelegatedTaskRequest) (*response.PutDelegatedTaskResponse, errwrap.Error) {
 	t.Helper()
 
 	reqBytes, err := json.Marshal(req)
@@ -216,16 +218,14 @@ func (api *OrderAPIReq) PutDelegatedTask(t *testing.T, ctx context.Context, req 
 		return nil, errwrap.NewError(http.StatusBadRequest, "marshaling request failed: %s", err)
 	}
 
-	reqHttp, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/v1/mgmt/order/%v/delegated_task", api.BaseURL, req.GetOrderID()), bytes.NewBuffer(reqBytes))
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "new request failed: %s", err)
-	}
-
+	path := fmt.Sprintf("/v1/mgmt/order/%v/delegated_task", req.GetOrderID())
+	path = strings.ReplaceAll(path, "//", "/")
+	reqHttp := httptest.NewRequest(http.MethodPut, path, bytes.NewBuffer(reqBytes))
 	reqHttp.Header.Set("Content-Type", "application/json")
-	respHttp, err := api.HttpClient.Do(reqHttp)
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
-	}
+
+	rr := httptest.NewRecorder()
+	api.Mux.ServeHTTP(rr, reqHttp)
+	respHttp := rr.Result()
 	defer respHttp.Body.Close()
 
 	if respHttp.StatusCode == http.StatusOK {
@@ -244,7 +244,7 @@ func (api *OrderAPIReq) PutDelegatedTask(t *testing.T, ctx context.Context, req 
 	return nil, &errw
 }
 
-func (api *OrderAPIReq) PatchDelegatedTask(t *testing.T, ctx context.Context, req *request.PatchDelegatedTaskRequest) (*response.PatchDelegatedTaskResponse, errwrap.Error) {
+func (api *OrderAPIHTTPTest) PatchDelegatedTask(t *testing.T, ctx context.Context, req *request.PatchDelegatedTaskRequest) (*response.PatchDelegatedTaskResponse, errwrap.Error) {
 	t.Helper()
 
 	reqBytes, err := json.Marshal(req)
@@ -252,16 +252,14 @@ func (api *OrderAPIReq) PatchDelegatedTask(t *testing.T, ctx context.Context, re
 		return nil, errwrap.NewError(http.StatusBadRequest, "marshaling request failed: %s", err)
 	}
 
-	reqHttp, err := http.NewRequest(http.MethodPatch, fmt.Sprintf("%s/v1/mgmt/order/%v/delegated_task", api.BaseURL, req.GetOrderID()), bytes.NewBuffer(reqBytes))
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "new request failed: %s", err)
-	}
-
+	path := fmt.Sprintf("/v1/mgmt/order/%v/delegated_task", req.GetOrderID())
+	path = strings.ReplaceAll(path, "//", "/")
+	reqHttp := httptest.NewRequest(http.MethodPatch, path, bytes.NewBuffer(reqBytes))
 	reqHttp.Header.Set("Content-Type", "application/json")
-	respHttp, err := api.HttpClient.Do(reqHttp)
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
-	}
+
+	rr := httptest.NewRecorder()
+	api.Mux.ServeHTTP(rr, reqHttp)
+	respHttp := rr.Result()
 	defer respHttp.Body.Close()
 
 	if respHttp.StatusCode == http.StatusOK {
@@ -280,18 +278,16 @@ func (api *OrderAPIReq) PatchDelegatedTask(t *testing.T, ctx context.Context, re
 	return nil, &errw
 }
 
-func (api *OrderAPIReq) DeleteDelegatedTask(t *testing.T, ctx context.Context, req *request.DeleteDelegatedTaskRequest) (*response.DeleteDelegatedTaskResponse, errwrap.Error) {
+func (api *OrderAPIHTTPTest) DeleteDelegatedTask(t *testing.T, ctx context.Context, req *request.DeleteDelegatedTaskRequest) (*response.DeleteDelegatedTaskResponse, errwrap.Error) {
 	t.Helper()
 
-	reqHttp, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/v1/mgmt/order/%v/delegated_task/%v", api.BaseURL, req.GetOrderID(), req.GetDelegatedTaskID()), nil)
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "new request failed: %s", err)
-	}
+	path := fmt.Sprintf("/v1/mgmt/order/%v/delegated_task/%v", req.GetOrderID(), req.GetDelegatedTaskID())
+	path = strings.ReplaceAll(path, "//", "/")
+	reqHttp := httptest.NewRequest(http.MethodDelete, path, nil)
 
-	respHttp, err := api.HttpClient.Do(reqHttp)
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
-	}
+	rr := httptest.NewRecorder()
+	api.Mux.ServeHTTP(rr, reqHttp)
+	respHttp := rr.Result()
 	defer respHttp.Body.Close()
 
 	if respHttp.StatusCode == http.StatusNoContent {
@@ -308,7 +304,7 @@ func (api *OrderAPIReq) DeleteDelegatedTask(t *testing.T, ctx context.Context, r
 
 ////
 
-func (api *OrderAPIReq) PutSitRep(t *testing.T, ctx context.Context, req *request.PutSitRepRequest) (*response.PutSitRepResponse, errwrap.Error) {
+func (api *OrderAPIHTTPTest) PutSitRep(t *testing.T, ctx context.Context, req *request.PutSitRepRequest) (*response.PutSitRepResponse, errwrap.Error) {
 	t.Helper()
 
 	reqBytes, err := json.Marshal(req)
@@ -316,16 +312,14 @@ func (api *OrderAPIReq) PutSitRep(t *testing.T, ctx context.Context, req *reques
 		return nil, errwrap.NewError(http.StatusBadRequest, "marshaling request failed: %s", err)
 	}
 
-	reqHttp, err := http.NewRequest(http.MethodPut, fmt.Sprintf("%s/v1/mgmt/order/%v/sitrep", api.BaseURL, req.GetOrderID()), bytes.NewBuffer(reqBytes))
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "new request failed: %s", err)
-	}
-
+	path := fmt.Sprintf("/v1/mgmt/order/%v/sitrep", req.GetOrderID())
+	path = strings.ReplaceAll(path, "//", "/")
+	reqHttp := httptest.NewRequest(http.MethodPut, path, bytes.NewBuffer(reqBytes))
 	reqHttp.Header.Set("Content-Type", "application/json")
-	respHttp, err := api.HttpClient.Do(reqHttp)
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
-	}
+
+	rr := httptest.NewRecorder()
+	api.Mux.ServeHTTP(rr, reqHttp)
+	respHttp := rr.Result()
 	defer respHttp.Body.Close()
 
 	if respHttp.StatusCode == http.StatusOK {
@@ -344,7 +338,7 @@ func (api *OrderAPIReq) PutSitRep(t *testing.T, ctx context.Context, req *reques
 	return nil, &errw
 }
 
-func (api *OrderAPIReq) PatchSitRep(t *testing.T, ctx context.Context, req *request.PatchSitRepRequest) (*response.PatchSitRepResponse, errwrap.Error) {
+func (api *OrderAPIHTTPTest) PatchSitRep(t *testing.T, ctx context.Context, req *request.PatchSitRepRequest) (*response.PatchSitRepResponse, errwrap.Error) {
 	t.Helper()
 
 	reqBytes, err := json.Marshal(req)
@@ -352,16 +346,14 @@ func (api *OrderAPIReq) PatchSitRep(t *testing.T, ctx context.Context, req *requ
 		return nil, errwrap.NewError(http.StatusBadRequest, "marshaling request failed: %s", err)
 	}
 
-	reqHttp, err := http.NewRequest(http.MethodPatch, fmt.Sprintf("%s/v1/mgmt/order/%v/sitrep", api.BaseURL, req.GetOrderID()), bytes.NewBuffer(reqBytes))
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "new request failed: %s", err)
-	}
-
+	path := fmt.Sprintf("/v1/mgmt/order/%v/sitrep", req.GetOrderID())
+	path = strings.ReplaceAll(path, "//", "/")
+	reqHttp := httptest.NewRequest(http.MethodPatch, path, bytes.NewBuffer(reqBytes))
 	reqHttp.Header.Set("Content-Type", "application/json")
-	respHttp, err := api.HttpClient.Do(reqHttp)
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
-	}
+
+	rr := httptest.NewRecorder()
+	api.Mux.ServeHTTP(rr, reqHttp)
+	respHttp := rr.Result()
 	defer respHttp.Body.Close()
 
 	if respHttp.StatusCode == http.StatusOK {
@@ -380,18 +372,16 @@ func (api *OrderAPIReq) PatchSitRep(t *testing.T, ctx context.Context, req *requ
 	return nil, &errw
 }
 
-func (api *OrderAPIReq) DeleteSitRep(t *testing.T, ctx context.Context, req *request.DeleteSitRepRequest) (*response.DeleteSitRepResponse, errwrap.Error) {
+func (api *OrderAPIHTTPTest) DeleteSitRep(t *testing.T, ctx context.Context, req *request.DeleteSitRepRequest) (*response.DeleteSitRepResponse, errwrap.Error) {
 	t.Helper()
 
-	reqHttp, err := http.NewRequest(http.MethodDelete, fmt.Sprintf("%s/v1/mgmt/order/%v/sitrep/%v", api.BaseURL, req.GetOrderID(), req.GetSitRepID()), nil)
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "new request failed: %s", err)
-	}
+	path := fmt.Sprintf("/v1/mgmt/order/%v/sitrep/%v", req.GetOrderID(), req.GetSitRepID())
+	path = strings.ReplaceAll(path, "//", "/")
+	reqHttp := httptest.NewRequest(http.MethodDelete, path, nil)
 
-	respHttp, err := api.HttpClient.Do(reqHttp)
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
-	}
+	rr := httptest.NewRecorder()
+	api.Mux.ServeHTTP(rr, reqHttp)
+	respHttp := rr.Result()
 	defer respHttp.Body.Close()
 
 	if respHttp.StatusCode == http.StatusNoContent {
