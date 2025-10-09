@@ -22,6 +22,15 @@ func (r *GetOrderByIDResponse) GetOrder() *order.Order {
 
 ////////////////
 
+func (r *GetOrdersResponse) GetOrders() []*order.Order {
+	if r == nil {
+		return nil
+	}
+	return r.Orders
+}
+
+////////////////
+
 func (r *GetOrderSubOrdersResponse) GetSubOrders() []*order.Order {
 	if r == nil {
 		return nil
