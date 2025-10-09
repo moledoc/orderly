@@ -3,6 +3,7 @@ package utils
 import (
 	"fmt"
 	"math/rand"
+	"reflect"
 	"strconv"
 )
 
@@ -33,4 +34,13 @@ func RandAlphanum() string {
 	}
 	v = v[:32]
 	return v
+}
+
+func IsZeroValue(x any) bool {
+	if x == nil {
+		return true
+	}
+	v := reflect.ValueOf(x)
+	zero := reflect.Zero(v.Type())
+	return reflect.DeepEqual(v.Interface(), zero.Interface())
 }

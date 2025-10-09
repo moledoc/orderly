@@ -23,7 +23,14 @@ func (s *serviceMgmtOrder) PostOrder(ctx context.Context, req *request.PostOrder
 	}
 
 	o := req.GetOrder()
-	o.Task.ID = meta.ID(utils.RandAlphanum())
+	o.SetID(meta.NewID())
+
+	for _, delegated := range o.GetDelegatedTasks() {
+		delegated.SetID(meta.NewID())
+	}
+	for _, sitrep := range o.GetSitReps() {
+		sitrep.SetID(meta.NewID())
+	}
 
 	now := time.Now().UTC()
 	o.SetMeta(&meta.Meta{
@@ -100,7 +107,7 @@ func (s *serviceMgmtOrder) PatchOrder(ctx context.Context, req *request.PatchOrd
 		return nil, err
 	}
 
-	order, err := s.Repository.ReadByID(ctx, req.GetOrder().GetTask().GetID())
+	order, err := s.Repository.ReadByID(ctx, req.GetOrder().GetID())
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +122,7 @@ func (s *serviceMgmtOrder) PatchOrder(ctx context.Context, req *request.PatchOrd
 	for _, reqDelegatedTask := range req.GetOrder().GetDelegatedTasks() {
 		for _, patchedDelegatedTask := range patchedOrder.GetDelegatedTasks() {
 			if reqDelegatedTask.GetID() == patchedDelegatedTask.GetID() {
-				hasChanges = hasChanges || patchTask(patchedDelegatedTask, patchedDelegatedTask)
+				hasChanges = hasChanges || patchTask(reqDelegatedTask, patchedDelegatedTask)
 				break
 			}
 		}
@@ -125,12 +132,12 @@ func (s *serviceMgmtOrder) PatchOrder(ctx context.Context, req *request.PatchOrd
 	for _, reqSitRep := range req.GetOrder().GetSitReps() {
 		for _, patchedSitRep := range patchedOrder.GetSitReps() {
 			if reqSitRep.GetID() == patchedSitRep.GetID() {
-				hasChanges = hasChanges || patchSitRep(patchedSitRep, patchedSitRep)
+				hasChanges = hasChanges || patchSitRep(reqSitRep, patchedSitRep)
 				break
 			}
 		}
 	}
-	if req.GetOrder().GetParentOrderID() != patchedOrder.GetParentOrderID() {
+	if !utils.IsZeroValue(req.GetOrder().GetParentOrderID()) && req.GetOrder().GetParentOrderID() != patchedOrder.GetParentOrderID() {
 		patchedOrder.SetParentOrderID(req.GetOrder().GetParentOrderID())
 		hasChanges = true
 	}
@@ -200,19 +207,19 @@ func (s *serviceMgmtOrder) PutDelegatedTask(ctx context.Context, req *request.Pu
 func patchTask(reqTask *order.Task, patchedTask *order.Task) bool {
 	hasChanges := false
 
-	if reqTask.GetState() != patchedTask.GetState() {
+	if !utils.IsZeroValue(reqTask.GetState()) && reqTask.GetState() != patchedTask.GetState() {
 		patchedTask.SetState(reqTask.GetState())
 		hasChanges = true
 	}
-	if reqTask.GetAccountable() != patchedTask.GetAccountable() {
+	if !utils.IsZeroValue(reqTask.GetAccountable()) && reqTask.GetAccountable() != patchedTask.GetAccountable() {
 		patchedTask.SetAccountable(reqTask.GetAccountable())
 		hasChanges = true
 	}
-	if reqTask.GetObjective() != patchedTask.GetObjective() {
+	if !utils.IsZeroValue(reqTask.GetObjective()) && reqTask.GetObjective() != patchedTask.GetObjective() {
 		patchedTask.SetObjective(reqTask.GetObjective())
 		hasChanges = true
 	}
-	if reqTask.GetDeadline() != patchedTask.GetDeadline() {
+	if !utils.IsZeroValue(reqTask.GetDeadline()) && reqTask.GetDeadline() != patchedTask.GetDeadline() {
 		patchedTask.SetDeadline(reqTask.GetDeadline())
 		hasChanges = true
 	}
@@ -340,15 +347,15 @@ func (s *serviceMgmtOrder) PutSitRep(ctx context.Context, req *request.PutSitRep
 func patchSitRep(reqSitRep *order.SitRep, patchedSitRep *order.SitRep) bool {
 	hasChanges := false
 
-	if reqSitRep.GetState() != patchedSitRep.GetState() {
+	if !utils.IsZeroValue(reqSitRep.GetState()) && reqSitRep.GetState() != patchedSitRep.GetState() {
 		patchedSitRep.SetState(reqSitRep.GetState())
 		hasChanges = true
 	}
-	if reqSitRep.GetWorkCompleted() != patchedSitRep.GetWorkCompleted() {
+	if !utils.IsZeroValue(reqSitRep.GetWorkCompleted()) && reqSitRep.GetWorkCompleted() != patchedSitRep.GetWorkCompleted() {
 		patchedSitRep.SetWorkCompleted(reqSitRep.GetWorkCompleted())
 		hasChanges = true
 	}
-	if reqSitRep.GetSummary() != patchedSitRep.GetSummary() {
+	if !utils.IsZeroValue(reqSitRep.GetSummary()) && reqSitRep.GetSummary() != patchedSitRep.GetSummary() {
 		patchedSitRep.SetSummary(reqSitRep.GetSummary())
 		hasChanges = true
 	}

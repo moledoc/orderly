@@ -15,10 +15,15 @@ type IgnoreField int
 const (
 	IgnoreNothing IgnoreField = 0
 	IgnoreID      IgnoreField = 1 << iota
+	IgnoreEmpty
 )
 
 func IsFieldIgnored(field IgnoreField, bitmask IgnoreField) bool {
 	return field&bitmask == field
+}
+
+func IsIgnoreEmpty(field any, bitmask IgnoreField) bool {
+	return IgnoreEmpty&bitmask == IgnoreEmpty && utils.IsZeroValue(field)
 }
 
 func ValidateID(id meta.ID) errwrap.Error {

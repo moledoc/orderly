@@ -98,7 +98,7 @@ func (r LocalRepositoryOrder) Write(ctx context.Context, order *order.Order) (*o
 		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
 	}
 
-	id := order.GetTask().GetID()
+	id := order.GetID()
 	r[id] = order
 
 	return order, nil

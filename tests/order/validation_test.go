@@ -277,23 +277,21 @@ func (s *OrderSuite) TestValidation_PatchOrderRequest() {
 		require.Equal(t, "empty request", err.GetStatusMessage())
 	})
 	tt.Run("order.task.id.empty", func(t *testing.T) {
-		o := setup.OrderObjWithIDs()
-		setup.ZeroOrderIDs(o)
+		o := setup.OrderObj()
 		resp, err := s.API.PatchOrder(t, context.Background(), &request.PatchOrderRequest{
 			Order: o,
 		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid order.task: invalid task.id: invalid id length", err.GetStatusMessage())
+		require.Equal(t, "order.task.id missing", err.GetStatusMessage())
 	})
 
 	tt.Run("order.delegated_task.id.empty", func(t *testing.T) {
-		o := setup.OrderObjWithIDs()
-		setup.ZeroOrderIDs(o)
-		oo := setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, o)
 
-		o.GetTask().SetID(oo.GetTask().GetID())
+		o := setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, setup.OrderObj())
+
+		o.GetDelegatedTasks()[0].SetID(meta.EmptyID())
 		o.GetDelegatedTasks()[0].SetObjective("patched objective")
 		o.SetSitReps(nil)
 		resp, err := s.API.PatchOrder(t, context.Background(), &request.PatchOrderRequest{
@@ -306,12 +304,10 @@ func (s *OrderSuite) TestValidation_PatchOrderRequest() {
 	})
 
 	tt.Run("order.sitrep.id.empty", func(t *testing.T) {
-		o := setup.OrderObjWithIDs()
-		setup.ZeroOrderIDs(o)
-		oo := setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, o)
 
-		o.GetTask().SetID(oo.GetTask().GetID())
-		o.SetDelegatedTasks(nil)
+		o := setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, setup.OrderObj())
+
+		o.GetSitReps()[0].SetID(meta.EmptyID())
 		o.GetSitReps()[0].SetActions("patched actions")
 		resp, err := s.API.PatchOrder(t, context.Background(), &request.PatchOrderRequest{
 			Order: o,

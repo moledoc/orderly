@@ -20,20 +20,20 @@ func ValidateTask(task *order.Task, ignore validation.IgnoreField) errwrap.Error
 		return errwrap.NewError(http.StatusBadRequest, "invalid task.id: %s", err.GetStatusMessage())
 	}
 
-	if task.GetState() < order.NotStarted || order.Completed < task.GetState() {
+	if !validation.IsIgnoreEmpty(task.GetState(), ignore) && task.GetState() < order.NotStarted || order.Completed < task.GetState() {
 		return errwrap.NewError(http.StatusBadRequest, "invalid task.state")
 	}
 
 	err = validation.ValidateEmail(task.GetAccountable())
-	if err != nil {
+	if !validation.IsIgnoreEmpty(task.GetAccountable(), ignore) && err != nil {
 		return err
 	}
 
-	if len(task.GetObjective()) == 0 {
+	if !validation.IsIgnoreEmpty(task.GetObjective(), ignore) && len(task.GetObjective()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "invalid task.objective")
 	}
 
-	if task.GetDeadline().Equal(time.Time{}) {
+	if !validation.IsIgnoreEmpty(task.GetDeadline(), ignore) && task.GetDeadline().Equal(time.Time{}) {
 		return errwrap.NewError(http.StatusBadRequest, "invalid task.deadline")
 	}
 
@@ -51,11 +51,12 @@ func ValidateSitRep(sitrep *order.SitRep, ignore validation.IgnoreField) errwrap
 		return errwrap.NewError(http.StatusBadRequest, "invalid sitrep.id: %s", err.GetStatusMessage())
 	}
 
-	if sitrep.GetDateTime().Equal(time.Time{}) {
+	if !validation.IsIgnoreEmpty(sitrep.GetDateTime(), ignore) && sitrep.GetDateTime().Equal(time.Time{}) {
 		return errwrap.NewError(http.StatusBadRequest, "invalid sitrep.datetime")
 	}
 
-	if err := validation.ValidateEmail(sitrep.GetBy()); err != nil {
+	err = validation.ValidateEmail(sitrep.GetBy())
+	if !validation.IsIgnoreEmpty(sitrep.GetBy(), ignore) && err != nil {
 		return errwrap.NewError(http.StatusBadRequest, "invalid sitrep.by: %s", err.GetStatusMessage())
 	}
 
@@ -67,7 +68,15 @@ func ValidateSitRep(sitrep *order.SitRep, ignore validation.IgnoreField) errwrap
 		}
 	}
 
-	if len(sitrep.GetSituation()) == 0 && len(sitrep.GetActions()) == 0 && len(sitrep.GetTBD()) == 0 && len(sitrep.GetIssues()) == 0 {
+	if !validation.IsIgnoreEmpty(sitrep.GetSituation()+
+		sitrep.GetActions()+
+		sitrep.GetTBD()+
+		sitrep.GetIssues(), ignore) &&
+		//
+		len(sitrep.GetSituation()) == 0 &&
+		len(sitrep.GetActions()) == 0 &&
+		len(sitrep.GetTBD()) == 0 &&
+		len(sitrep.GetIssues()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "empty sitrep")
 	}
 
@@ -79,7 +88,7 @@ func ValidateOrder(order *order.Order, ignore validation.IgnoreField) errwrap.Er
 		return nil
 	}
 
-	if order.GetTask() == nil {
+	if !validation.IsIgnoreEmpty(order.GetTask(), ignore) && order.GetTask() == nil {
 		return errwrap.NewError(http.StatusBadRequest, "invalid order.task")
 	}
 
@@ -89,7 +98,7 @@ func ValidateOrder(order *order.Order, ignore validation.IgnoreField) errwrap.Er
 	}
 
 	err = validation.ValidateID(order.GetParentOrderID())
-	if err != nil {
+	if !validation.IsIgnoreEmpty(order.GetParentOrderID(), ignore) && err != nil {
 		return errwrap.NewError(http.StatusBadRequest, "invalid order.parent_order_id: %s", err.GetStatusMessage())
 	}
 
@@ -166,7 +175,11 @@ func ValidatePatchOrderRequest(req *request.PatchOrderRequest) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 
-	return ValidateOrder(req.GetOrder(), validation.IgnoreNothing)
+	if len(req.GetOrder().GetID()) == 0 {
+		return errwrap.NewError(http.StatusBadRequest, "order.task.id missing")
+	}
+
+	return ValidateOrder(req.GetOrder(), validation.IgnoreEmpty)
 }
 
 func ValidateDeleteOrderRequest(req *request.DeleteOrderRequest) errwrap.Error {

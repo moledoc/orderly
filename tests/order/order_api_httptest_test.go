@@ -132,7 +132,9 @@ func (api *OrderAPIHTTPTest) GetOrders(t *testing.T, ctx context.Context, req *r
 func (api *OrderAPIHTTPTest) GetOrderSubOrders(t *testing.T, ctx context.Context, req *request.GetOrderSubOrdersRequest) (*response.GetOrderSubOrdersResponse, errwrap.Error) {
 	t.Helper()
 
-	reqHttp := httptest.NewRequest(http.MethodGet, fmt.Sprintf("/v1/mgmt/order/%v", req.GetID()), nil)
+	path := fmt.Sprintf("/v1/mgmt/order/%v/suborders", req.GetID())
+	path = strings.ReplaceAll(path, "//", "/")
+	reqHttp := httptest.NewRequest(http.MethodGet, path, nil)
 
 	rr := httptest.NewRecorder()
 	api.Mux.ServeHTTP(rr, reqHttp)
