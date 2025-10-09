@@ -24,7 +24,7 @@ func (s *OrderSuite) TestGetOrders() {
 		}
 		orders := make([]*order.Order, count)
 		for i := 1; i <= count; i++ {
-			orders[i-1] = setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, orderObj())
+			orders[i-1] = setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, setup.OrderObj())
 		}
 		return orders
 	}

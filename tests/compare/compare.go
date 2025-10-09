@@ -64,15 +64,31 @@ var (
 func AssertEqual(t *testing.T, expected any, actual any, opts ...cmp.Option) {
 	t.Helper()
 	opts = append(opts, IgnoreMeta)
-	// var r DiffReporter
-	// opts = append(opts, cmp.Reporter(&r))
-	assert.Empty(t, cmp.Diff(expected, actual, opts...) /*, r.String()*/)
+	var r DiffReporter
+	opts = append(opts, cmp.Reporter(&r))
+	assert.Empty(t, cmp.Diff(expected, actual, opts...))
 }
 
 func RequireEqual(t *testing.T, expected any, actual any, opts ...cmp.Option) {
 	t.Helper()
 	opts = append(opts, IgnoreMeta)
-	// var r DiffReporter
-	// opts = append(opts, cmp.Reporter(&r))
-	require.Empty(t, cmp.Diff(expected, actual, opts...) /*, r.String()*/)
+	var r DiffReporter
+	opts = append(opts, cmp.Reporter(&r))
+	require.Empty(t, cmp.Diff(expected, actual, opts...))
+}
+
+func AssertNotEqual(t *testing.T, expected any, actual any, opts ...cmp.Option) {
+	t.Helper()
+	opts = append(opts, IgnoreMeta)
+	var r DiffReporter
+	opts = append(opts, cmp.Reporter(&r))
+	assert.NotEmpty(t, cmp.Diff(expected, actual, opts...))
+}
+
+func RequireNotEqual(t *testing.T, expected any, actual any, opts ...cmp.Option) {
+	t.Helper()
+	opts = append(opts, IgnoreMeta)
+	var r DiffReporter
+	opts = append(opts, cmp.Reporter(&r))
+	require.NotEmpty(t, cmp.Diff(expected, actual, opts...))
 }

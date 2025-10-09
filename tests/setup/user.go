@@ -2,15 +2,34 @@ package setup
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/moledoc/orderly/internal/domain/errwrap"
+	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/tests/api"
 	"github.com/moledoc/orderly/tests/cleanup"
 	"github.com/stretchr/testify/require"
 )
+
+func UserObj(extra ...string) *user.User {
+	ee := strings.Join(extra, ".")
+	return &user.User{
+		ID:         meta.NewID(),
+		Name:       fmt.Sprintf("name%v", ee),
+		Email:      user.Email(fmt.Sprintf("example%v@example.com", ee)),
+		Supervisor: user.Email(fmt.Sprintf("example.supervisor%v@example.com", ee)),
+		Meta: &meta.Meta{
+			Version: 1,
+			Created: time.Now().UTC(),
+			Updated: time.Now().UTC(),
+		},
+	}
+}
 
 func CreateUserWithCleanup(t *testing.T, ctx context.Context, api api.User, userObj *user.User) (*user.User, errwrap.Error) {
 	resp, err := api.PostUser(t, ctx, &request.PostUserRequest{

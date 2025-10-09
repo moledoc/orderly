@@ -2,9 +2,7 @@ package tests
 
 import (
 	"context"
-	"fmt"
 	"net/http"
-	"strings"
 	"testing"
 	"time"
 
@@ -14,28 +12,14 @@ import (
 	"github.com/moledoc/orderly/internal/service/common/validation"
 	"github.com/moledoc/orderly/internal/service/mgmtuser"
 	"github.com/moledoc/orderly/tests/cleanup"
+	"github.com/moledoc/orderly/tests/setup"
 	"github.com/stretchr/testify/require"
 )
-
-func userObj(extra ...string) *user.User {
-	ee := strings.Join(extra, ".")
-	return &user.User{
-		ID:         meta.NewID(),
-		Name:       fmt.Sprintf("name%v", ee),
-		Email:      user.Email(fmt.Sprintf("example%v@example.com", ee)),
-		Supervisor: user.Email(fmt.Sprintf("example.supervisor%v@example.com", ee)),
-		Meta: &meta.Meta{
-			Version: 1,
-			Created: time.Now().UTC(),
-			Updated: time.Now().UTC(),
-		},
-	}
-}
 
 func (s *UserSuite) TestValidation_User() {
 	tt := s.T()
 	tt.Run("user.id", func(t *testing.T) {
-		u := userObj()
+		u := setup.UserObj()
 		u.SetID("")
 		err := mgmtuser.ValidateUser(u, validation.IgnoreNothing)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
@@ -43,7 +27,7 @@ func (s *UserSuite) TestValidation_User() {
 	})
 
 	tt.Run("user.name", func(t *testing.T) {
-		u := userObj()
+		u := setup.UserObj()
 		u.SetName("")
 		err := mgmtuser.ValidateUser(u, validation.IgnoreNothing)
 		require.Error(t, err)
@@ -52,7 +36,7 @@ func (s *UserSuite) TestValidation_User() {
 	})
 
 	tt.Run("user.email", func(t *testing.T) {
-		u := userObj()
+		u := setup.UserObj()
 		u.SetEmail("")
 		err := mgmtuser.ValidateUser(u, validation.IgnoreNothing)
 		require.Error(t, err)
@@ -61,7 +45,7 @@ func (s *UserSuite) TestValidation_User() {
 	})
 
 	tt.Run("user.supervisor", func(t *testing.T) {
-		u := userObj()
+		u := setup.UserObj()
 		u.SetSupervisor("")
 		err := mgmtuser.ValidateUser(u, validation.IgnoreNothing)
 		require.Error(t, err)
@@ -70,7 +54,7 @@ func (s *UserSuite) TestValidation_User() {
 	})
 
 	tt.Run("user.meta", func(t *testing.T) {
-		u := userObj()
+		u := setup.UserObj()
 		u.SetMeta(&meta.Meta{
 			Version: 2,
 			Created: time.Now().UTC(),
@@ -95,7 +79,7 @@ func (s *UserSuite) TestValidation_PostUserRequest() {
 
 	tt.Run("user.id.provided", func(t *testing.T) {
 		resp, err := s.API.PostUser(t, context.Background(), &request.PostUserRequest{
-			User: userObj(),
+			User: setup.UserObj(),
 		})
 		defer cleanup.User(t, s.API, resp.GetUser())
 		require.Error(t, err)

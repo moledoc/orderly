@@ -17,7 +17,7 @@ import (
 func (s *OrderSuite) TestGetOrderByID() {
 	tt := s.T()
 
-	o := setup.MustCreateOrderWithCleanup(tt, context.Background(), s.API, orderObj())
+	o := setup.MustCreateOrderWithCleanup(tt, context.Background(), s.API, setup.OrderObj())
 	resp, err := s.API.GetOrderByID(tt, context.Background(), &request.GetOrderByIDRequest{
 		ID: o.GetID(),
 	})

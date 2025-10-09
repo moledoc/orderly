@@ -33,3 +33,59 @@ var (
 		})
 	}
 )
+
+var (
+	SortTaskByID = func(a *order.Task, b *order.Task) bool {
+		return a.GetID() < b.GetID()
+	}
+
+	SorterTask = func(sorters ...func(a *order.Task, b *order.Task) bool) cmp.Option {
+		return cmpopts.SortSlices(func(a *order.Task, b *order.Task) bool {
+			for _, comparer := range sorters {
+				if !comparer(a, b) {
+					return false
+				}
+			}
+			return true
+		})
+	}
+
+	ComparerTask = func(comparers ...func(a *order.Task, b *order.Task) bool) cmp.Option {
+		return cmp.Comparer(func(a *order.Task, b *order.Task) bool {
+			for _, comparer := range comparers {
+				if !comparer(a, b) {
+					return false
+				}
+			}
+			return true
+		})
+	}
+)
+
+var (
+	SortSitRepByID = func(a *order.SitRep, b *order.SitRep) bool {
+		return a.GetID() < b.GetID()
+	}
+
+	SorterSitRep = func(sorters ...func(a *order.SitRep, b *order.SitRep) bool) cmp.Option {
+		return cmpopts.SortSlices(func(a *order.SitRep, b *order.SitRep) bool {
+			for _, comparer := range sorters {
+				if !comparer(a, b) {
+					return false
+				}
+			}
+			return true
+		})
+	}
+
+	ComparerSitRep = func(comparers ...func(a *order.SitRep, b *order.SitRep) bool) cmp.Option {
+		return cmp.Comparer(func(a *order.SitRep, b *order.SitRep) bool {
+			for _, comparer := range comparers {
+				if !comparer(a, b) {
+					return false
+				}
+			}
+			return true
+		})
+	}
+)
