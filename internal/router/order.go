@@ -13,7 +13,7 @@ import (
 
 func postOrder(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "postOrder")
 	defer middleware.SpanStop(ctx, "postOrder")
@@ -33,7 +33,7 @@ func postOrder(w http.ResponseWriter, r *http.Request) {
 
 func getOrderByID(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "getOrderByID")
 	defer middleware.SpanStop(ctx, "getOrderByID")
@@ -48,7 +48,7 @@ func getOrderByID(w http.ResponseWriter, r *http.Request) {
 
 func getOrders(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "getOrderByID")
 	defer middleware.SpanStop(ctx, "getOrderByID")
@@ -61,7 +61,7 @@ func getOrders(w http.ResponseWriter, r *http.Request) {
 
 func getOrderSubOrders(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "getOrderSubOrders")
 	defer middleware.SpanStop(ctx, "getOrderSubOrders")
@@ -76,7 +76,7 @@ func getOrderSubOrders(w http.ResponseWriter, r *http.Request) {
 
 func patchOrder(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "patchOrder")
 	defer middleware.SpanStop(ctx, "patchOrder")
@@ -95,7 +95,7 @@ func patchOrder(w http.ResponseWriter, r *http.Request) {
 
 func deleteOrder(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "deleteOrder")
 	defer middleware.SpanStop(ctx, "deleteOrder")
@@ -112,7 +112,7 @@ func deleteOrder(w http.ResponseWriter, r *http.Request) {
 
 func putDelegatedTask(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "putDelegatedTask")
 	defer middleware.SpanStop(ctx, "putDelegatedTask")
@@ -133,7 +133,7 @@ func putDelegatedTask(w http.ResponseWriter, r *http.Request) {
 
 func patchDelegatedTask(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "patchDelegatedTask")
 	defer middleware.SpanStop(ctx, "patchDelegatedTask")
@@ -154,7 +154,7 @@ func patchDelegatedTask(w http.ResponseWriter, r *http.Request) {
 
 func deleteDelegatedTask(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "deleteDelegatedTask")
 	defer middleware.SpanStop(ctx, "deleteDelegatedTask")
@@ -177,7 +177,7 @@ func deleteDelegatedTask(w http.ResponseWriter, r *http.Request) {
 
 func putSitRep(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "putSitRep")
 	defer middleware.SpanStop(ctx, "putSitRep")
@@ -198,7 +198,7 @@ func putSitRep(w http.ResponseWriter, r *http.Request) {
 
 func patchSitRep(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "patchSitRep")
 	defer middleware.SpanStop(ctx, "patchSitRep")
@@ -219,7 +219,7 @@ func patchSitRep(w http.ResponseWriter, r *http.Request) {
 
 func deleteSitRep(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "deleteSitRep")
 	defer middleware.SpanStop(ctx, "deleteSitRep")
