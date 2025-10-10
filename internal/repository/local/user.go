@@ -11,7 +11,7 @@ import (
 	"github.com/moledoc/orderly/internal/repository"
 )
 
-type LocalRepositoryUser map[meta.ID]*user.User
+type LocalRepositoryUser map[meta.ID]user.User
 
 var (
 	_ repository.RepositoryUserAPI = (LocalRepositoryUser)(nil)
@@ -44,7 +44,7 @@ func (r LocalRepositoryUser) ReadByID(ctx context.Context, ID meta.ID) (*user.Us
 	if !ok {
 		return nil, errwrap.NewError(http.StatusNotFound, "not found")
 	}
-	return user, nil
+	return &user, nil
 }
 
 func (r LocalRepositoryUser) ReadSubOrdinates(ctx context.Context, ID meta.ID) ([]*user.User, errwrap.Error) {
@@ -63,9 +63,8 @@ func (r LocalRepositoryUser) ReadSubOrdinates(ctx context.Context, ID meta.ID) (
 	// MAYBE: TODO: optimize subordinate finding
 	var subOrdinates []*user.User
 	for _, user := range r {
-
 		if user.GetSupervisor() == supervisor.GetEmail() {
-			subOrdinates = append(subOrdinates, user)
+			subOrdinates = append(subOrdinates, &user)
 		}
 	}
 
@@ -82,7 +81,7 @@ func (r LocalRepositoryUser) ReadAll(ctx context.Context) ([]*user.User, errwrap
 
 	var users []*user.User
 	for _, user := range r {
-		users = append(users, user)
+		users = append(users, &user)
 	}
 	return users, nil
 }
@@ -96,7 +95,7 @@ func (r LocalRepositoryUser) Write(ctx context.Context, user *user.User) (*user.
 	}
 
 	id := user.GetID()
-	r[id] = user
+	r[id] = *user
 
 	return user, nil
 }
