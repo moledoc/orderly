@@ -104,10 +104,6 @@ func (s *OrderSuite) TestPatchOrder() {
 					// Actions:   "<List of actions>",
 					// TBD:       "<List of things to do>",
 					Issues: "<List of issues>",
-
-					State:         order.InProgress,
-					WorkCompleted: 20,
-					Summary:       "patched new summary",
 				}
 
 				expected.GetSitReps()[0].SetDateTime(patchedSitRep.GetDateTime())
@@ -117,9 +113,6 @@ func (s *OrderSuite) TestPatchOrder() {
 				// expected.GetSitReps()[0].SetActions(patchedSitRep.GetActions())
 				// expected.GetSitReps()[0].SetTBD(patchedSitRep.GetTBD())
 				expected.GetSitReps()[0].SetIssues(patchedSitRep.GetIssues())
-				expected.GetSitReps()[0].SetState(patchedSitRep.GetState())
-				expected.GetSitReps()[0].SetWorkCompleted(patchedSitRep.GetWorkCompleted())
-				expected.GetSitReps()[0].SetSummary(patchedSitRep.GetSummary())
 
 				return &request.PatchOrderRequest{
 					Order: &order.Order{

@@ -35,9 +35,6 @@ func TaskObjWithID(extra ...string) *order.Task {
 func SitrepObj(extra ...string) *order.SitRep {
 	ee := strings.Join(extra, ".")
 	return &order.SitRep{
-		State:         order.NotStarted,
-		WorkCompleted: 50,
-		Summary:       "summary",
 
 		DateTime: time.Now().UTC(),
 		By:       user.Email(fmt.Sprintf("by%v@example.com", ee)),

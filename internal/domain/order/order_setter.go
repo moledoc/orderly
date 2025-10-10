@@ -51,27 +51,6 @@ func (sr *SitRep) SetID(id meta.ID) {
 	sr.ID = id
 }
 
-func (sr *SitRep) SetState(state State) {
-	if sr == nil {
-		return
-	}
-	sr.State = state
-}
-
-func (sr *SitRep) SetWorkCompleted(workcompleted uint) {
-	if sr == nil {
-		return
-	}
-	sr.WorkCompleted = workcompleted
-}
-
-func (sr *SitRep) SetSummary(summary string) {
-	if sr == nil {
-		return
-	}
-	sr.Summary = summary
-}
-
 func (sr *SitRep) SetDateTime(dateTime time.Time) {
 	if sr == nil {
 		return

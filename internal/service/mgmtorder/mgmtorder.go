@@ -348,19 +348,6 @@ func (s *serviceMgmtOrder) PutSitRep(ctx context.Context, req *request.PutSitRep
 func patchSitRep(reqSitRep *order.SitRep, patchedSitRep *order.SitRep) bool {
 	hasChanges := false
 
-	if !utils.IsZeroValue(reqSitRep.GetState()) && reqSitRep.GetState() != patchedSitRep.GetState() {
-		patchedSitRep.SetState(reqSitRep.GetState())
-		hasChanges = true
-	}
-	if !utils.IsZeroValue(reqSitRep.GetWorkCompleted()) && reqSitRep.GetWorkCompleted() != patchedSitRep.GetWorkCompleted() {
-		patchedSitRep.SetWorkCompleted(reqSitRep.GetWorkCompleted())
-		hasChanges = true
-	}
-	if !utils.IsZeroValue(reqSitRep.GetSummary()) && reqSitRep.GetSummary() != patchedSitRep.GetSummary() {
-		patchedSitRep.SetSummary(reqSitRep.GetSummary())
-		hasChanges = true
-	}
-
 	if !utils.IsZeroValue(reqSitRep.GetDateTime()) && reqSitRep.GetDateTime() != patchedSitRep.GetDateTime() {
 		patchedSitRep.SetDateTime(reqSitRep.GetDateTime())
 		hasChanges = true

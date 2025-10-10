@@ -51,27 +51,6 @@ func (sr *SitRep) GetID() meta.ID {
 	return sr.ID
 }
 
-func (sr *SitRep) GetState() State {
-	if sr == nil {
-		return NotStarted
-	}
-	return sr.State
-}
-
-func (sr *SitRep) GetWorkCompleted() uint {
-	if sr == nil {
-		return 0
-	}
-	return sr.WorkCompleted
-}
-
-func (sr *SitRep) GetSummary() string {
-	if sr == nil {
-		return ""
-	}
-	return sr.Summary
-}
-
 func (sr *SitRep) GetDateTime() time.Time {
 	if sr == nil {
 		return time.Time{}
