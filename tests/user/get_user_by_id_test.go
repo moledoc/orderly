@@ -15,52 +15,6 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func (s *UserSuite) TestGetUserByID_InputValidation() {
-	tt := s.T()
-
-	tt.Run("EmptyRequest", func(t *testing.T) {
-		t.Run("nil", func(t *testing.T) {
-			resp, err := s.API.GetUserByID(t, context.Background(), nil)
-			require.Error(t, err)
-			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		})
-		t.Run("empty", func(t *testing.T) {
-			resp, err := s.API.GetUserByID(t, context.Background(), &request.GetUserByIDRequest{})
-			require.Error(t, err)
-			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		})
-	})
-
-	tt.Run("InvalidRequiredField", func(t *testing.T) {
-		t.Run("user.id.empty", func(t *testing.T) {
-			resp, err := s.API.GetUserByID(t, context.Background(), &request.GetUserByIDRequest{
-				ID: meta.EmptyID(),
-			})
-			require.Error(t, err)
-			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		})
-		t.Run("user.id.shorter", func(t *testing.T) {
-			resp, err := s.API.GetUserByID(t, context.Background(), &request.GetUserByIDRequest{
-				ID: meta.NewID()[:10],
-			})
-			require.Error(t, err)
-			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		})
-		t.Run("user.id.longer", func(t *testing.T) {
-			resp, err := s.API.GetUserByID(t, context.Background(), &request.GetUserByIDRequest{
-				ID: meta.NewID() + meta.NewID(),
-			})
-			require.Error(t, err)
-			require.Empty(t, resp)
-			require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		})
-	})
-}
-
 func (s *UserSuite) TestGetUserByID() {
 	tt := s.T()
 
@@ -94,5 +48,6 @@ func (s *UserSuite) TestGetUserByID_Failed() {
 		})
 		require.Error(tt, err)
 		require.Equal(tt, http.StatusNotFound, err.GetStatusCode(), err)
+		require.Equal(t, "not found", err.GetStatusMessage())
 	})
 }

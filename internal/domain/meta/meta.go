@@ -33,9 +33,10 @@ func (m *Meta) Clone() *Meta {
 	if m == nil {
 		return nil
 	}
-	clone := Meta{}
-	clone.Version = m.Version
-	clone.Created = m.Created
-	clone.Updated = m.Updated
+	clone := Meta{
+		Version: m.Version,
+		Created: m.Created,
+		Updated: m.Updated,
+	}
 	return &clone
 }

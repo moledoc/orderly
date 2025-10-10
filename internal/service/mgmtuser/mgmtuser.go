@@ -16,11 +16,11 @@ func (s *serviceMgmtUser) PostUser(ctx context.Context, req *request.PostUserReq
 	middleware.SpanStart(ctx, "PostUser")
 	defer middleware.SpanStop(ctx, "PostUser")
 
-	if err := validatePostUserRequest(req); err != nil {
+	if err := ValidatePostUserRequest(req); err != nil {
 		return nil, err
 	}
 
-	u := req.GetUser()
+	u := req.GetUser().Clone()
 	u.ID = meta.ID(utils.RandAlphanum())
 
 	now := time.Now().UTC()
@@ -44,7 +44,7 @@ func (s *serviceMgmtUser) GetUserByID(ctx context.Context, req *request.GetUserB
 	middleware.SpanStart(ctx, "GetUserByID")
 	defer middleware.SpanStop(ctx, "GetUserByID")
 
-	if err := validateGetUserByIDRequest(req); err != nil {
+	if err := ValidateGetUserByIDRequest(req); err != nil {
 		return nil, err
 	}
 
@@ -61,7 +61,7 @@ func (s *serviceMgmtUser) GetUsers(ctx context.Context, req *request.GetUsersReq
 	middleware.SpanStart(ctx, "GetUserByID")
 	defer middleware.SpanStop(ctx, "GetUserByID")
 
-	if err := validateGetUsersRequest(req); err != nil {
+	if err := ValidateGetUsersRequest(req); err != nil {
 		return nil, err
 	}
 
@@ -78,7 +78,7 @@ func (s *serviceMgmtUser) GetUserSubOrdinates(ctx context.Context, req *request.
 	middleware.SpanStart(ctx, "GetUserSubOrdinates")
 	defer middleware.SpanStop(ctx, "GetUserSubOrdinates")
 
-	if err := validateGetUserSubOrdinatesRequest(req); err != nil {
+	if err := ValidateGetUserSubOrdinatesRequest(req); err != nil {
 		return nil, err
 	}
 
@@ -95,7 +95,7 @@ func (s *serviceMgmtUser) PatchUser(ctx context.Context, req *request.PatchUserR
 	middleware.SpanStart(ctx, "PatchUser")
 	defer middleware.SpanStop(ctx, "PatchUser")
 
-	if err := validatePatchUserRequest(req); err != nil {
+	if err := ValidatePatchUserRequest(req); err != nil {
 		return nil, err
 	}
 
@@ -108,15 +108,15 @@ func (s *serviceMgmtUser) PatchUser(ctx context.Context, req *request.PatchUserR
 	reqUser := req.GetUser()
 	hasChanges := false
 
-	if reqUser.GetName() != patchedUser.GetName() {
+	if !utils.IsZeroValue(reqUser.GetName()) && reqUser.GetName() != patchedUser.GetName() {
 		patchedUser.SetName(reqUser.GetName())
 		hasChanges = true
 	}
-	if reqUser.GetEmail() != patchedUser.GetEmail() {
+	if !utils.IsZeroValue(reqUser.GetEmail()) && reqUser.GetEmail() != patchedUser.GetEmail() {
 		patchedUser.SetEmail(reqUser.GetEmail())
 		hasChanges = true
 	}
-	if reqUser.GetSupervisor() != patchedUser.GetSupervisor() {
+	if !utils.IsZeroValue(reqUser.GetSupervisor()) && reqUser.GetSupervisor() != patchedUser.GetSupervisor() {
 		patchedUser.SetSupervisor(reqUser.GetSupervisor())
 		hasChanges = true
 	}
@@ -144,7 +144,7 @@ func (s *serviceMgmtUser) DeleteUser(ctx context.Context, req *request.DeleteUse
 	middleware.SpanStart(ctx, "DeleteUser")
 	defer middleware.SpanStop(ctx, "DeleteUser")
 
-	if err := validateDeleteUserRequest(req); err != nil {
+	if err := ValidateDeleteUserRequest(req); err != nil {
 		return nil, err
 	}
 

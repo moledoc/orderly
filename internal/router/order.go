@@ -9,12 +9,11 @@ import (
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
 	"github.com/moledoc/orderly/internal/middleware"
-	"github.com/moledoc/orderly/pkg/utils"
 )
 
 func postOrder(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "postOrder")
 	defer middleware.SpanStop(ctx, "postOrder")
@@ -25,6 +24,7 @@ func postOrder(w http.ResponseWriter, r *http.Request) {
 
 	err = decodeBody(ctx, r, &req)
 	if err == nil {
+		middleware.SpanLog(ctx, "PostOrderRequest", &req)
 		resp, err = mgmtordersvc.PostOrder(ctx, &req)
 	}
 
@@ -33,44 +33,50 @@ func postOrder(w http.ResponseWriter, r *http.Request) {
 
 func getOrderByID(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "getOrderByID")
 	defer middleware.SpanStop(ctx, "getOrderByID")
 
-	resp, err := mgmtordersvc.GetOrderByID(ctx, &request.GetOrderByIDRequest{
-		ID: utils.Ptr(meta.ID(r.PathValue(orderID))),
-	})
+	req := &request.GetOrderByIDRequest{
+		ID: meta.ID(r.PathValue(orderID)),
+	}
+	middleware.SpanLog(ctx, "GetOrderByIDRequest", req)
+	resp, err := mgmtordersvc.GetOrderByID(ctx, req)
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
 func getOrders(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "getOrderByID")
 	defer middleware.SpanStop(ctx, "getOrderByID")
 
-	resp, err := mgmtordersvc.GetOrders(ctx, &request.GetOrdersRequest{})
+	req := &request.GetOrdersRequest{}
+	middleware.SpanLog(ctx, "GetOrdersRequest", req)
+	resp, err := mgmtordersvc.GetOrders(ctx, req)
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
 func getOrderSubOrders(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "getOrderSubOrders")
 	defer middleware.SpanStop(ctx, "getOrderSubOrders")
 
-	resp, err := mgmtordersvc.GetOrderSubOrders(ctx, &request.GetOrderSubOrdersRequest{
-		ID: utils.Ptr(meta.ID(r.PathValue(orderID))),
-	})
+	req := &request.GetOrderSubOrdersRequest{
+		ID: meta.ID(r.PathValue(orderID)),
+	}
+	middleware.SpanLog(ctx, "GetOrderSubOrdersRequest", req)
+	resp, err := mgmtordersvc.GetOrderSubOrders(ctx, req)
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
 func patchOrder(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "patchOrder")
 	defer middleware.SpanStop(ctx, "patchOrder")
@@ -81,6 +87,7 @@ func patchOrder(w http.ResponseWriter, r *http.Request) {
 
 	err = decodeBody(ctx, r, &req)
 	if err == nil {
+		middleware.SpanLog(ctx, "PatchOrderRequest", &req)
 		resp, err = mgmtordersvc.PatchOrder(ctx, &req)
 	}
 	writeResponse(ctx, w, resp, err, http.StatusOK)
@@ -88,126 +95,145 @@ func patchOrder(w http.ResponseWriter, r *http.Request) {
 
 func deleteOrder(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "deleteOrder")
 	defer middleware.SpanStop(ctx, "deleteOrder")
 
-	resp, err := mgmtordersvc.DeleteOrder(ctx, &request.DeleteOrderRequest{
-		ID: utils.Ptr(meta.ID(r.PathValue(orderID))),
-	})
+	req := &request.DeleteOrderRequest{
+		ID: meta.ID(r.PathValue(orderID)),
+	}
+	middleware.SpanLog(ctx, "DeleteOrderRequest", req)
+	resp, err := mgmtordersvc.DeleteOrder(ctx, req)
 	writeResponse(ctx, w, resp, err, http.StatusNoContent)
 }
 
 ////////////////
 
-func putDelegatedTask(w http.ResponseWriter, r *http.Request) {
+func putDelegatedTasks(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "putDelegatedTask")
 	defer middleware.SpanStop(ctx, "putDelegatedTask")
 
-	var req request.PutDelegatedTaskRequest = request.PutDelegatedTaskRequest{
-		OrderID: utils.Ptr(meta.ID(r.PathValue(orderID))),
+	var req request.PutDelegatedTasksRequest = request.PutDelegatedTasksRequest{
+		OrderID: meta.ID(r.PathValue(orderID)),
 	}
-	var resp *response.PutDelegatedTaskResponse
+	var resp *response.PutDelegatedTasksResponse
 	var err errwrap.Error
 
 	err = decodeBody(ctx, r, &req)
 	if err == nil {
-		resp, err = mgmtordersvc.PutDelegatedTask(ctx, &req)
+		middleware.SpanLog(ctx, "PutDelegatedTaskRequest", &req)
+		resp, err = mgmtordersvc.PutDelegatedTasks(ctx, &req)
 	}
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func patchDelegatedTask(w http.ResponseWriter, r *http.Request) {
+func patchDelegatedTasks(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "patchDelegatedTask")
 	defer middleware.SpanStop(ctx, "patchDelegatedTask")
 
-	var req request.PatchDelegatedTaskRequest = request.PatchDelegatedTaskRequest{
-		OrderID: utils.Ptr(meta.ID(r.PathValue(orderID))),
+	var req request.PatchDelegatedTasksRequest = request.PatchDelegatedTasksRequest{
+		OrderID: meta.ID(r.PathValue(orderID)),
 	}
-	var resp *response.PatchDelegatedTaskResponse
+	var resp *response.PatchDelegatedTasksResponse
 	var err errwrap.Error
 
 	err = decodeBody(ctx, r, &req)
 	if err == nil {
-		resp, err = mgmtordersvc.PatchDelegatedTask(ctx, &req)
+		middleware.SpanLog(ctx, "PatchDelegatedTaskRequest", &req)
+		resp, err = mgmtordersvc.PatchDelegatedTasks(ctx, &req)
 	}
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func deleteDelegatedTask(w http.ResponseWriter, r *http.Request) {
+func deleteDelegatedTasks(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "deleteDelegatedTask")
 	defer middleware.SpanStop(ctx, "deleteDelegatedTask")
 
-	resp, err := mgmtordersvc.DeleteDelegatedTask(ctx, &request.DeleteDelegatedTaskRequest{
-		OrderID:         utils.Ptr(meta.ID(r.PathValue(orderID))),
-		DelegatedTaskID: utils.Ptr(meta.ID(r.PathValue(delegatedTaskID))),
-	})
+	req := &request.DeleteDelegatedTasksRequest{
+		OrderID: meta.ID(r.PathValue(orderID)),
+	}
+	var resp *response.DeleteDelegatedTasksResponse
+	var err errwrap.Error
+
+	err = decodeBody(ctx, r, &req)
+	if err == nil {
+		middleware.SpanLog(ctx, "DeleteDelegatedTaskRequest", req)
+		resp, err = mgmtordersvc.DeleteDelegatedTasks(ctx, req)
+	}
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
 ////////////////
 
-func putSitRep(w http.ResponseWriter, r *http.Request) {
+func putSitReps(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "putSitRep")
 	defer middleware.SpanStop(ctx, "putSitRep")
 
-	var req request.PutSitRepRequest = request.PutSitRepRequest{
-		OrderID: utils.Ptr(meta.ID(r.PathValue(orderID))),
+	var req request.PutSitRepsRequest = request.PutSitRepsRequest{
+		OrderID: meta.ID(r.PathValue(orderID)),
 	}
-	var resp *response.PutSitRepResponse
+	var resp *response.PutSitRepsResponse
 	var err errwrap.Error
 
 	err = decodeBody(ctx, r, &req)
 	if err == nil {
-		resp, err = mgmtordersvc.PutSitRep(ctx, &req)
+		middleware.SpanLog(ctx, "PutSitRepRequest", &req)
+		resp, err = mgmtordersvc.PutSitReps(ctx, &req)
 	}
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func patchSitRep(w http.ResponseWriter, r *http.Request) {
+func patchSitReps(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "patchSitRep")
 	defer middleware.SpanStop(ctx, "patchSitRep")
 
-	var req request.PatchSitRepRequest = request.PatchSitRepRequest{
-		OrderID: utils.Ptr(meta.ID(r.PathValue(orderID))),
+	var req request.PatchSitRepsRequest = request.PatchSitRepsRequest{
+		OrderID: meta.ID(r.PathValue(orderID)),
 	}
-	var resp *response.PatchSitRepResponse
+	var resp *response.PatchSitRepsResponse
 	var err errwrap.Error
 
 	err = decodeBody(ctx, r, &req)
 	if err == nil {
-		resp, err = mgmtordersvc.PatchSitRep(ctx, &req)
+		middleware.SpanLog(ctx, "PatchSitRepRequest", &req)
+		resp, err = mgmtordersvc.PatchSitReps(ctx, &req)
 	}
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func deleteSitRep(w http.ResponseWriter, r *http.Request) {
+func deleteSitReps(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "deleteSitRep")
 	defer middleware.SpanStop(ctx, "deleteSitRep")
 
-	resp, err := mgmtordersvc.DeleteSitRep(ctx, &request.DeleteSitRepRequest{
-		OrderID:  utils.Ptr(meta.ID(r.PathValue(orderID))),
-		SitRepID: utils.Ptr(meta.ID(r.PathValue(sitrepID))),
-	})
+	req := &request.DeleteSitRepsRequest{
+		OrderID: meta.ID(r.PathValue(orderID)),
+	}
+	var resp *response.DeleteSitRepsResponse
+	var err errwrap.Error
+	err = decodeBody(ctx, r, req)
+	if err == nil {
+		middleware.SpanLog(ctx, "DeleteSitRepRequest", req)
+		resp, err = mgmtordersvc.DeleteSitReps(ctx, req)
+	}
 
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }

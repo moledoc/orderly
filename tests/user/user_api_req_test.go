@@ -44,10 +44,12 @@ func TestUserReqSuite(t *testing.T) {
 
 func (api *UserAPIReq) PostUser(t *testing.T, ctx context.Context, req *request.PostUserRequest) (*response.PostUserResponse, errwrap.Error) {
 	t.Helper()
+
 	reqBytes, err := json.Marshal(req)
 	if err != nil {
 		return nil, errwrap.NewError(http.StatusBadRequest, "marshaling request failed: %s", err)
 	}
+
 	respHttp, err := api.HttpClient.Post(fmt.Sprintf("%s/v1/mgmt/user", api.BaseURL), "application/json", bytes.NewBuffer(reqBytes))
 	if err != nil {
 		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)

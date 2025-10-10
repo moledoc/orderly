@@ -10,6 +10,22 @@ import (
 	"github.com/moledoc/orderly/pkg/utils"
 )
 
+type IgnoreField int
+
+const (
+	IgnoreNothing IgnoreField = 0
+	IgnoreID      IgnoreField = 1 << iota
+	IgnoreEmpty
+)
+
+func IsFieldIgnored(field IgnoreField, bitmask IgnoreField) bool {
+	return field&bitmask == field
+}
+
+func IsIgnoreEmpty(field any, bitmask IgnoreField) bool {
+	return IgnoreEmpty&bitmask == IgnoreEmpty && utils.IsZeroValue(field)
+}
+
 func ValidateID(id meta.ID) errwrap.Error {
 	if len(id) != utils.RandAlphanumLen {
 		return errwrap.NewError(http.StatusBadRequest, "invalid id length")
@@ -30,17 +46,5 @@ func ValidateEmail(email user.Email) errwrap.Error {
 	if err != nil {
 		return errwrap.NewError(http.StatusBadRequest, "invalid email")
 	}
-	return nil
-}
-
-func ValidateMeta(m *meta.Meta) errwrap.Error {
-	if m == nil {
-		return nil
-	}
-
-	// if m.Version < 0 {
-	// 	return errwrap.NewError(http.StatusBadGateway, "invalid version")
-	// }
-
 	return nil
 }

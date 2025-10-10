@@ -9,46 +9,34 @@ import (
 	"github.com/moledoc/orderly/internal/service/common/validation"
 )
 
-func validateUser(user *user.User) errwrap.Error {
+func ValidateUser(user *user.User, ignore validation.IgnoreField) errwrap.Error {
 	if user == nil {
 		return nil
 	}
 
-	if len(user.GetID()) > 0 { // NOTE: ID is required, but when creating we don't allow ID; relevant ID check is done one level up in validation
-		err := validation.ValidateID(user.GetID())
-		if err != nil {
-			return err
-		}
+	err := validation.ValidateID(user.GetID())
+	if !validation.IsFieldIgnored(validation.IgnoreID, ignore) && err != nil {
+		return errwrap.NewError(http.StatusBadRequest, "invalid user.id: %s", err.GetStatusMessage())
 	}
 
-	if len(user.GetName()) == 0 {
+	if !validation.IsIgnoreEmpty(user.GetName(), ignore) && len(user.GetName()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "invalid user.name length")
 	}
 
-	err := validation.ValidateEmail(user.GetEmail())
-	if err != nil {
-		return err
+	if err := validation.ValidateEmail(user.GetEmail()); !validation.IsIgnoreEmpty(user.GetEmail(), ignore) && err != nil {
+		return errwrap.NewError(http.StatusBadRequest, "invalid user.email: %s", err.GetStatusMessage())
 	}
 
-	err = validation.ValidateEmail(user.GetSupervisor())
-	if err != nil {
-		return err
-	}
-
-	err = validation.ValidateMeta(user.GetMeta())
-	if err != nil {
-		return err
+	if err := validation.ValidateEmail(user.GetSupervisor()); !validation.IsIgnoreEmpty(user.GetSupervisor(), ignore) && err != nil {
+		return errwrap.NewError(http.StatusBadRequest, "invalid user.supervisor: %s", err.GetStatusMessage())
 	}
 
 	return nil
 }
 
-func validatePostUserRequest(req *request.PostUserRequest) errwrap.Error {
-	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "empty request")
-	}
+func ValidatePostUserRequest(req *request.PostUserRequest) errwrap.Error {
 	if req.User == nil {
-		return errwrap.NewError(http.StatusBadRequest, "empty user")
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 
 	if len(req.GetUser().GetID()) > 0 {
@@ -59,16 +47,12 @@ func validatePostUserRequest(req *request.PostUserRequest) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "user.meta disallowed")
 	}
 
-	return validateUser(req.GetUser())
+	return ValidateUser(req.GetUser(), validation.IgnoreID)
 }
 
-func validateGetUserByIDRequest(req *request.GetUserByIDRequest) errwrap.Error {
-	if req == nil {
+func ValidateGetUserByIDRequest(req *request.GetUserByIDRequest) errwrap.Error {
+	if req == nil || len(req.GetID()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "empty request")
-	}
-
-	if len(req.GetID()) == 0 {
-		return errwrap.NewError(http.StatusBadRequest, "empty id")
 	}
 
 	err := validation.ValidateID(req.GetID())
@@ -79,17 +63,13 @@ func validateGetUserByIDRequest(req *request.GetUserByIDRequest) errwrap.Error {
 	return nil
 }
 
-func validateGetUsersRequest(*request.GetUsersRequest) errwrap.Error {
+func ValidateGetUsersRequest(*request.GetUsersRequest) errwrap.Error {
 	return nil
 }
 
-func validateGetUserSubOrdinatesRequest(req *request.GetUserSubOrdinatesRequest) errwrap.Error {
-	if req == nil {
+func ValidateGetUserSubOrdinatesRequest(req *request.GetUserSubOrdinatesRequest) errwrap.Error {
+	if req == nil || len(req.GetID()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "empty request")
-	}
-
-	if len(req.GetID()) == 0 {
-		return errwrap.NewError(http.StatusBadRequest, "empty id")
 	}
 
 	err := validation.ValidateID(req.GetID())
@@ -100,10 +80,8 @@ func validateGetUserSubOrdinatesRequest(req *request.GetUserSubOrdinatesRequest)
 	return nil
 }
 
-func validatePatchUserRequest(req *request.PatchUserRequest) errwrap.Error {
-	if req == nil {
-		return errwrap.NewError(http.StatusBadRequest, "empty request")
-	}
+func ValidatePatchUserRequest(req *request.PatchUserRequest) errwrap.Error {
+
 	if req.User == nil {
 		return errwrap.NewError(http.StatusBadRequest, "empty user")
 	}
@@ -112,20 +90,12 @@ func validatePatchUserRequest(req *request.PatchUserRequest) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "user.id missing")
 	}
 
-	if err := validateUser(req.GetUser()); err != nil {
-		return err
-	}
-
-	return nil
+	return ValidateUser(req.GetUser(), validation.IgnoreEmpty)
 }
 
-func validateDeleteUserRequest(req *request.DeleteUserRequest) errwrap.Error {
-	if req == nil {
+func ValidateDeleteUserRequest(req *request.DeleteUserRequest) errwrap.Error {
+	if req == nil || len(req.GetID()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "empty request")
-	}
-
-	if len(req.GetID()) == 0 {
-		return errwrap.NewError(http.StatusBadRequest, "empty id")
 	}
 
 	err := validation.ValidateID(req.GetID())

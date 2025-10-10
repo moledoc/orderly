@@ -11,9 +11,9 @@ import (
 	"github.com/moledoc/orderly/internal/middleware"
 )
 
-func postUser(w http.ResponseWriter, r *http.Request) {
+func handlePostUser(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "postUser")
 	defer middleware.SpanStop(ctx, "postUser")
@@ -24,15 +24,16 @@ func postUser(w http.ResponseWriter, r *http.Request) {
 
 	err = decodeBody(ctx, r, &req)
 	if err == nil {
+		middleware.SpanLog(ctx, "PostUserRequest", &req)
 		resp, err = mgmtusersvc.PostUser(ctx, &req)
 	}
 
 	writeResponse(ctx, w, resp, err, http.StatusCreated)
 }
 
-func getUserByID(w http.ResponseWriter, r *http.Request) {
+func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "getUserByID")
 	defer middleware.SpanStop(ctx, "getUserByID")
@@ -40,38 +41,43 @@ func getUserByID(w http.ResponseWriter, r *http.Request) {
 	req := &request.GetUserByIDRequest{
 		ID: meta.ID(r.PathValue(userID)),
 	}
+	middleware.SpanLog(ctx, "GetUserByIDRequest", req)
 	resp, err := mgmtusersvc.GetUserByID(ctx, req)
 
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func getUsers(w http.ResponseWriter, r *http.Request) {
+func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "getUsers")
 	defer middleware.SpanStop(ctx, "getUsers")
 
-	resp, err := mgmtusersvc.GetUsers(ctx, &request.GetUsersRequest{})
+	req := &request.GetUsersRequest{}
+	middleware.SpanLog(ctx, "GetUsersRequest", req)
+	resp, err := mgmtusersvc.GetUsers(ctx, req)
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func getUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
+func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "getUserSubOrdinates")
 	defer middleware.SpanStop(ctx, "getUserSubOrdinates")
 
-	resp, err := mgmtusersvc.GetUserSubOrdinates(ctx, &request.GetUserSubOrdinatesRequest{
+	req := &request.GetUserSubOrdinatesRequest{
 		ID: meta.ID(r.PathValue(userID)),
-	})
+	}
+	middleware.SpanLog(ctx, "GetUserSubOrdinatesRequest", req)
+	resp, err := mgmtusersvc.GetUserSubOrdinates(ctx, req)
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func patchUser(w http.ResponseWriter, r *http.Request) {
+func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "patchUser")
 	defer middleware.SpanStop(ctx, "patchUser")
@@ -82,21 +88,24 @@ func patchUser(w http.ResponseWriter, r *http.Request) {
 
 	err = decodeBody(ctx, r, &req)
 	if err == nil {
+		middleware.SpanLog(ctx, "PatchUserRequest", &req)
 		resp, err = mgmtusersvc.PatchUser(ctx, &req)
 	}
 
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func deleteUser(w http.ResponseWriter, r *http.Request) {
+func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
-	defer middleware.SpanFlushTrace(ctx)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "deleteUser")
 	defer middleware.SpanStop(ctx, "deleteUser")
 
-	resp, err := mgmtusersvc.DeleteUser(ctx, &request.DeleteUserRequest{
+	req := &request.DeleteUserRequest{
 		ID: meta.ID(r.PathValue(userID)),
-	})
+	}
+	middleware.SpanLog(ctx, "DeleteUserRequest", req)
+	resp, err := mgmtusersvc.DeleteUser(ctx, req)
 	writeResponse(ctx, w, resp, err, http.StatusNoContent)
 }

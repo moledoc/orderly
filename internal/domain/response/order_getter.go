@@ -22,6 +22,15 @@ func (r *GetOrderByIDResponse) GetOrder() *order.Order {
 
 ////////////////
 
+func (r *GetOrdersResponse) GetOrders() []*order.Order {
+	if r == nil {
+		return nil
+	}
+	return r.Orders
+}
+
+////////////////
+
 func (r *GetOrderSubOrdersResponse) GetSubOrders() []*order.Order {
 	if r == nil {
 		return nil
@@ -40,7 +49,7 @@ func (r *PatchOrderResponse) GetOrder() *order.Order {
 
 ////////////////
 
-func (r *PutDelegatedTaskResponse) GetOrder() *order.Order {
+func (r *PutDelegatedTasksResponse) GetOrder() *order.Order {
 	if r == nil {
 		return nil
 	}
@@ -49,7 +58,7 @@ func (r *PutDelegatedTaskResponse) GetOrder() *order.Order {
 
 ////////////////
 
-func (r *PatchDelegatedTaskResponse) GetOrder() *order.Order {
+func (r *PatchDelegatedTasksResponse) GetOrder() *order.Order {
 	if r == nil {
 		return nil
 	}
@@ -58,7 +67,7 @@ func (r *PatchDelegatedTaskResponse) GetOrder() *order.Order {
 
 ////////////////
 
-func (r *DeleteDelegatedTaskResponse) GetOrder() *order.Order {
+func (r *DeleteDelegatedTasksResponse) GetOrder() *order.Order {
 	if r == nil {
 		return nil
 	}
@@ -67,7 +76,7 @@ func (r *DeleteDelegatedTaskResponse) GetOrder() *order.Order {
 
 ////////////////
 
-func (r *PutSitRepResponse) GetOrder() *order.Order {
+func (r *PutSitRepsResponse) GetOrder() *order.Order {
 	if r == nil {
 		return nil
 	}
@@ -76,7 +85,7 @@ func (r *PutSitRepResponse) GetOrder() *order.Order {
 
 ////////////////
 
-func (r *PatchSitRepResponse) GetOrder() *order.Order {
+func (r *PatchSitRepsResponse) GetOrder() *order.Order {
 	if r == nil {
 		return nil
 	}
@@ -85,7 +94,7 @@ func (r *PatchSitRepResponse) GetOrder() *order.Order {
 
 ////////////////
 
-func (r *DeleteSitRepResponse) GetOrder() *order.Order {
+func (r *DeleteSitRepsResponse) GetOrder() *order.Order {
 	if r == nil {
 		return nil
 	}

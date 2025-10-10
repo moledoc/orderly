@@ -3,6 +3,7 @@ package middleware
 import (
 	"context"
 	"fmt"
+	"os"
 	"runtime"
 	"sync"
 	"time"
@@ -12,14 +13,12 @@ import (
 )
 
 var (
-	spanss     map[string][]*span.Span = make(map[string][]*span.Span)
-	spansMutex sync.Mutex
+	spanss          map[string][]*span.Span = make(map[string][]*span.Span)
+	spansMutex      sync.Mutex
+	spanLogFilename = "/tmp/orderly.spans.log"
 )
 
 func fixTraceSpanEndTimes(spans []*span.Span) {
-	spansMutex.Lock()
-	defer spansMutex.Unlock()
-
 	emptyTime := time.Time{}
 	var prevEnd time.Time
 	for _, spn := range spans {
@@ -35,13 +34,15 @@ func fixTraceSpanEndTimes(spans []*span.Span) {
 	}
 }
 
-func GetSpansByTrace(traceID string) []*span.Span {
-	spans := spanss[traceID]
-	fixTraceSpanEndTimes(spans)
-	return spans
-}
-
 func SpanFlushTrace(ctx context.Context) {
+	spansMutex.Lock()
+	defer spansMutex.Unlock()
+
+	fptr, err := os.OpenFile(spanLogFilename, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0600)
+	if err != nil {
+		fmt.Printf("[WARNING]: failed to open %v: %v\n", spanLogFilename, err)
+	}
+	defer fptr.Close()
 
 	var traceID string
 	ctxTraceID := ctx.Value(consts.CtxKeyTrace)
@@ -49,16 +50,21 @@ func SpanFlushTrace(ctx context.Context) {
 		traceID = ctxTraceID.(string)
 	}
 
-	spans := GetSpansByTrace(traceID)
-
-	spansMutex.Lock()
+	spans := spanss[traceID]
+	fixTraceSpanEndTimes(spans)
 	delete(spanss, traceID)
-	spansMutex.Unlock()
 
+	var buf string
 	for _, s := range spans {
-		fmt.Println(s)
+		buf += fmt.Sprintf("%s\n", s)
 	}
-
+	n, err := fptr.Write([]byte(buf))
+	if n != len(buf) {
+		fmt.Fprintf(os.Stderr, "[WARNING]: wrote diff nr bytes to '%s': expected %v, wrote %v\n", spanLogFilename, len(buf), n)
+	}
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "[WARNING]: failed to write span logs to '%s': %s\n", spanLogFilename, err)
+	}
 }
 
 func SpanStart(ctx context.Context, desc string) {
@@ -109,4 +115,31 @@ func SpanStop(ctx context.Context, desc string) {
 			break
 		}
 	}
+}
+
+func SpanLog(ctx context.Context, desc string, val any) {
+	spansMutex.Lock()
+	defer spansMutex.Unlock()
+
+	pc, file, line, _ := runtime.Caller(1)
+	fn := runtime.FuncForPC(pc)
+
+	var traceID string
+	ctxTraceID := ctx.Value(consts.CtxKeyTrace)
+	if ctxTraceID != nil {
+		traceID = ctxTraceID.(string)
+	}
+
+	now := time.Now().UTC()
+	s := &span.Span{
+		FuncName: fn.Name(),
+		Filename: file,
+		Line:     line,
+		TraceID:  traceID,
+		Start:    now,
+		End:      now,
+		Desc:     desc,
+		Val:      val,
+	}
+	spanss[traceID] = append(spanss[traceID], s)
 }

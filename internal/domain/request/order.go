@@ -10,13 +10,13 @@ type PostOrderRequest struct {
 }
 
 type GetOrderByIDRequest struct {
-	ID *meta.ID `json:"id"`
+	ID meta.ID `json:"id"`
 }
 
 type GetOrdersRequest struct{}
 
 type GetOrderSubOrdersRequest struct {
-	ID *meta.ID `json:"id"`
+	ID meta.ID `json:"id"`
 }
 
 type PatchOrderRequest struct {
@@ -24,39 +24,39 @@ type PatchOrderRequest struct {
 }
 
 type DeleteOrderRequest struct {
-	ID *meta.ID `json:"id"`
+	ID meta.ID `json:"id"`
 }
 
 ////////////////
 
-type PutDelegatedTaskRequest struct {
-	OrderID *meta.ID    `json:"order_id"`
-	Task    *order.Task `json:"task"`
+type PutDelegatedTasksRequest struct {
+	OrderID meta.ID       `json:"order_id"`
+	Tasks   []*order.Task `json:"tasks"`
 }
 
-type PatchDelegatedTaskRequest struct {
-	OrderID *meta.ID    `json:"order_id"`
-	Task    *order.Task `json:"task"`
+type PatchDelegatedTasksRequest struct {
+	OrderID meta.ID       `json:"order_id"`
+	Tasks   []*order.Task `json:"tasks"`
 }
 
-type DeleteDelegatedTaskRequest struct {
-	OrderID         *meta.ID `json:"order_id"`
-	DelegatedTaskID *meta.ID `json:"delegatedTask_id"`
+type DeleteDelegatedTasksRequest struct {
+	OrderID          meta.ID   `json:"order_id"`
+	DelegatedTaskIDs []meta.ID `json:"delegated_task_ids"`
 }
 
 ////////////////
 
-type PutSitRepRequest struct {
-	OrderID *meta.ID      `json:"order_id"`
-	SitRep  *order.SitRep `json:"sitrep"`
+type PutSitRepsRequest struct {
+	OrderID meta.ID         `json:"order_id"`
+	SitReps []*order.SitRep `json:"sitreps"`
 }
 
-type PatchSitRepRequest struct {
-	OrderID *meta.ID      `json:"order_id"`
-	SitRep  *order.SitRep `json:"sitrep"`
+type PatchSitRepsRequest struct {
+	OrderID meta.ID         `json:"order_id"`
+	SitReps []*order.SitRep `json:"sitreps"`
 }
 
-type DeleteSitRepRequest struct {
-	OrderID  *meta.ID `json:"order_id"`
-	SitRepID *meta.ID `json:"sitrep_id"`
+type DeleteSitRepsRequest struct {
+	OrderID   meta.ID   `json:"order_id"`
+	SitRepIDs []meta.ID `json:"sitrep_ids"`
 }

@@ -25,6 +25,7 @@ type Span struct {
 	End      time.Time    `json:"end,omitempty"`
 	Duration SpanDuration `json:"duration,omitempty"`
 	Desc     string       `json:"desc,omitempty"`
+	Val      any          `json:"val,omitempty"`
 }
 
 func (s *Span) GetFuncName() string {

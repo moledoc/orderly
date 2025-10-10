@@ -8,71 +8,106 @@ import (
 )
 
 func (tt *Task) SetID(id meta.ID) {
-	if tt == nil || tt.ID == nil {
+	if tt == nil {
 		return
 	}
-	*tt.ID = id
+	tt.ID = id
 }
 
 func (tt *Task) SetState(state State) {
-	if tt == nil || tt.State == nil {
+	if tt == nil {
 		return
 	}
-	*tt.State = state
+	tt.State = state
 }
 
 func (tt *Task) SetAccountable(accountable user.Email) {
-	if tt == nil || tt.Accountable == nil {
+	if tt == nil {
 		return
 	}
-	*tt.Accountable = accountable
+	tt.Accountable = accountable
 }
 
 func (tt *Task) SetObjective(objective string) {
-	if tt == nil || tt.Objective == nil {
+	if tt == nil {
 		return
 	}
-	*tt.Objective = objective
+	tt.Objective = objective
 }
 
 func (tt *Task) SetDeadline(deadline time.Time) {
-	if tt == nil || tt.Deadline == nil {
+	if tt == nil {
 		return
 	}
-	*tt.Deadline = deadline
+	tt.Deadline = deadline
 }
 
 ////////////
 
 func (sr *SitRep) SetID(id meta.ID) {
-	if sr == nil || sr.ID == nil {
+	if sr == nil {
 		return
 	}
-	*sr.ID = id
+	sr.ID = id
 }
 
-func (sr *SitRep) SetState(state State) {
-	if sr == nil || sr.State == nil {
+func (sr *SitRep) SetDateTime(dateTime time.Time) {
+	if sr == nil {
 		return
 	}
-	*sr.State = state
+	sr.DateTime = dateTime
 }
 
-func (sr *SitRep) SetWorkCompleted(workcompleted uint) {
-	if sr == nil || sr.WorkCompleted == nil {
+func (sr *SitRep) SetBy(by user.Email) {
+	if sr == nil {
 		return
 	}
-	*sr.WorkCompleted = workcompleted
+	sr.By = by
 }
 
-func (sr *SitRep) SetSummary(summary string) {
-	if sr == nil || sr.Summary == nil {
+func (sr *SitRep) SetPing(ping []user.Email) {
+	if sr == nil {
 		return
 	}
-	*sr.Summary = summary
+	sr.Ping = ping
+}
+
+func (sr *SitRep) SetSituation(situation string) {
+	if sr == nil {
+		return
+	}
+	sr.Situation = situation
+}
+
+func (sr *SitRep) SetActions(actions string) {
+	if sr == nil {
+		return
+	}
+	sr.Actions = actions
+}
+
+func (sr *SitRep) SetTBD(tBD string) {
+	if sr == nil {
+		return
+	}
+	sr.TBD = tBD
+}
+
+func (sr *SitRep) SetIssues(issues string) {
+	if sr == nil {
+		return
+	}
+	sr.Issues = issues
 }
 
 ////////////
+
+func (o *Order) SetID(id meta.ID) {
+	if o == nil {
+		return
+	}
+	o.GetTask().SetID(id)
+}
 
 func (o *Order) SetTask(task *Task) {
 	if o == nil {
@@ -89,14 +124,14 @@ func (o *Order) SetDelegatedTasks(delegatedTask []*Task) {
 }
 
 func (o *Order) SetParentOrderID(parentorderid meta.ID) {
-	if o == nil || o.ParentOrderID == nil {
+	if o == nil {
 		return
 	}
-	*o.ParentOrderID = parentorderid
+	o.ParentOrderID = parentorderid
 }
 
 func (o *Order) SetSitReps(sitreps []*SitRep) {
-	if o == nil || o.SitReps == nil {
+	if o == nil {
 		return
 	}
 	o.SitReps = sitreps
