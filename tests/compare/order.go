@@ -70,6 +70,9 @@ var (
 	SortSitRepByID = func(a *order.SitRep, b *order.SitRep) bool {
 		return a.GetID() < b.GetID()
 	}
+	SortSitRepByDateTime = func(a *order.SitRep, b *order.SitRep) bool {
+		return a.GetDateTime().Sub(b.GetDateTime()) < 0
+	}
 
 	SorterSitRep = func(sorters ...func(a *order.SitRep, b *order.SitRep) bool) cmp.Option {
 		return cmpopts.SortSlices(func(a *order.SitRep, b *order.SitRep) bool {
