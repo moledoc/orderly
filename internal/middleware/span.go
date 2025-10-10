@@ -15,7 +15,7 @@ import (
 var (
 	spanss          map[string][]*span.Span = make(map[string][]*span.Span)
 	spansMutex      sync.Mutex
-	spanLogFilename = "/tmp/spans.log"
+	spanLogFilename = "/tmp/orderly.spans.log"
 )
 
 func fixTraceSpanEndTimes(spans []*span.Span) {
