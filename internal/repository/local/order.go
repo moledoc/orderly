@@ -61,6 +61,12 @@ func (r *LocalRepositoryOrder) composeOrder(storedOrder orderInfo) *order.Order 
 		sitreps = append(sitreps, &sr)
 	}
 
+	if len(delegatedTasks) == 0 {
+		delegatedTasks = nil
+	}
+	if len(sitreps) == 0 {
+		sitreps = nil
+	}
 	resp := &order.Order{
 		Task:           &task,
 		ParentOrderID:  storedOrder.ParentOrderID,
@@ -71,7 +77,7 @@ func (r *LocalRepositoryOrder) composeOrder(storedOrder orderInfo) *order.Order 
 	return resp
 }
 
-func (r *LocalRepositoryOrder) storeOrder(o *order.Order) {
+func (r *LocalRepositoryOrder) storeOrder(o *order.Order) orderInfo {
 
 	r.Tasks[o.GetTask().GetID()] = utils.Deref(o.GetTask())
 
@@ -85,14 +91,15 @@ func (r *LocalRepositoryOrder) storeOrder(o *order.Order) {
 		sitrepIDs = append(sitrepIDs, sitrep.GetID())
 		r.SitReps[sitrep.GetID()] = utils.Deref(sitrep)
 	}
-	r.Orders[o.GetID()] = orderInfo{
+	info := orderInfo{
 		TaskID:           o.GetID(),
 		ParentOrderID:    o.GetParentOrderID(),
 		DelegatedTaskIDs: delegatedTaskIDs,
 		SitRepIDs:        sitrepIDs,
 		Meta:             utils.Deref(o.GetMeta()),
 	}
-	return
+	r.Orders[o.GetID()] = info
+	return info
 }
 
 func (r *LocalRepositoryOrder) deleteOrder(storedOrder orderInfo) {
@@ -189,7 +196,8 @@ func (r *LocalRepositoryOrder) Write(ctx context.Context, order *order.Order) (*
 		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
 	}
 
-	r.storeOrder(order)
+	info := r.storeOrder(order)
+	order = r.composeOrder(info)
 
 	return order, nil
 }

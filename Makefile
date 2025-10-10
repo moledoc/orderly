@@ -62,7 +62,7 @@ tests-manual:
 
 # NOTE: needs orderly running
 tests-all:
-	go test -v -test.count=1 ./...
+	go test -test.count=1 ./...
 
 clean:
 	rm -rf bin
