@@ -160,11 +160,16 @@ func deleteDelegatedTask(w http.ResponseWriter, r *http.Request) {
 	defer middleware.SpanStop(ctx, "deleteDelegatedTask")
 
 	req := &request.DeleteDelegatedTaskRequest{
-		OrderID:         meta.ID(r.PathValue(orderID)),
-		DelegatedTaskID: meta.ID(r.PathValue(delegatedTaskID)),
+		OrderID: meta.ID(r.PathValue(orderID)),
 	}
-	middleware.SpanLog(ctx, "DeleteDelegatedTaskRequest", req)
-	resp, err := mgmtordersvc.DeleteDelegatedTask(ctx, req)
+	var resp *response.DeleteDelegatedTaskResponse
+	var err errwrap.Error
+
+	err = decodeBody(ctx, r, &req)
+	if err == nil {
+		middleware.SpanLog(ctx, "DeleteDelegatedTaskRequest", req)
+		resp, err = mgmtordersvc.DeleteDelegatedTask(ctx, req)
+	}
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
@@ -220,11 +225,15 @@ func deleteSitRep(w http.ResponseWriter, r *http.Request) {
 	defer middleware.SpanStop(ctx, "deleteSitRep")
 
 	req := &request.DeleteSitRepRequest{
-		OrderID:  meta.ID(r.PathValue(orderID)),
-		SitRepID: meta.ID(r.PathValue(sitrepID)),
+		OrderID: meta.ID(r.PathValue(orderID)),
 	}
-	middleware.SpanLog(ctx, "DeleteSitRepRequest", req)
-	resp, err := mgmtordersvc.DeleteSitRep(ctx, req)
+	var resp *response.DeleteSitRepResponse
+	var err errwrap.Error
+	err = decodeBody(ctx, r, req)
+	if err == nil {
+		middleware.SpanLog(ctx, "DeleteSitRepRequest", req)
+		resp, err = mgmtordersvc.DeleteSitRep(ctx, req)
+	}
 
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }

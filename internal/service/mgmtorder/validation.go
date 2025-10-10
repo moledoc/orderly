@@ -63,7 +63,7 @@ func ValidateSitRep(sitrep *order.SitRep, ignore validation.IgnoreField) errwrap
 	if len(sitrep.GetPing()) > 0 {
 		for i, ping := range sitrep.GetPing() {
 			if err := validation.ValidateEmail(ping); err != nil {
-				return errwrap.NewError(http.StatusBadRequest, "invalid sitrep.%v.ping: %s", i, err.GetStatusMessage())
+				return errwrap.NewError(http.StatusBadRequest, "invalid sitrep.ping.%v: %s", i, err.GetStatusMessage())
 			}
 		}
 	}
@@ -105,14 +105,14 @@ func ValidateOrder(order *order.Order, ignore validation.IgnoreField) errwrap.Er
 	for i, delegatedTask := range order.GetDelegatedTasks() {
 		err := ValidateTask(delegatedTask, ignore)
 		if err != nil {
-			return errwrap.NewError(http.StatusBadRequest, "invalid order.delegated_task.%v: %s", i, err.GetStatusMessage())
+			return errwrap.NewError(http.StatusBadRequest, "invalid order.delegated_tasks.%v: %s", i, err.GetStatusMessage())
 		}
 	}
 
 	for i, sitrep := range order.GetSitReps() {
 		err := ValidateSitRep(sitrep, ignore)
 		if err != nil {
-			return errwrap.NewError(http.StatusBadRequest, "invalid order.sitrep.%v: %s", i, err.GetStatusMessage())
+			return errwrap.NewError(http.StatusBadRequest, "invalid order.sitreps.%v: %s", i, err.GetStatusMessage())
 		}
 	}
 
@@ -129,19 +129,19 @@ func ValidatePostOrderRequest(req *request.PostOrderRequest) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "empty task")
 	}
 
-	if len(req.GetOrder().GetTask().GetID()) > 0 {
+	if len(req.GetOrder().GetID()) > 0 {
 		return errwrap.NewError(http.StatusBadRequest, "order.task.id disallowed")
 	}
 
 	for i, delegatedTask := range req.GetOrder().GetDelegatedTasks() {
 		if len(delegatedTask.GetID()) > 0 {
-			return errwrap.NewError(http.StatusBadRequest, "order.delegated.%v.id disallowed", i)
+			return errwrap.NewError(http.StatusBadRequest, "order.delegated_tasks.%v.id disallowed", i)
 		}
 	}
 
 	for i, sitrep := range req.GetOrder().GetSitReps() {
 		if len(sitrep.GetID()) > 0 {
-			return errwrap.NewError(http.StatusBadRequest, "order.sitrep.%v.id disallowed", i)
+			return errwrap.NewError(http.StatusBadRequest, "order.sitreps.%v.id disallowed", i)
 		}
 	}
 
@@ -175,8 +175,9 @@ func ValidatePatchOrderRequest(req *request.PatchOrderRequest) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 
-	if len(req.GetOrder().GetID()) == 0 {
-		return errwrap.NewError(http.StatusBadRequest, "order.task.id missing")
+	err := validation.ValidateID(req.Order.GetID())
+	if err != nil {
+		return errwrap.NewError(http.StatusBadRequest, "invalid order.task.id: %s", err.GetStatusMessage())
 	}
 
 	return ValidateOrder(req.GetOrder(), validation.IgnoreEmpty)
@@ -200,15 +201,21 @@ func ValidatePutDelegatedTaskRequest(req *request.PutDelegatedTaskRequest) errwr
 		return errwrap.NewError(http.StatusBadRequest, "invalid order_id: %s", err.GetStatusMessage())
 	}
 
-	if req.Task == nil {
-		return errwrap.NewError(http.StatusBadRequest, "empty task")
+	if len(req.GetTasks()) == 0 {
+		return errwrap.NewError(http.StatusBadRequest, "empty tasks")
 	}
 
-	if len(req.GetTask().GetID()) > 0 {
-		return errwrap.NewError(http.StatusBadRequest, "task.id disallowed")
-	}
+	for i, tsk := range req.GetTasks() {
+		if len(tsk.GetID()) > 0 {
+			return errwrap.NewError(http.StatusBadRequest, "tasks.%v.id disallowed", i)
+		}
 
-	return ValidateTask(req.GetTask(), validation.IgnoreID)
+		err := ValidateTask(tsk, validation.IgnoreID)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func ValidatePatchDelegatedTaskRequest(req *request.PatchDelegatedTaskRequest) errwrap.Error {
@@ -218,15 +225,22 @@ func ValidatePatchDelegatedTaskRequest(req *request.PatchDelegatedTaskRequest) e
 		return errwrap.NewError(http.StatusBadRequest, "invalid order_id: %s", err.GetStatusMessage())
 	}
 
-	if req.Task == nil {
-		return errwrap.NewError(http.StatusBadRequest, "empty task")
+	if len(req.GetTasks()) == 0 {
+		return errwrap.NewError(http.StatusBadRequest, "empty tasks")
 	}
 
-	if len(req.GetTask().GetID()) > 0 {
-		return errwrap.NewError(http.StatusBadRequest, "task.id required")
-	}
+	for i, tsk := range req.GetTasks() {
+		err := validation.ValidateID(tsk.GetID())
+		if err != nil {
+			return errwrap.NewError(http.StatusBadRequest, "invalid tasks.%v.id: %s", i, err.GetStatusMessage())
+		}
 
-	return ValidateTask(req.GetTask(), validation.IgnoreNothing)
+		err = ValidateTask(tsk, validation.IgnoreNothing)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func ValidateDeleteDelegatedTaskRequest(req *request.DeleteDelegatedTaskRequest) errwrap.Error {
@@ -236,9 +250,15 @@ func ValidateDeleteDelegatedTaskRequest(req *request.DeleteDelegatedTaskRequest)
 		return errwrap.NewError(http.StatusBadRequest, "invalid order_id: %s", err.GetStatusMessage())
 	}
 
-	err = validation.ValidateID(req.GetDelegatedTaskID())
-	if err != nil {
-		return errwrap.NewError(http.StatusBadRequest, "invalid delegated_task_id: %s", err.GetStatusMessage())
+	if len(req.GetDelegatedTaskIDs()) == 0 {
+		return errwrap.NewError(http.StatusBadRequest, "empty delegated_task_ids")
+	}
+
+	for i, id := range req.GetDelegatedTaskIDs() {
+		err = validation.ValidateID(id)
+		if err != nil {
+			return errwrap.NewError(http.StatusBadRequest, "invalid delegated_task_ids.%v: %s", i, err.GetStatusMessage())
+		}
 	}
 
 	return nil
@@ -253,15 +273,22 @@ func ValidatePutSitRepRequest(req *request.PutSitRepRequest) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "invalid order_id: %s", err.GetStatusMessage())
 	}
 
-	if req.SitRep == nil {
-		return errwrap.NewError(http.StatusBadRequest, "empty sitrep")
+	if len(req.GetSitReps()) == 0 {
+		return errwrap.NewError(http.StatusBadRequest, "empty sitreps")
 	}
 
-	if len(req.GetSitRep().GetID()) > 0 {
-		return errwrap.NewError(http.StatusBadRequest, "sitrep.id disallowed")
+	for i, sitrep := range req.GetSitReps() {
+		if len(sitrep.GetID()) > 0 {
+			return errwrap.NewError(http.StatusBadRequest, "sitreps.%v.id disallowed", i)
+		}
+
+		err := ValidateSitRep(sitrep, validation.IgnoreID)
+		if err != nil {
+			return err
+		}
 	}
 
-	return ValidateSitRep(req.GetSitRep(), validation.IgnoreID)
+	return nil
 }
 
 func ValidatePatchSitRepRequest(req *request.PatchSitRepRequest) errwrap.Error {
@@ -271,15 +298,23 @@ func ValidatePatchSitRepRequest(req *request.PatchSitRepRequest) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "invalid order_id: %s", err.GetStatusMessage())
 	}
 
-	if req.SitRep == nil {
-		return errwrap.NewError(http.StatusBadRequest, "empty sitrep")
+	if len(req.GetSitReps()) == 0 {
+		return errwrap.NewError(http.StatusBadRequest, "empty sitreps")
 	}
 
-	if len(req.GetSitRep().GetID()) > 0 {
-		return errwrap.NewError(http.StatusBadRequest, "sitrep.id required")
+	for i, sitrep := range req.GetSitReps() {
+		err := validation.ValidateID(sitrep.GetID())
+		if err != nil {
+			return errwrap.NewError(http.StatusBadRequest, "invalid sitreps.%v.id: %s", i, err.GetStatusMessage())
+		}
+
+		err = ValidateSitRep(sitrep, validation.IgnoreNothing)
+		if err != nil {
+			return err
+		}
 	}
 
-	return ValidateSitRep(req.GetSitRep(), validation.IgnoreNothing)
+	return nil
 }
 
 func ValidateDeleteSitRepRequest(req *request.DeleteSitRepRequest) errwrap.Error {
@@ -289,9 +324,15 @@ func ValidateDeleteSitRepRequest(req *request.DeleteSitRepRequest) errwrap.Error
 		return errwrap.NewError(http.StatusBadRequest, "invalid order_id: %s", err.GetStatusMessage())
 	}
 
-	err = validation.ValidateID(req.GetSitRepID())
-	if err != nil {
-		return errwrap.NewError(http.StatusBadRequest, "invalid sitrep_id: %s", err.GetStatusMessage())
+	if len(req.GetSitRepIDs()) == 0 {
+		return errwrap.NewError(http.StatusBadRequest, "empty sitrep_ids")
+	}
+
+	for i, sitrep := range req.GetSitRepIDs() {
+		err = validation.ValidateID(sitrep)
+		if err != nil {
+			return errwrap.NewError(http.StatusBadRequest, "invalid sitrep_ids.%v: %s", i, err.GetStatusMessage())
+		}
 	}
 
 	return nil

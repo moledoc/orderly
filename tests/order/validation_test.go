@@ -100,7 +100,7 @@ func (s *OrderSuite) TestValidation_SitRep() {
 		err := mgmtorder.ValidateSitRep(sp, validation.IgnoreNothing)
 		require.Error(t, err)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid sitrep.0.ping: invalid email length", err.GetStatusMessage())
+		require.Equal(t, "invalid sitrep.ping.0: invalid email length", err.GetStatusMessage())
 	})
 	tt.Run("sitrep.no_content", func(t *testing.T) {
 		sp := setup.SitrepObjWithID()
@@ -194,7 +194,7 @@ func (s *OrderSuite) TestValidation_PostOrderRequest() {
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "order.delegated.0.id disallowed", err.GetStatusMessage())
+		require.Equal(t, "order.delegated_tasks.0.id disallowed", err.GetStatusMessage())
 	})
 	tt.Run("order.sitrep.id_provided", func(t *testing.T) {
 		o := setup.OrderObjWithIDs()
@@ -206,7 +206,7 @@ func (s *OrderSuite) TestValidation_PostOrderRequest() {
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "order.sitrep.0.id disallowed", err.GetStatusMessage())
+		require.Equal(t, "order.sitreps.0.id disallowed", err.GetStatusMessage())
 	})
 }
 
@@ -284,7 +284,7 @@ func (s *OrderSuite) TestValidation_PatchOrderRequest() {
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "order.task.id missing", err.GetStatusMessage())
+		require.Equal(t, "invalid order.task.id: invalid id length", err.GetStatusMessage())
 	})
 
 	tt.Run("order.delegated_task.id.empty", func(t *testing.T) {
@@ -300,7 +300,7 @@ func (s *OrderSuite) TestValidation_PatchOrderRequest() {
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid order.delegated_task.0: invalid task.id: invalid id length", err.GetStatusMessage())
+		require.Equal(t, "invalid order.delegated_tasks.0: invalid task.id: invalid id length", err.GetStatusMessage())
 	})
 
 	tt.Run("order.sitrep.id.empty", func(t *testing.T) {
@@ -315,7 +315,7 @@ func (s *OrderSuite) TestValidation_PatchOrderRequest() {
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid order.sitrep.0: invalid sitrep.id: invalid id length", err.GetStatusMessage())
+		require.Equal(t, "invalid order.sitreps.0: invalid sitrep.id: invalid id length", err.GetStatusMessage())
 	})
 }
 
@@ -357,33 +357,43 @@ func (s *OrderSuite) TestValidation_PutDelegatedTaskRequest() {
 		o := setup.OrderObjWithIDs()
 		setup.ZeroOrderIDs(o)
 		resp, err := s.API.PutDelegatedTask(t, context.Background(), &request.PutDelegatedTaskRequest{
-			Task: o.GetTask(),
+			Tasks: []*order.Task{o.GetTask()},
 		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
-	tt.Run("empty.task", func(t *testing.T) {
+	tt.Run("empty.nil", func(t *testing.T) {
 		resp, err := s.API.PutDelegatedTask(t, context.Background(), &request.PutDelegatedTaskRequest{
 			OrderID: meta.NewID(),
 		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "empty task", err.GetStatusMessage())
+		require.Equal(t, "empty tasks", err.GetStatusMessage())
+	})
+	tt.Run("empty.task", func(t *testing.T) {
+		resp, err := s.API.PutDelegatedTask(t, context.Background(), &request.PutDelegatedTaskRequest{
+			OrderID: meta.NewID(),
+			Tasks:   []*order.Task{},
+		})
+		require.Error(t, err)
+		require.Empty(t, resp)
+		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+		require.Equal(t, "empty tasks", err.GetStatusMessage())
 	})
 	tt.Run("delegated_task.id.provided", func(t *testing.T) {
 		o := setup.OrderObjWithIDs()
 		oid := o.GetID()
 		resp, err := s.API.PutDelegatedTask(t, context.Background(), &request.PutDelegatedTaskRequest{
 			OrderID: oid,
-			Task:    o.GetTask(),
+			Tasks:   []*order.Task{o.GetTask()},
 		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "task.id disallowed", err.GetStatusMessage())
+		require.Equal(t, "tasks.0.id disallowed", err.GetStatusMessage())
 	})
 }
 
@@ -407,21 +417,31 @@ func (s *OrderSuite) TestValidation_PatchDelegatedTaskRequest() {
 		o := setup.OrderObjWithIDs()
 		setup.ZeroOrderIDs(o)
 		resp, err := s.API.PatchDelegatedTask(t, context.Background(), &request.PatchDelegatedTaskRequest{
-			Task: o.GetTask(),
+			Tasks: []*order.Task{o.GetTask()},
 		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
-	tt.Run("empty.task", func(t *testing.T) {
+	tt.Run("nil.task", func(t *testing.T) {
 		resp, err := s.API.PatchDelegatedTask(t, context.Background(), &request.PatchDelegatedTaskRequest{
 			OrderID: meta.NewID(),
 		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "empty task", err.GetStatusMessage())
+		require.Equal(t, "empty tasks", err.GetStatusMessage())
+	})
+	tt.Run("empty.task", func(t *testing.T) {
+		resp, err := s.API.PatchDelegatedTask(t, context.Background(), &request.PatchDelegatedTaskRequest{
+			OrderID: meta.NewID(),
+			Tasks:   []*order.Task{},
+		})
+		require.Error(t, err)
+		require.Empty(t, resp)
+		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+		require.Equal(t, "empty tasks", err.GetStatusMessage())
 	})
 	tt.Run("delegated_task.id.empty", func(t *testing.T) {
 		o := setup.OrderObjWithIDs()
@@ -430,12 +450,12 @@ func (s *OrderSuite) TestValidation_PatchDelegatedTaskRequest() {
 
 		resp, err := s.API.PatchDelegatedTask(t, context.Background(), &request.PatchDelegatedTaskRequest{
 			OrderID: oid,
-			Task:    o.GetTask(),
+			Tasks:   []*order.Task{o.GetTask()},
 		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid task.id: invalid id length", err.GetStatusMessage())
+		require.Equal(t, "invalid tasks.0.id: invalid id length", err.GetStatusMessage())
 	})
 }
 
@@ -457,21 +477,31 @@ func (s *OrderSuite) TestValidation_DeleteDelegatedTaskRequest() {
 	})
 	tt.Run("empty.order_id", func(t *testing.T) {
 		resp, err := s.API.DeleteDelegatedTask(t, context.Background(), &request.DeleteDelegatedTaskRequest{
-			DelegatedTaskID: meta.NewID(),
+			DelegatedTaskIDs: []meta.ID{meta.NewID()},
 		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
-	tt.Run("empty.delegated_task_id", func(t *testing.T) {
+	tt.Run("nil.delegated_task_id", func(t *testing.T) {
 		resp, err := s.API.DeleteDelegatedTask(t, context.Background(), &request.DeleteDelegatedTaskRequest{
 			OrderID: meta.NewID(),
 		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid delegated_task_id: invalid id length", err.GetStatusMessage())
+		require.Equal(t, "empty delegated_task_ids", err.GetStatusMessage())
+	})
+	tt.Run("invalid.delegated_task_id", func(t *testing.T) {
+		resp, err := s.API.DeleteDelegatedTask(t, context.Background(), &request.DeleteDelegatedTaskRequest{
+			OrderID:          meta.NewID(),
+			DelegatedTaskIDs: []meta.ID{meta.NewID(), meta.EmptyID()},
+		})
+		require.Error(t, err)
+		require.Empty(t, resp)
+		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+		require.Equal(t, "invalid delegated_task_ids.1: invalid id length", err.GetStatusMessage())
 	})
 }
 
@@ -491,37 +521,47 @@ func (s *OrderSuite) TestValidation_PutSitRepRequest() {
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
-	tt.Run("empty.sitrep_id", func(t *testing.T) {
+	tt.Run("empty.order_id", func(t *testing.T) {
 		o := setup.OrderObjWithIDs()
 		setup.ZeroOrderIDs(o)
 		resp, err := s.API.PutSitRep(t, context.Background(), &request.PutSitRepRequest{
-			SitRep: o.GetSitReps()[0],
+			SitReps: []*order.SitRep{o.GetSitReps()[0]},
 		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
-	tt.Run("empty.sitrep", func(t *testing.T) {
+	tt.Run("nil.sitrep", func(t *testing.T) {
 		resp, err := s.API.PutSitRep(t, context.Background(), &request.PutSitRepRequest{
 			OrderID: meta.NewID(),
 		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "empty sitrep", err.GetStatusMessage())
+		require.Equal(t, "empty sitreps", err.GetStatusMessage())
+	})
+	tt.Run("empty.sitrep", func(t *testing.T) {
+		resp, err := s.API.PutSitRep(t, context.Background(), &request.PutSitRepRequest{
+			OrderID: meta.NewID(),
+			SitReps: []*order.SitRep{},
+		})
+		require.Error(t, err)
+		require.Empty(t, resp)
+		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+		require.Equal(t, "empty sitreps", err.GetStatusMessage())
 	})
 	tt.Run("sitrep.id.provided", func(t *testing.T) {
 		o := setup.OrderObjWithIDs()
 		oid := o.GetID()
 		resp, err := s.API.PutSitRep(t, context.Background(), &request.PutSitRepRequest{
 			OrderID: oid,
-			SitRep:  o.GetSitReps()[0],
+			SitReps: []*order.SitRep{o.GetSitReps()[0]},
 		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "sitrep.id disallowed", err.GetStatusMessage())
+		require.Equal(t, "sitreps.0.id disallowed", err.GetStatusMessage())
 	})
 }
 
@@ -545,21 +585,31 @@ func (s *OrderSuite) TestValidation_PatchSitRepRequest() {
 		o := setup.OrderObjWithIDs()
 		setup.ZeroOrderIDs(o)
 		resp, err := s.API.PatchSitRep(t, context.Background(), &request.PatchSitRepRequest{
-			SitRep: o.GetSitReps()[0],
+			SitReps: []*order.SitRep{o.GetSitReps()[0]},
 		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
-	tt.Run("empty.sitrep", func(t *testing.T) {
+	tt.Run("nil.sitrep", func(t *testing.T) {
 		resp, err := s.API.PatchSitRep(t, context.Background(), &request.PatchSitRepRequest{
 			OrderID: meta.NewID(),
 		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "empty sitrep", err.GetStatusMessage())
+		require.Equal(t, "empty sitreps", err.GetStatusMessage())
+	})
+	tt.Run("empty.sitrep", func(t *testing.T) {
+		resp, err := s.API.PatchSitRep(t, context.Background(), &request.PatchSitRepRequest{
+			OrderID: meta.NewID(),
+			SitReps: []*order.SitRep{},
+		})
+		require.Error(t, err)
+		require.Empty(t, resp)
+		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+		require.Equal(t, "empty sitreps", err.GetStatusMessage())
 	})
 	tt.Run("sitrep.id.empty", func(t *testing.T) {
 		o := setup.OrderObjWithIDs()
@@ -568,12 +618,12 @@ func (s *OrderSuite) TestValidation_PatchSitRepRequest() {
 
 		resp, err := s.API.PatchSitRep(t, context.Background(), &request.PatchSitRepRequest{
 			OrderID: oid,
-			SitRep:  o.GetSitReps()[0],
+			SitReps: []*order.SitRep{o.GetSitReps()[0]},
 		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid sitrep.id: invalid id length", err.GetStatusMessage())
+		require.Equal(t, "invalid sitreps.0.id: invalid id length", err.GetStatusMessage())
 	})
 }
 
@@ -595,20 +645,40 @@ func (s *OrderSuite) TestValidation_DeleteSitRepRequest() {
 	})
 	tt.Run("empty.order_id", func(t *testing.T) {
 		resp, err := s.API.DeleteSitRep(t, context.Background(), &request.DeleteSitRepRequest{
-			SitRepID: meta.NewID(),
+			SitRepIDs: []meta.ID{meta.NewID()},
 		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
-	tt.Run("empty.sitrep_id", func(t *testing.T) {
+	tt.Run("nil.sitrep_ids", func(t *testing.T) {
 		resp, err := s.API.DeleteSitRep(t, context.Background(), &request.DeleteSitRepRequest{
 			OrderID: meta.NewID(),
 		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid sitrep_id: invalid id length", err.GetStatusMessage())
+		require.Equal(t, "empty sitrep_ids", err.GetStatusMessage())
+	})
+	tt.Run("empty.sitrep_ids", func(t *testing.T) {
+		resp, err := s.API.DeleteSitRep(t, context.Background(), &request.DeleteSitRepRequest{
+			OrderID:   meta.NewID(),
+			SitRepIDs: []meta.ID{},
+		})
+		require.Error(t, err)
+		require.Empty(t, resp)
+		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+		require.Equal(t, "empty sitrep_ids", err.GetStatusMessage())
+	})
+	tt.Run("invalid.sitrep_ids", func(t *testing.T) {
+		resp, err := s.API.DeleteSitRep(t, context.Background(), &request.DeleteSitRepRequest{
+			OrderID:   meta.NewID(),
+			SitRepIDs: []meta.ID{meta.NewID(), meta.EmptyID()},
+		})
+		require.Error(t, err)
+		require.Empty(t, resp)
+		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+		require.Equal(t, "invalid sitrep_ids.1: invalid id length", err.GetStatusMessage())
 	})
 }

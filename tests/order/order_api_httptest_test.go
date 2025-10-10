@@ -283,9 +283,13 @@ func (api *OrderAPIHTTPTest) PatchDelegatedTask(t *testing.T, ctx context.Contex
 func (api *OrderAPIHTTPTest) DeleteDelegatedTask(t *testing.T, ctx context.Context, req *request.DeleteDelegatedTaskRequest) (*response.DeleteDelegatedTaskResponse, errwrap.Error) {
 	t.Helper()
 
-	path := fmt.Sprintf("/v1/mgmt/order/%v/delegated_task/%v", req.GetOrderID(), req.GetDelegatedTaskID())
+	reqBytes, err := json.Marshal(req)
+	if err != nil {
+		return nil, errwrap.NewError(http.StatusBadRequest, "marshaling request failed: %s", err)
+	}
+	path := fmt.Sprintf("/v1/mgmt/order/%v/delegated_task", req.GetOrderID())
 	path = strings.ReplaceAll(path, "//", "/")
-	reqHttp := httptest.NewRequest(http.MethodDelete, path, nil)
+	reqHttp := httptest.NewRequest(http.MethodDelete, path, bytes.NewBuffer(reqBytes))
 
 	rr := httptest.NewRecorder()
 	api.Mux.ServeHTTP(rr, reqHttp)
@@ -377,9 +381,14 @@ func (api *OrderAPIHTTPTest) PatchSitRep(t *testing.T, ctx context.Context, req 
 func (api *OrderAPIHTTPTest) DeleteSitRep(t *testing.T, ctx context.Context, req *request.DeleteSitRepRequest) (*response.DeleteSitRepResponse, errwrap.Error) {
 	t.Helper()
 
-	path := fmt.Sprintf("/v1/mgmt/order/%v/sitrep/%v", req.GetOrderID(), req.GetSitRepID())
+	reqBytes, err := json.Marshal(req)
+	if err != nil {
+		return nil, errwrap.NewError(http.StatusBadRequest, "marshaling request failed: %s", err)
+	}
+
+	path := fmt.Sprintf("/v1/mgmt/order/%v/sitrep", req.GetOrderID())
 	path = strings.ReplaceAll(path, "//", "/")
-	reqHttp := httptest.NewRequest(http.MethodDelete, path, nil)
+	reqHttp := httptest.NewRequest(http.MethodDelete, path, bytes.NewBuffer(reqBytes))
 
 	rr := httptest.NewRecorder()
 	api.Mux.ServeHTTP(rr, reqHttp)
