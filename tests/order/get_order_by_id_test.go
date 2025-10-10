@@ -32,7 +32,6 @@ func (s *OrderSuite) TestGetOrderByID() {
 	}
 
 	compare.RequireEqual(tt, expected, resp, opts...)
-	require.NotEmpty(tt, resp.GetOrder().GetMeta())
 }
 
 func (s *OrderSuite) TestGetOrderByID_Failed() {

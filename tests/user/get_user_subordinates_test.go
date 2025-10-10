@@ -11,7 +11,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/tests/compare"
 	"github.com/moledoc/orderly/tests/setup"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -61,9 +60,6 @@ func (s *UserSuite) TestGetUserSubOrdinates() {
 				SubOrdinates: users,
 			}
 			compare.RequireEqual(t, expected, resp, opts...)
-			for _, u := range resp.GetSubOrdinates() {
-				assert.NotEmpty(tt, u.GetMeta())
-			}
 		})
 	}
 }

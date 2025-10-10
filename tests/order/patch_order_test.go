@@ -156,12 +156,18 @@ func (s *OrderSuite) TestPatchOrder() {
 			respPatch, err := s.API.PatchOrder(t, context.Background(), req)
 			require.NoError(t, err)
 
+			expected.GetMeta().VersionIncr()
 			expectedPatch := &response.PatchOrderResponse{
 				Order: expected,
 			}
 
-			compare.RequireEqual(t, expectedPatch, respPatch)
-			require.NotEmpty(t, respPatch.GetOrder().GetMeta())
+			opts := []cmp.Option{
+				compare.IgnorePaths("Order.Meta.Updated"),
+				compare.SorterOrder(compare.SortOrderByID),
+				compare.SorterTask(compare.SortTaskByID),
+				compare.SorterSitRep(compare.SortSitRepByID),
+			}
+			compare.RequireEqual(t, expectedPatch, respPatch, opts...)
 
 			respGet, err := s.API.GetOrderByID(t, context.Background(), &request.GetOrderByIDRequest{
 				ID: expected.GetID(),
@@ -171,14 +177,7 @@ func (s *OrderSuite) TestPatchOrder() {
 			expectedGet := &response.GetOrderByIDResponse{
 				Order: expected,
 			}
-
-			opts := []cmp.Option{
-				compare.SorterOrder(compare.SortOrderByID),
-				compare.SorterTask(compare.SortTaskByID),
-				compare.SorterSitRep(compare.SortSitRepByID),
-			}
 			compare.RequireEqual(t, expectedGet, respGet, opts...)
-			require.NotEmpty(t, respGet.GetOrder().GetMeta())
 		})
 	}
 }

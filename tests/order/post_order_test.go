@@ -33,7 +33,6 @@ func (s *OrderSuite) TestPostOrder_Minimal() {
 	}
 
 	compare.RequireEqual(tt, expected, resp, opts...)
-	require.NotEmpty(tt, resp.GetOrder().GetMeta())
 }
 
 func (s *OrderSuite) TestPostOrder_WithDelegatedTasks() {
@@ -56,7 +55,6 @@ func (s *OrderSuite) TestPostOrder_WithDelegatedTasks() {
 	}
 
 	compare.RequireEqual(tt, expected, resp, opts...)
-	require.NotEmpty(tt, resp.GetOrder().GetMeta())
 }
 
 func (s *OrderSuite) TestPostOrder_WithSitReps() {
@@ -79,7 +77,6 @@ func (s *OrderSuite) TestPostOrder_WithSitReps() {
 	}
 
 	compare.RequireEqual(tt, expected, resp, opts...)
-	require.NotEmpty(tt, resp.GetOrder().GetMeta())
 }
 
 func (s *OrderSuite) TestPostOrder_Full() {
@@ -101,5 +98,4 @@ func (s *OrderSuite) TestPostOrder_Full() {
 	}
 
 	compare.RequireEqual(tt, expected, resp, opts...)
-	require.NotEmpty(tt, resp.GetOrder().GetMeta())
 }

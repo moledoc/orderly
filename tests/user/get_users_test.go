@@ -11,7 +11,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/tests/compare"
 	"github.com/moledoc/orderly/tests/setup"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -51,9 +50,6 @@ func (s *UserSuite) TestGetUsers() {
 				Users: users,
 			}
 			compare.RequireEqual(t, expected, resp, opts...)
-			for _, u := range resp.GetUsers() {
-				assert.NotEmpty(t, u.GetMeta())
-			}
 		})
 	}
 }

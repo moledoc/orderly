@@ -41,7 +41,6 @@ func (s *UserSuite) TestPatchUser() {
 		}
 
 		compare.RequireEqual(tt, expected, resp, opts...)
-		require.NotEmpty(tt, resp.GetUser().GetMeta())
 	})
 	tt.Run("Email", func(t *testing.T) {
 		pathcedUser := *user
@@ -59,7 +58,6 @@ func (s *UserSuite) TestPatchUser() {
 		}
 
 		compare.RequireEqual(tt, expected, resp, opts...)
-		require.NotEmpty(tt, resp.GetUser().GetMeta())
 	})
 	tt.Run("Supervisor", func(t *testing.T) {
 		pathcedUser := *user
@@ -77,7 +75,6 @@ func (s *UserSuite) TestPatchUser() {
 		}
 
 		compare.RequireEqual(tt, expected, resp, opts...)
-		require.NotEmpty(tt, resp.GetUser().GetMeta())
 	})
 	tt.Run("Meta", func(t *testing.T) {
 		// NOTE: meta is ignored in PATCH call
@@ -100,7 +97,6 @@ func (s *UserSuite) TestPatchUser() {
 		}
 
 		compare.RequireEqual(tt, expected, resp, opts...)
-		require.NotEmpty(tt, resp.GetUser().GetMeta())
 	})
 }
 

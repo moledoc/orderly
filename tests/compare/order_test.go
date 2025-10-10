@@ -16,26 +16,26 @@ func TestCompare_Order(t *testing.T) {
 		compare.RequireEqual(t, &order.Order{}, &order.Order{})
 	})
 	t.Run("same", func(t *testing.T) {
-		u := setup.OrderObjWithIDs()
-		compare.RequireEqual(t, u, u)
+		o := setup.OrderObjWithIDs()
+		compare.RequireEqual(t, o, o)
 	})
 
 	t.Run("different", func(t *testing.T) {
-		compare.RequireNotEqual(t, setup.OrderObjWithIDs("u1"), setup.OrderObjWithIDs("u2"))
+		compare.RequireNotEqual(t, setup.OrderObjWithIDs("o1"), setup.OrderObjWithIDs("o2"))
 	})
 
 	t.Run("differentParentID", func(t *testing.T) {
-		u1 := setup.OrderObjWithIDs()
-		u2 := utils.RePtr(u1)
-		u2.SetParentOrderID(meta.NewID())
+		o1 := setup.OrderObjWithIDs()
+		o2 := utils.RePtr(o1)
+		o2.SetParentOrderID(meta.NewID())
 
-		compare.RequireNotEqual(t, u1, u2)
+		compare.RequireNotEqual(t, o1, o2)
 
 		t.Run("ignoreChange", func(t *testing.T) {
 			opts := []cmp.Option{
 				compare.IgnorePaths("ParentOrderID"),
 			}
-			compare.RequireEqual(t, u1, u2, opts...)
+			compare.RequireEqual(t, o1, o2, opts...)
 		})
 	})
 

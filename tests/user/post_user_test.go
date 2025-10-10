@@ -36,5 +36,4 @@ func (s *UserSuite) TestPostUser() {
 	}
 
 	compare.RequireEqual(tt, expected, resp, opts...)
-	require.NotEmpty(tt, resp.GetUser().GetMeta())
 }

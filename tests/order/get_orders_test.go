@@ -11,7 +11,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/response"
 	"github.com/moledoc/orderly/tests/compare"
 	"github.com/moledoc/orderly/tests/setup"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -44,9 +43,6 @@ func (s *OrderSuite) TestGetOrders() {
 				Orders: orders,
 			}
 			compare.RequireEqual(t, expected, resp, opts...)
-			for _, u := range resp.GetOrders() {
-				assert.NotEmpty(t, u.GetMeta())
-			}
 		})
 	}
 }
