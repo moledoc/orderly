@@ -45,7 +45,8 @@ tests-order-http:
 tests-order: 
 	go test -v -test.count=1  -test.run="TestOrderSvcSuite|TestOrderHTTPTestSuite" ./tests/order/...
 
-
+tests:
+	go test -v -test.count=1  -test.run="TestOrderSvcSuite|TestOrderHTTPTestSuite|TestUserSvcSuite|TestUserHTTPTestSuite" ./tests//...
 
 # NOTE: needs mgmtuser-service running
 tests-user-http-manual: 
@@ -54,6 +55,14 @@ tests-user-http-manual:
 # NOTE: needs mgmtorder-service running
 tests-order-http-manual:
 	go test -v -test.count=1  -test.run=TestOrderReqSuite ./tests/order/...
+
+# NOTE: needs orderly running
+tests-manual:
+	go test -v -test.count=1  -test.run="TestOrderReqSuite|TestUserReqSuite" ./tests/...
+
+# NOTE: needs orderly running
+tests-all:
+	go test -v -test.count=1 ./...
 
 clean:
 	rm -rf bin

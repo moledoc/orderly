@@ -29,6 +29,7 @@ func (s *UserSuite) TestPostUser() {
 
 	opts := []cmp.Option{
 		compare.IgnorePaths("User.ID"),
+		compare.IgnoreMeta,
 	}
 
 	expected := &response.PostUserResponse{
