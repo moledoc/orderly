@@ -86,26 +86,26 @@ func RouteOrder(svc mgmtorder.ServiceMgmtOrderAPI) *http.ServeMux {
 	http.HandleFunc("PATCH /v1/mgmt/order", patchOrder)
 	http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/order/{%v}", orderID), deleteOrder)
 
-	http.HandleFunc(fmt.Sprintf("PUT /v1/mgmt/order/{%v}/delegated_task", orderID), putDelegatedTask)
-	http.HandleFunc(fmt.Sprintf("PATCH /v1/mgmt/order/{%v}/delegated_task", orderID), patchDelegatedTask)
-	http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/order/{%v}/delegated_task", orderID), deleteDelegatedTask)
+	http.HandleFunc(fmt.Sprintf("PUT /v1/mgmt/order/{%v}/delegated_task", orderID), putDelegatedTasks)
+	http.HandleFunc(fmt.Sprintf("PATCH /v1/mgmt/order/{%v}/delegated_task", orderID), patchDelegatedTasks)
+	http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/order/{%v}/delegated_task", orderID), deleteDelegatedTasks)
 
-	http.HandleFunc(fmt.Sprintf("PUT /v1/mgmt/order/{%v}/sitrep", orderID), putSitRep)
-	http.HandleFunc(fmt.Sprintf("PATCH /v1/mgmt/order/{%v}/sitrep", orderID), patchSitRep)
-	http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/order/{%v}/sitrep", orderID), deleteSitRep)
+	http.HandleFunc(fmt.Sprintf("PUT /v1/mgmt/order/{%v}/sitrep", orderID), putSitReps)
+	http.HandleFunc(fmt.Sprintf("PATCH /v1/mgmt/order/{%v}/sitrep", orderID), patchSitReps)
+	http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/order/{%v}/sitrep", orderID), deleteSitReps)
 
 	// NOTE: handle empty ids
 	http.HandleFunc("GET /v1/mgmt/order/", getOrderByID)
 	http.HandleFunc("GET /v1/mgmt/order/suborders", getOrderSubOrders)
 	http.HandleFunc("DELETE /v1/mgmt/order/", deleteOrder)
 
-	http.HandleFunc("PUT /v1/mgmt/order/delegated_task", putDelegatedTask)
-	http.HandleFunc("PATCH /v1/mgmt/order/delegated_task", patchDelegatedTask)
-	http.HandleFunc("DELETE /v1/mgmt/order/delegated_task", deleteDelegatedTask)
+	http.HandleFunc("PUT /v1/mgmt/order/delegated_task", putDelegatedTasks)
+	http.HandleFunc("PATCH /v1/mgmt/order/delegated_task", patchDelegatedTasks)
+	http.HandleFunc("DELETE /v1/mgmt/order/delegated_task", deleteDelegatedTasks)
 
-	http.HandleFunc("PUT /v1/mgmt/order/sitrep", putSitRep)
-	http.HandleFunc("PATCH /v1/mgmt/order/sitrep", patchSitRep)
-	http.HandleFunc("DELETE /v1/mgmt/order/sitrep", deleteSitRep)
+	http.HandleFunc("PUT /v1/mgmt/order/sitrep", putSitReps)
+	http.HandleFunc("PATCH /v1/mgmt/order/sitrep", patchSitReps)
+	http.HandleFunc("DELETE /v1/mgmt/order/sitrep", deleteSitReps)
 
 	return http.DefaultServeMux
 }

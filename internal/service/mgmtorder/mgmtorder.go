@@ -2,6 +2,7 @@ package mgmtorder
 
 import (
 	"context"
+	"net/http"
 	"slices"
 	"time"
 
@@ -132,7 +133,7 @@ func (s *serviceMgmtOrder) PatchOrder(ctx context.Context, req *request.PatchOrd
 	for _, reqSitRep := range req.GetOrder().GetSitReps() {
 		for _, patchedSitRep := range patchedOrder.GetSitReps() {
 			if reqSitRep.GetID() == patchedSitRep.GetID() {
-				hasChanges = patchSitRep(reqSitRep, patchedSitRep) || hasChanges
+				hasChanges = patchSitReps(reqSitRep, patchedSitRep) || hasChanges
 				break
 			}
 		}
@@ -168,12 +169,28 @@ func (s *serviceMgmtOrder) DeleteOrder(ctx context.Context, req *request.DeleteO
 		return nil, err
 	}
 
-	return &response.DeleteOrderResponse{}, s.Repository.DeleteOrder(ctx, req.GetID())
+	patchedOrder, err := s.Repository.ReadByID(ctx, req.GetID())
+	if err != nil && err.GetStatusCode() != http.StatusNotFound {
+		return nil, err
+	}
+	if err != nil && err.GetStatusCode() == http.StatusNotFound {
+		return &response.DeleteOrderResponse{}, nil
+	}
+
+	err = s.Repository.DeleteOrder(ctx, req.GetID())
+	if err != nil {
+		return nil, err
+	}
+
+	patchedOrder.GetMeta().VersionIncr()
+	patchedOrder.GetMeta().SetUpdated(time.Now().UTC())
+
+	return &response.DeleteOrderResponse{}, nil
 }
 
-func (s *serviceMgmtOrder) PutDelegatedTask(ctx context.Context, req *request.PutDelegatedTasksRequest) (*response.PutDelegatedTasksResponse, errwrap.Error) {
-	middleware.SpanStart(ctx, "PutDelegatedTask")
-	defer middleware.SpanStop(ctx, "PutDelegatedTask")
+func (s *serviceMgmtOrder) PutDelegatedTasks(ctx context.Context, req *request.PutDelegatedTasksRequest) (*response.PutDelegatedTasksResponse, errwrap.Error) {
+	middleware.SpanStart(ctx, "PutDelegatedTasks")
+	defer middleware.SpanStop(ctx, "PutDelegatedTasks")
 
 	if err := ValidatePutDelegatedTaskRequest(req); err != nil {
 		return nil, err
@@ -190,6 +207,7 @@ func (s *serviceMgmtOrder) PutDelegatedTask(ctx context.Context, req *request.Pu
 	now := time.Now().UTC()
 	for _, task := range tasks {
 		task.SetID(meta.ID(utils.RandAlphanum()))
+		patchedOrder.GetMeta().SetCreated(now)
 		patchedOrder.GetMeta().SetUpdated(now)
 		patchedOrder.GetMeta().VersionIncr()
 		patchedOrder.SetDelegatedTasks(append(patchedOrder.GetDelegatedTasks(), task))
@@ -226,9 +244,9 @@ func patchTask(reqTask *order.Task, patchedTask *order.Task) bool {
 	return hasChanges
 }
 
-func (s *serviceMgmtOrder) PatchDelegatedTask(ctx context.Context, req *request.PatchDelegatedTasksRequest) (*response.PatchDelegatedTasksResponse, errwrap.Error) {
-	middleware.SpanStart(ctx, "PatchDelegatedTask")
-	defer middleware.SpanStop(ctx, "PatchDelegatedTask")
+func (s *serviceMgmtOrder) PatchDelegatedTasks(ctx context.Context, req *request.PatchDelegatedTasksRequest) (*response.PatchDelegatedTasksResponse, errwrap.Error) {
+	middleware.SpanStart(ctx, "PatchDelegatedTasks")
+	defer middleware.SpanStop(ctx, "PatchDelegatedTasks")
 
 	if err := ValidatePatchDelegatedTaskRequest(req); err != nil {
 		return nil, err
@@ -274,9 +292,9 @@ func (s *serviceMgmtOrder) PatchDelegatedTask(ctx context.Context, req *request.
 	}, nil
 }
 
-func (s *serviceMgmtOrder) DeleteDelegatedTask(ctx context.Context, req *request.DeleteDelegatedTasksRequest) (*response.DeleteDelegatedTasksResponse, errwrap.Error) {
-	middleware.SpanStart(ctx, "DeleteDelegatedTask")
-	defer middleware.SpanStop(ctx, "DeleteDelegatedTask")
+func (s *serviceMgmtOrder) DeleteDelegatedTasks(ctx context.Context, req *request.DeleteDelegatedTasksRequest) (*response.DeleteDelegatedTasksResponse, errwrap.Error) {
+	middleware.SpanStart(ctx, "DeleteDelegatedTasks")
+	defer middleware.SpanStop(ctx, "DeleteDelegatedTasks")
 
 	if err := ValidateDeleteDelegatedTaskRequest(req); err != nil {
 		return nil, err
@@ -293,22 +311,28 @@ func (s *serviceMgmtOrder) DeleteDelegatedTask(ctx context.Context, req *request
 		return slices.Contains(req.GetDelegatedTaskIDs(), a.GetID())
 	})
 
-	_, err = s.Repository.Write(ctx, patchedOrder)
+	didDelete, err := s.Repository.DeleteTasks(ctx, req.GetDelegatedTaskIDs()) // NOTE: delete tasks in db.tasks
+	if err != nil {
+		// TODO: log warning
+	}
+
+	if didDelete {
+		patchedOrder.GetMeta().VersionIncr()
+		patchedOrder.GetMeta().SetUpdated(time.Now().UTC())
+		patchedOrder, err = s.Repository.Write(ctx, patchedOrder) // NOTE: update order obj in db.order
+	}
+
 	if err != nil {
 		return nil, err
 	}
-	for _, delegatedID := range req.GetDelegatedTaskIDs() {
-		err = s.Repository.DeleteTask(ctx, delegatedID)
-		if err != nil {
-			// TODO: log warning
-		}
-	}
-	return &response.DeleteDelegatedTasksResponse{}, nil
+	return &response.DeleteDelegatedTasksResponse{
+		Order: patchedOrder,
+	}, nil
 }
 
-func (s *serviceMgmtOrder) PutSitRep(ctx context.Context, req *request.PutSitRepsRequest) (*response.PutSitRepsResponse, errwrap.Error) {
-	middleware.SpanStart(ctx, "PutSitRep")
-	defer middleware.SpanStop(ctx, "PutSitRep")
+func (s *serviceMgmtOrder) PutSitReps(ctx context.Context, req *request.PutSitRepsRequest) (*response.PutSitRepsResponse, errwrap.Error) {
+	middleware.SpanStart(ctx, "PutSitReps")
+	defer middleware.SpanStop(ctx, "PutSitReps")
 
 	if err := ValidatePutSitRepRequest(req); err != nil {
 		return nil, err
@@ -339,7 +363,7 @@ func (s *serviceMgmtOrder) PutSitRep(ctx context.Context, req *request.PutSitRep
 	}, nil
 }
 
-func patchSitRep(reqSitRep *order.SitRep, patchedSitRep *order.SitRep) bool {
+func patchSitReps(reqSitRep *order.SitRep, patchedSitRep *order.SitRep) bool {
 	hasChanges := false
 
 	if !utils.IsZeroValue(reqSitRep.GetDateTime()) && reqSitRep.GetDateTime() != patchedSitRep.GetDateTime() {
@@ -372,9 +396,9 @@ func patchSitRep(reqSitRep *order.SitRep, patchedSitRep *order.SitRep) bool {
 	}
 	return hasChanges
 }
-func (s *serviceMgmtOrder) PatchSitRep(ctx context.Context, req *request.PatchSitRepsRequest) (*response.PatchSitRepsResponse, errwrap.Error) {
-	middleware.SpanStart(ctx, "PatchSitRep")
-	defer middleware.SpanStop(ctx, "PatchSitRep")
+func (s *serviceMgmtOrder) PatchSitReps(ctx context.Context, req *request.PatchSitRepsRequest) (*response.PatchSitRepsResponse, errwrap.Error) {
+	middleware.SpanStart(ctx, "PatchSitReps")
+	defer middleware.SpanStop(ctx, "PatchSitReps")
 
 	if err := ValidatePatchSitRepRequest(req); err != nil {
 		return nil, err
@@ -399,7 +423,7 @@ func (s *serviceMgmtOrder) PatchSitRep(ctx context.Context, req *request.PatchSi
 		if !ok {
 			continue
 		}
-		hasChanges = patchSitRep(sitrep, patchedSitRep) || hasChanges
+		hasChanges = patchSitReps(sitrep, patchedSitRep) || hasChanges
 
 	}
 
@@ -421,9 +445,9 @@ func (s *serviceMgmtOrder) PatchSitRep(ctx context.Context, req *request.PatchSi
 	}, nil
 }
 
-func (s *serviceMgmtOrder) DeleteSitRep(ctx context.Context, req *request.DeleteSitRepsRequest) (*response.DeleteSitRepsResponse, errwrap.Error) {
-	middleware.SpanStart(ctx, "DeleteSitRep")
-	defer middleware.SpanStop(ctx, "DeleteSitRep")
+func (s *serviceMgmtOrder) DeleteSitReps(ctx context.Context, req *request.DeleteSitRepsRequest) (*response.DeleteSitRepsResponse, errwrap.Error) {
+	middleware.SpanStart(ctx, "DeleteSitReps")
+	defer middleware.SpanStop(ctx, "DeleteSitReps")
 
 	if err := ValidateDeleteSitRepRequest(req); err != nil {
 		return nil, err
@@ -440,15 +464,21 @@ func (s *serviceMgmtOrder) DeleteSitRep(ctx context.Context, req *request.Delete
 		return slices.Contains(req.GetSitRepIDs(), a.GetID())
 	})
 
-	_, err = s.Repository.Write(ctx, patchedOrder)
+	didDelete, err := s.Repository.DeleteTasks(ctx, req.GetSitRepIDs()) // NOTE: delete sitrep in db.sitrep
+	if err != nil {
+		// TODO: log warning
+	}
+
+	if didDelete {
+		patchedOrder.GetMeta().VersionIncr()
+		patchedOrder.GetMeta().SetUpdated(time.Now().UTC())
+		patchedOrder, err = s.Repository.Write(ctx, patchedOrder) // NOTE: update order obj in db.order
+	}
+
 	if err != nil {
 		return nil, err
 	}
-	for _, delegatedID := range req.GetSitRepIDs() {
-		err = s.Repository.DeleteTask(ctx, delegatedID)
-		if err != nil {
-			// TODO: log warning
-		}
-	}
-	return &response.DeleteSitRepsResponse{}, nil
+	return &response.DeleteSitRepsResponse{
+		Order: patchedOrder,
+	}, nil
 }

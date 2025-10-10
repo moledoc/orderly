@@ -16,8 +16,8 @@ type RepositoryOrderAPI interface {
 	ReadAll(ctx context.Context) ([]*order.Order, errwrap.Error)
 	Write(ctx context.Context, order *order.Order) (*order.Order, errwrap.Error)
 	DeleteOrder(ctx context.Context, ID meta.ID) errwrap.Error
-	DeleteTask(ctx context.Context, ID meta.ID) errwrap.Error
-	DeleteSitRep(ctx context.Context, ID meta.ID) errwrap.Error
+	DeleteTasks(ctx context.Context, IDs []meta.ID) (bool, errwrap.Error)
+	DeleteSitReps(ctx context.Context, IDs []meta.ID) (bool, errwrap.Error)
 }
 
 type RepositoryUserAPI interface {

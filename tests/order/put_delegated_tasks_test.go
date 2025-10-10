@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func (s *OrderSuite) TestPutDelegatedTask() {
+func (s *OrderSuite) TestPutDelegatedTasks() {
 	tt := s.T()
 
 	createTasks := func(count int) []*order.Task {
@@ -34,7 +34,7 @@ func (s *OrderSuite) TestPutDelegatedTask() {
 		tt.Run(fmt.Sprintf("count.%v", i), func(t *testing.T) {
 			tasks := createTasks(i)
 
-			respPatch, err := s.API.PutDelegatedTask(t, context.Background(), &request.PutDelegatedTasksRequest{
+			respPatch, err := s.API.PutDelegatedTasks(t, context.Background(), &request.PutDelegatedTasksRequest{
 				OrderID: o.GetID(),
 				Tasks:   tasks,
 			})

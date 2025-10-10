@@ -219,28 +219,38 @@ func (r *LocalRepositoryOrder) DeleteOrder(ctx context.Context, ID meta.ID) errw
 	return nil
 }
 
-func (r *LocalRepositoryOrder) DeleteTask(ctx context.Context, ID meta.ID) errwrap.Error {
+func (r *LocalRepositoryOrder) DeleteTasks(ctx context.Context, IDs []meta.ID) (bool, errwrap.Error) {
 	middleware.SpanStart(ctx, "LocalStorageOrder:DeleteTask")
 	defer middleware.SpanStop(ctx, "LocalStorageOrder:DeleteTask")
 
 	if r == nil {
-		return errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
+		return false, errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
 	}
 
-	delete(r.Tasks, ID)
+	didDelete := false
+	for _, id := range IDs {
+		_, ok := r.Tasks[id]
+		didDelete = ok || didDelete
+		delete(r.Tasks, id)
+	}
 
-	return nil
+	return didDelete, nil
 }
 
-func (r *LocalRepositoryOrder) DeleteSitRep(ctx context.Context, ID meta.ID) errwrap.Error {
+func (r *LocalRepositoryOrder) DeleteSitReps(ctx context.Context, IDs []meta.ID) (bool, errwrap.Error) {
 	middleware.SpanStart(ctx, "LocalStorageOrder:DeleteSitRep")
 	defer middleware.SpanStop(ctx, "LocalStorageOrder:DeleteSitRep")
 
 	if r == nil {
-		return errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
+		return false, errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
 	}
 
-	delete(r.SitReps, ID)
+	didDelete := false
+	for _, id := range IDs {
+		_, ok := r.Tasks[id]
+		didDelete = ok || didDelete
+		delete(r.SitReps, id)
+	}
 
-	return nil
+	return didDelete, nil
 }

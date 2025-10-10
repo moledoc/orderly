@@ -68,34 +68,34 @@ func (api *OrderAPISvc) DeleteOrder(t *testing.T, ctx context.Context, req *requ
 
 ////
 
-func (api *OrderAPISvc) PutDelegatedTask(t *testing.T, ctx context.Context, req *request.PutDelegatedTasksRequest) (*response.PutDelegatedTasksResponse, errwrap.Error) {
+func (api *OrderAPISvc) PutDelegatedTasks(t *testing.T, ctx context.Context, req *request.PutDelegatedTasksRequest) (*response.PutDelegatedTasksResponse, errwrap.Error) {
 	t.Helper()
-	return api.Svc.PutDelegatedTask(ctx, req)
+	return api.Svc.PutDelegatedTasks(ctx, req)
 }
 
-func (api *OrderAPISvc) PatchDelegatedTask(t *testing.T, ctx context.Context, req *request.PatchDelegatedTasksRequest) (*response.PatchDelegatedTasksResponse, errwrap.Error) {
+func (api *OrderAPISvc) PatchDelegatedTasks(t *testing.T, ctx context.Context, req *request.PatchDelegatedTasksRequest) (*response.PatchDelegatedTasksResponse, errwrap.Error) {
 	t.Helper()
-	return api.Svc.PatchDelegatedTask(ctx, req)
+	return api.Svc.PatchDelegatedTasks(ctx, req)
 }
 
-func (api *OrderAPISvc) DeleteDelegatedTask(t *testing.T, ctx context.Context, req *request.DeleteDelegatedTasksRequest) (*response.DeleteDelegatedTasksResponse, errwrap.Error) {
+func (api *OrderAPISvc) DeleteDelegatedTasks(t *testing.T, ctx context.Context, req *request.DeleteDelegatedTasksRequest) (*response.DeleteDelegatedTasksResponse, errwrap.Error) {
 	t.Helper()
-	return api.Svc.DeleteDelegatedTask(ctx, req)
+	return api.Svc.DeleteDelegatedTasks(ctx, req)
 }
 
 ////
 
-func (api *OrderAPISvc) PutSitRep(t *testing.T, ctx context.Context, req *request.PutSitRepsRequest) (*response.PutSitRepsResponse, errwrap.Error) {
+func (api *OrderAPISvc) PutSitReps(t *testing.T, ctx context.Context, req *request.PutSitRepsRequest) (*response.PutSitRepsResponse, errwrap.Error) {
 	t.Helper()
-	return api.Svc.PutSitRep(ctx, req)
+	return api.Svc.PutSitReps(ctx, req)
 }
 
-func (api *OrderAPISvc) PatchSitRep(t *testing.T, ctx context.Context, req *request.PatchSitRepsRequest) (*response.PatchSitRepsResponse, errwrap.Error) {
+func (api *OrderAPISvc) PatchSitReps(t *testing.T, ctx context.Context, req *request.PatchSitRepsRequest) (*response.PatchSitRepsResponse, errwrap.Error) {
 	t.Helper()
-	return api.Svc.PatchSitRep(ctx, req)
+	return api.Svc.PatchSitReps(ctx, req)
 }
 
-func (api *OrderAPISvc) DeleteSitRep(t *testing.T, ctx context.Context, req *request.DeleteSitRepsRequest) (*response.DeleteSitRepsResponse, errwrap.Error) {
+func (api *OrderAPISvc) DeleteSitReps(t *testing.T, ctx context.Context, req *request.DeleteSitRepsRequest) (*response.DeleteSitRepsResponse, errwrap.Error) {
 	t.Helper()
-	return api.Svc.DeleteSitRep(ctx, req)
+	return api.Svc.DeleteSitReps(ctx, req)
 }

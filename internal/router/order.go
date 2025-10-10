@@ -110,7 +110,7 @@ func deleteOrder(w http.ResponseWriter, r *http.Request) {
 
 ////////////////
 
-func putDelegatedTask(w http.ResponseWriter, r *http.Request) {
+func putDelegatedTasks(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
@@ -126,12 +126,12 @@ func putDelegatedTask(w http.ResponseWriter, r *http.Request) {
 	err = decodeBody(ctx, r, &req)
 	if err == nil {
 		middleware.SpanLog(ctx, "PutDelegatedTaskRequest", &req)
-		resp, err = mgmtordersvc.PutDelegatedTask(ctx, &req)
+		resp, err = mgmtordersvc.PutDelegatedTasks(ctx, &req)
 	}
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func patchDelegatedTask(w http.ResponseWriter, r *http.Request) {
+func patchDelegatedTasks(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
@@ -147,12 +147,12 @@ func patchDelegatedTask(w http.ResponseWriter, r *http.Request) {
 	err = decodeBody(ctx, r, &req)
 	if err == nil {
 		middleware.SpanLog(ctx, "PatchDelegatedTaskRequest", &req)
-		resp, err = mgmtordersvc.PatchDelegatedTask(ctx, &req)
+		resp, err = mgmtordersvc.PatchDelegatedTasks(ctx, &req)
 	}
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func deleteDelegatedTask(w http.ResponseWriter, r *http.Request) {
+func deleteDelegatedTasks(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
@@ -168,14 +168,14 @@ func deleteDelegatedTask(w http.ResponseWriter, r *http.Request) {
 	err = decodeBody(ctx, r, &req)
 	if err == nil {
 		middleware.SpanLog(ctx, "DeleteDelegatedTaskRequest", req)
-		resp, err = mgmtordersvc.DeleteDelegatedTask(ctx, req)
+		resp, err = mgmtordersvc.DeleteDelegatedTasks(ctx, req)
 	}
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
 ////////////////
 
-func putSitRep(w http.ResponseWriter, r *http.Request) {
+func putSitReps(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
@@ -191,12 +191,12 @@ func putSitRep(w http.ResponseWriter, r *http.Request) {
 	err = decodeBody(ctx, r, &req)
 	if err == nil {
 		middleware.SpanLog(ctx, "PutSitRepRequest", &req)
-		resp, err = mgmtordersvc.PutSitRep(ctx, &req)
+		resp, err = mgmtordersvc.PutSitReps(ctx, &req)
 	}
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func patchSitRep(w http.ResponseWriter, r *http.Request) {
+func patchSitReps(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
@@ -212,12 +212,12 @@ func patchSitRep(w http.ResponseWriter, r *http.Request) {
 	err = decodeBody(ctx, r, &req)
 	if err == nil {
 		middleware.SpanLog(ctx, "PatchSitRepRequest", &req)
-		resp, err = mgmtordersvc.PatchSitRep(ctx, &req)
+		resp, err = mgmtordersvc.PatchSitReps(ctx, &req)
 	}
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func deleteSitRep(w http.ResponseWriter, r *http.Request) {
+func deleteSitReps(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTrace(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
@@ -232,7 +232,7 @@ func deleteSitRep(w http.ResponseWriter, r *http.Request) {
 	err = decodeBody(ctx, r, req)
 	if err == nil {
 		middleware.SpanLog(ctx, "DeleteSitRepRequest", req)
-		resp, err = mgmtordersvc.DeleteSitRep(ctx, req)
+		resp, err = mgmtordersvc.DeleteSitReps(ctx, req)
 	}
 
 	writeResponse(ctx, w, resp, err, http.StatusOK)

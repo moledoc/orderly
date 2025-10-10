@@ -68,7 +68,7 @@ func (s *OrderSuite) TestValidation_Task() {
 	})
 }
 
-func (s *OrderSuite) TestValidation_SitRep() {
+func (s *OrderSuite) TestValidation_SitReps() {
 	tt := s.T()
 
 	tt.Run("sitrep.id", func(t *testing.T) {
@@ -340,14 +340,14 @@ func (s *OrderSuite) TestValidation_DeleteOrderRequest() {
 func (s *OrderSuite) TestValidation_PutDelegatedTaskRequest() {
 	tt := s.T()
 	tt.Run("nil.request", func(t *testing.T) {
-		resp, err := s.API.PutDelegatedTask(t, context.Background(), nil)
+		resp, err := s.API.PutDelegatedTasks(t, context.Background(), nil)
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
 	tt.Run("empty.request", func(t *testing.T) {
-		resp, err := s.API.PutDelegatedTask(t, context.Background(), &request.PutDelegatedTasksRequest{})
+		resp, err := s.API.PutDelegatedTasks(t, context.Background(), &request.PutDelegatedTasksRequest{})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
@@ -356,7 +356,7 @@ func (s *OrderSuite) TestValidation_PutDelegatedTaskRequest() {
 	tt.Run("empty.order_id", func(t *testing.T) {
 		o := setup.OrderObjWithIDs()
 		setup.ZeroOrderIDs(o)
-		resp, err := s.API.PutDelegatedTask(t, context.Background(), &request.PutDelegatedTasksRequest{
+		resp, err := s.API.PutDelegatedTasks(t, context.Background(), &request.PutDelegatedTasksRequest{
 			Tasks: []*order.Task{o.GetTask()},
 		})
 		require.Error(t, err)
@@ -365,7 +365,7 @@ func (s *OrderSuite) TestValidation_PutDelegatedTaskRequest() {
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
 	tt.Run("empty.nil", func(t *testing.T) {
-		resp, err := s.API.PutDelegatedTask(t, context.Background(), &request.PutDelegatedTasksRequest{
+		resp, err := s.API.PutDelegatedTasks(t, context.Background(), &request.PutDelegatedTasksRequest{
 			OrderID: meta.NewID(),
 		})
 		require.Error(t, err)
@@ -374,7 +374,7 @@ func (s *OrderSuite) TestValidation_PutDelegatedTaskRequest() {
 		require.Equal(t, "empty tasks", err.GetStatusMessage())
 	})
 	tt.Run("empty.task", func(t *testing.T) {
-		resp, err := s.API.PutDelegatedTask(t, context.Background(), &request.PutDelegatedTasksRequest{
+		resp, err := s.API.PutDelegatedTasks(t, context.Background(), &request.PutDelegatedTasksRequest{
 			OrderID: meta.NewID(),
 			Tasks:   []*order.Task{},
 		})
@@ -386,7 +386,7 @@ func (s *OrderSuite) TestValidation_PutDelegatedTaskRequest() {
 	tt.Run("delegated_task.id.provided", func(t *testing.T) {
 		o := setup.OrderObjWithIDs()
 		oid := o.GetID()
-		resp, err := s.API.PutDelegatedTask(t, context.Background(), &request.PutDelegatedTasksRequest{
+		resp, err := s.API.PutDelegatedTasks(t, context.Background(), &request.PutDelegatedTasksRequest{
 			OrderID: oid,
 			Tasks:   []*order.Task{o.GetTask()},
 		})
@@ -400,14 +400,14 @@ func (s *OrderSuite) TestValidation_PutDelegatedTaskRequest() {
 func (s *OrderSuite) TestValidation_PatchDelegatedTaskRequest() {
 	tt := s.T()
 	tt.Run("nil.request", func(t *testing.T) {
-		resp, err := s.API.PatchDelegatedTask(t, context.Background(), nil)
+		resp, err := s.API.PatchDelegatedTasks(t, context.Background(), nil)
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
 	tt.Run("empty.request", func(t *testing.T) {
-		resp, err := s.API.PatchDelegatedTask(t, context.Background(), &request.PatchDelegatedTasksRequest{})
+		resp, err := s.API.PatchDelegatedTasks(t, context.Background(), &request.PatchDelegatedTasksRequest{})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
@@ -416,7 +416,7 @@ func (s *OrderSuite) TestValidation_PatchDelegatedTaskRequest() {
 	tt.Run("empty.order_id", func(t *testing.T) {
 		o := setup.OrderObjWithIDs()
 		setup.ZeroOrderIDs(o)
-		resp, err := s.API.PatchDelegatedTask(t, context.Background(), &request.PatchDelegatedTasksRequest{
+		resp, err := s.API.PatchDelegatedTasks(t, context.Background(), &request.PatchDelegatedTasksRequest{
 			Tasks: []*order.Task{o.GetTask()},
 		})
 		require.Error(t, err)
@@ -425,7 +425,7 @@ func (s *OrderSuite) TestValidation_PatchDelegatedTaskRequest() {
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
 	tt.Run("nil.task", func(t *testing.T) {
-		resp, err := s.API.PatchDelegatedTask(t, context.Background(), &request.PatchDelegatedTasksRequest{
+		resp, err := s.API.PatchDelegatedTasks(t, context.Background(), &request.PatchDelegatedTasksRequest{
 			OrderID: meta.NewID(),
 		})
 		require.Error(t, err)
@@ -434,7 +434,7 @@ func (s *OrderSuite) TestValidation_PatchDelegatedTaskRequest() {
 		require.Equal(t, "empty tasks", err.GetStatusMessage())
 	})
 	tt.Run("empty.task", func(t *testing.T) {
-		resp, err := s.API.PatchDelegatedTask(t, context.Background(), &request.PatchDelegatedTasksRequest{
+		resp, err := s.API.PatchDelegatedTasks(t, context.Background(), &request.PatchDelegatedTasksRequest{
 			OrderID: meta.NewID(),
 			Tasks:   []*order.Task{},
 		})
@@ -448,7 +448,7 @@ func (s *OrderSuite) TestValidation_PatchDelegatedTaskRequest() {
 		oid := o.GetID()
 		setup.ZeroOrderIDs(o)
 
-		resp, err := s.API.PatchDelegatedTask(t, context.Background(), &request.PatchDelegatedTasksRequest{
+		resp, err := s.API.PatchDelegatedTasks(t, context.Background(), &request.PatchDelegatedTasksRequest{
 			OrderID: oid,
 			Tasks:   []*order.Task{o.GetTask()},
 		})
@@ -462,21 +462,21 @@ func (s *OrderSuite) TestValidation_PatchDelegatedTaskRequest() {
 func (s *OrderSuite) TestValidation_DeleteDelegatedTaskRequest() {
 	tt := s.T()
 	tt.Run("nil.request", func(t *testing.T) {
-		resp, err := s.API.DeleteDelegatedTask(t, context.Background(), nil)
+		resp, err := s.API.DeleteDelegatedTasks(t, context.Background(), nil)
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
 	tt.Run("empty.request", func(t *testing.T) {
-		resp, err := s.API.DeleteDelegatedTask(t, context.Background(), &request.DeleteDelegatedTasksRequest{})
+		resp, err := s.API.DeleteDelegatedTasks(t, context.Background(), &request.DeleteDelegatedTasksRequest{})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
 	tt.Run("empty.order_id", func(t *testing.T) {
-		resp, err := s.API.DeleteDelegatedTask(t, context.Background(), &request.DeleteDelegatedTasksRequest{
+		resp, err := s.API.DeleteDelegatedTasks(t, context.Background(), &request.DeleteDelegatedTasksRequest{
 			DelegatedTaskIDs: []meta.ID{meta.NewID()},
 		})
 		require.Error(t, err)
@@ -485,7 +485,7 @@ func (s *OrderSuite) TestValidation_DeleteDelegatedTaskRequest() {
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
 	tt.Run("nil.delegated_task_id", func(t *testing.T) {
-		resp, err := s.API.DeleteDelegatedTask(t, context.Background(), &request.DeleteDelegatedTasksRequest{
+		resp, err := s.API.DeleteDelegatedTasks(t, context.Background(), &request.DeleteDelegatedTasksRequest{
 			OrderID: meta.NewID(),
 		})
 		require.Error(t, err)
@@ -494,7 +494,7 @@ func (s *OrderSuite) TestValidation_DeleteDelegatedTaskRequest() {
 		require.Equal(t, "empty delegated_task_ids", err.GetStatusMessage())
 	})
 	tt.Run("invalid.delegated_task_id", func(t *testing.T) {
-		resp, err := s.API.DeleteDelegatedTask(t, context.Background(), &request.DeleteDelegatedTasksRequest{
+		resp, err := s.API.DeleteDelegatedTasks(t, context.Background(), &request.DeleteDelegatedTasksRequest{
 			OrderID:          meta.NewID(),
 			DelegatedTaskIDs: []meta.ID{meta.NewID(), meta.EmptyID()},
 		})
@@ -508,14 +508,14 @@ func (s *OrderSuite) TestValidation_DeleteDelegatedTaskRequest() {
 func (s *OrderSuite) TestValidation_PutSitRepRequest() {
 	tt := s.T()
 	tt.Run("nil.request", func(t *testing.T) {
-		resp, err := s.API.PutSitRep(t, context.Background(), nil)
+		resp, err := s.API.PutSitReps(t, context.Background(), nil)
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
 	tt.Run("empty.request", func(t *testing.T) {
-		resp, err := s.API.PutSitRep(t, context.Background(), &request.PutSitRepsRequest{})
+		resp, err := s.API.PutSitReps(t, context.Background(), &request.PutSitRepsRequest{})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
@@ -524,7 +524,7 @@ func (s *OrderSuite) TestValidation_PutSitRepRequest() {
 	tt.Run("empty.order_id", func(t *testing.T) {
 		o := setup.OrderObjWithIDs()
 		setup.ZeroOrderIDs(o)
-		resp, err := s.API.PutSitRep(t, context.Background(), &request.PutSitRepsRequest{
+		resp, err := s.API.PutSitReps(t, context.Background(), &request.PutSitRepsRequest{
 			SitReps: []*order.SitRep{o.GetSitReps()[0]},
 		})
 		require.Error(t, err)
@@ -533,7 +533,7 @@ func (s *OrderSuite) TestValidation_PutSitRepRequest() {
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
 	tt.Run("nil.sitrep", func(t *testing.T) {
-		resp, err := s.API.PutSitRep(t, context.Background(), &request.PutSitRepsRequest{
+		resp, err := s.API.PutSitReps(t, context.Background(), &request.PutSitRepsRequest{
 			OrderID: meta.NewID(),
 		})
 		require.Error(t, err)
@@ -542,7 +542,7 @@ func (s *OrderSuite) TestValidation_PutSitRepRequest() {
 		require.Equal(t, "empty sitreps", err.GetStatusMessage())
 	})
 	tt.Run("empty.sitrep", func(t *testing.T) {
-		resp, err := s.API.PutSitRep(t, context.Background(), &request.PutSitRepsRequest{
+		resp, err := s.API.PutSitReps(t, context.Background(), &request.PutSitRepsRequest{
 			OrderID: meta.NewID(),
 			SitReps: []*order.SitRep{},
 		})
@@ -554,7 +554,7 @@ func (s *OrderSuite) TestValidation_PutSitRepRequest() {
 	tt.Run("sitrep.id.provided", func(t *testing.T) {
 		o := setup.OrderObjWithIDs()
 		oid := o.GetID()
-		resp, err := s.API.PutSitRep(t, context.Background(), &request.PutSitRepsRequest{
+		resp, err := s.API.PutSitReps(t, context.Background(), &request.PutSitRepsRequest{
 			OrderID: oid,
 			SitReps: []*order.SitRep{o.GetSitReps()[0]},
 		})
@@ -568,14 +568,14 @@ func (s *OrderSuite) TestValidation_PutSitRepRequest() {
 func (s *OrderSuite) TestValidation_PatchSitRepRequest() {
 	tt := s.T()
 	tt.Run("nil.request", func(t *testing.T) {
-		resp, err := s.API.PatchSitRep(t, context.Background(), nil)
+		resp, err := s.API.PatchSitReps(t, context.Background(), nil)
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
 	tt.Run("empty.request", func(t *testing.T) {
-		resp, err := s.API.PatchSitRep(t, context.Background(), &request.PatchSitRepsRequest{})
+		resp, err := s.API.PatchSitReps(t, context.Background(), &request.PatchSitRepsRequest{})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
@@ -584,7 +584,7 @@ func (s *OrderSuite) TestValidation_PatchSitRepRequest() {
 	tt.Run("empty.order_id", func(t *testing.T) {
 		o := setup.OrderObjWithIDs()
 		setup.ZeroOrderIDs(o)
-		resp, err := s.API.PatchSitRep(t, context.Background(), &request.PatchSitRepsRequest{
+		resp, err := s.API.PatchSitReps(t, context.Background(), &request.PatchSitRepsRequest{
 			SitReps: []*order.SitRep{o.GetSitReps()[0]},
 		})
 		require.Error(t, err)
@@ -593,7 +593,7 @@ func (s *OrderSuite) TestValidation_PatchSitRepRequest() {
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
 	tt.Run("nil.sitrep", func(t *testing.T) {
-		resp, err := s.API.PatchSitRep(t, context.Background(), &request.PatchSitRepsRequest{
+		resp, err := s.API.PatchSitReps(t, context.Background(), &request.PatchSitRepsRequest{
 			OrderID: meta.NewID(),
 		})
 		require.Error(t, err)
@@ -602,7 +602,7 @@ func (s *OrderSuite) TestValidation_PatchSitRepRequest() {
 		require.Equal(t, "empty sitreps", err.GetStatusMessage())
 	})
 	tt.Run("empty.sitrep", func(t *testing.T) {
-		resp, err := s.API.PatchSitRep(t, context.Background(), &request.PatchSitRepsRequest{
+		resp, err := s.API.PatchSitReps(t, context.Background(), &request.PatchSitRepsRequest{
 			OrderID: meta.NewID(),
 			SitReps: []*order.SitRep{},
 		})
@@ -616,7 +616,7 @@ func (s *OrderSuite) TestValidation_PatchSitRepRequest() {
 		oid := o.GetID()
 		setup.ZeroOrderIDs(o)
 
-		resp, err := s.API.PatchSitRep(t, context.Background(), &request.PatchSitRepsRequest{
+		resp, err := s.API.PatchSitReps(t, context.Background(), &request.PatchSitRepsRequest{
 			OrderID: oid,
 			SitReps: []*order.SitRep{o.GetSitReps()[0]},
 		})
@@ -630,21 +630,21 @@ func (s *OrderSuite) TestValidation_PatchSitRepRequest() {
 func (s *OrderSuite) TestValidation_DeleteSitRepRequest() {
 	tt := s.T()
 	tt.Run("nil.request", func(t *testing.T) {
-		resp, err := s.API.DeleteSitRep(t, context.Background(), nil)
+		resp, err := s.API.DeleteSitReps(t, context.Background(), nil)
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
 	tt.Run("empty.request", func(t *testing.T) {
-		resp, err := s.API.DeleteSitRep(t, context.Background(), &request.DeleteSitRepsRequest{})
+		resp, err := s.API.DeleteSitReps(t, context.Background(), &request.DeleteSitRepsRequest{})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
 	tt.Run("empty.order_id", func(t *testing.T) {
-		resp, err := s.API.DeleteSitRep(t, context.Background(), &request.DeleteSitRepsRequest{
+		resp, err := s.API.DeleteSitReps(t, context.Background(), &request.DeleteSitRepsRequest{
 			SitRepIDs: []meta.ID{meta.NewID()},
 		})
 		require.Error(t, err)
@@ -653,7 +653,7 @@ func (s *OrderSuite) TestValidation_DeleteSitRepRequest() {
 		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
 	})
 	tt.Run("nil.sitrep_ids", func(t *testing.T) {
-		resp, err := s.API.DeleteSitRep(t, context.Background(), &request.DeleteSitRepsRequest{
+		resp, err := s.API.DeleteSitReps(t, context.Background(), &request.DeleteSitRepsRequest{
 			OrderID: meta.NewID(),
 		})
 		require.Error(t, err)
@@ -662,7 +662,7 @@ func (s *OrderSuite) TestValidation_DeleteSitRepRequest() {
 		require.Equal(t, "empty sitrep_ids", err.GetStatusMessage())
 	})
 	tt.Run("empty.sitrep_ids", func(t *testing.T) {
-		resp, err := s.API.DeleteSitRep(t, context.Background(), &request.DeleteSitRepsRequest{
+		resp, err := s.API.DeleteSitReps(t, context.Background(), &request.DeleteSitRepsRequest{
 			OrderID:   meta.NewID(),
 			SitRepIDs: []meta.ID{},
 		})
@@ -672,7 +672,7 @@ func (s *OrderSuite) TestValidation_DeleteSitRepRequest() {
 		require.Equal(t, "empty sitrep_ids", err.GetStatusMessage())
 	})
 	tt.Run("invalid.sitrep_ids", func(t *testing.T) {
-		resp, err := s.API.DeleteSitRep(t, context.Background(), &request.DeleteSitRepsRequest{
+		resp, err := s.API.DeleteSitReps(t, context.Background(), &request.DeleteSitRepsRequest{
 			OrderID:   meta.NewID(),
 			SitRepIDs: []meta.ID{meta.NewID(), meta.EmptyID()},
 		})

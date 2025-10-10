@@ -14,7 +14,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func (s *OrderSuite) TestPatchDelegatedTask() {
+func (s *OrderSuite) TestPatchDelegatedTasks() {
 	tt := s.T()
 
 	expected := setup.MustCreateOrderWithCleanup(tt, context.Background(), s.API, setup.OrderObj())
@@ -124,7 +124,7 @@ func (s *OrderSuite) TestPatchDelegatedTask() {
 	for _, change := range changes {
 		tt.Run(change.name, func(t *testing.T) {
 			req := change.f()
-			respPatch, err := s.API.PatchDelegatedTask(t, context.Background(), req)
+			respPatch, err := s.API.PatchDelegatedTasks(t, context.Background(), req)
 			require.NoError(t, err)
 
 			expected.GetMeta().VersionIncr()
