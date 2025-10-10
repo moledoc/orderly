@@ -247,7 +247,7 @@ func (r *LocalRepositoryOrder) DeleteSitReps(ctx context.Context, IDs []meta.ID)
 
 	didDelete := false
 	for _, id := range IDs {
-		_, ok := r.Tasks[id]
+		_, ok := r.SitReps[id]
 		didDelete = ok || didDelete
 		delete(r.SitReps, id)
 	}

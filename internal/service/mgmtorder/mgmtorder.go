@@ -464,7 +464,7 @@ func (s *serviceMgmtOrder) DeleteSitReps(ctx context.Context, req *request.Delet
 		return slices.Contains(req.GetSitRepIDs(), a.GetID())
 	})
 
-	didDelete, err := s.Repository.DeleteTasks(ctx, req.GetSitRepIDs()) // NOTE: delete sitrep in db.sitrep
+	didDelete, err := s.Repository.DeleteSitReps(ctx, req.GetSitRepIDs()) // NOTE: delete sitrep in db.sitrep
 	if err != nil {
 		// TODO: log warning
 	}
