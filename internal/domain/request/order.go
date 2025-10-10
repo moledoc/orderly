@@ -29,34 +29,34 @@ type DeleteOrderRequest struct {
 
 ////////////////
 
-type PutDelegatedTaskRequest struct {
+type PutDelegatedTasksRequest struct {
 	OrderID meta.ID       `json:"order_id"`
 	Tasks   []*order.Task `json:"tasks"`
 }
 
-type PatchDelegatedTaskRequest struct {
+type PatchDelegatedTasksRequest struct {
 	OrderID meta.ID       `json:"order_id"`
 	Tasks   []*order.Task `json:"tasks"`
 }
 
-type DeleteDelegatedTaskRequest struct {
+type DeleteDelegatedTasksRequest struct {
 	OrderID          meta.ID   `json:"order_id"`
 	DelegatedTaskIDs []meta.ID `json:"delegated_task_ids"`
 }
 
 ////////////////
 
-type PutSitRepRequest struct {
+type PutSitRepsRequest struct {
 	OrderID meta.ID         `json:"order_id"`
 	SitReps []*order.SitRep `json:"sitreps"`
 }
 
-type PatchSitRepRequest struct {
+type PatchSitRepsRequest struct {
 	OrderID meta.ID         `json:"order_id"`
 	SitReps []*order.SitRep `json:"sitreps"`
 }
 
-type DeleteSitRepRequest struct {
+type DeleteSitRepsRequest struct {
 	OrderID   meta.ID   `json:"order_id"`
 	SitRepIDs []meta.ID `json:"sitrep_ids"`
 }

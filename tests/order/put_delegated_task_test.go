@@ -34,7 +34,7 @@ func (s *OrderSuite) TestPutDelegatedTask() {
 		tt.Run(fmt.Sprintf("count.%v", i), func(t *testing.T) {
 			tasks := createTasks(i)
 
-			respPatch, err := s.API.PutDelegatedTask(t, context.Background(), &request.PutDelegatedTaskRequest{
+			respPatch, err := s.API.PutDelegatedTask(t, context.Background(), &request.PutDelegatedTasksRequest{
 				OrderID: o.GetID(),
 				Tasks:   tasks,
 			})
@@ -49,7 +49,7 @@ func (s *OrderSuite) TestPutDelegatedTask() {
 			}
 
 			o.SetDelegatedTasks(append(o.GetDelegatedTasks(), tasks...))
-			expectedPut := &response.PutDelegatedTaskResponse{
+			expectedPut := &response.PutDelegatedTasksResponse{
 				Order: o,
 			}
 			compare.RequireEqual(t, expectedPut, respPatch, opts...)

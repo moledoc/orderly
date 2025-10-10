@@ -208,7 +208,7 @@ func (api *OrderAPIReq) DeleteOrder(t *testing.T, ctx context.Context, req *requ
 
 ////
 
-func (api *OrderAPIReq) PutDelegatedTask(t *testing.T, ctx context.Context, req *request.PutDelegatedTaskRequest) (*response.PutDelegatedTaskResponse, errwrap.Error) {
+func (api *OrderAPIReq) PutDelegatedTask(t *testing.T, ctx context.Context, req *request.PutDelegatedTasksRequest) (*response.PutDelegatedTasksResponse, errwrap.Error) {
 	t.Helper()
 
 	reqBytes, err := json.Marshal(req)
@@ -229,7 +229,7 @@ func (api *OrderAPIReq) PutDelegatedTask(t *testing.T, ctx context.Context, req 
 	defer respHttp.Body.Close()
 
 	if respHttp.StatusCode == http.StatusOK {
-		var resp response.PutDelegatedTaskResponse
+		var resp response.PutDelegatedTasksResponse
 		if err := json.NewDecoder(respHttp.Body).Decode(&resp); err != nil {
 			return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
 		}
@@ -244,7 +244,7 @@ func (api *OrderAPIReq) PutDelegatedTask(t *testing.T, ctx context.Context, req 
 	return nil, &errw
 }
 
-func (api *OrderAPIReq) PatchDelegatedTask(t *testing.T, ctx context.Context, req *request.PatchDelegatedTaskRequest) (*response.PatchDelegatedTaskResponse, errwrap.Error) {
+func (api *OrderAPIReq) PatchDelegatedTask(t *testing.T, ctx context.Context, req *request.PatchDelegatedTasksRequest) (*response.PatchDelegatedTasksResponse, errwrap.Error) {
 	t.Helper()
 
 	reqBytes, err := json.Marshal(req)
@@ -265,7 +265,7 @@ func (api *OrderAPIReq) PatchDelegatedTask(t *testing.T, ctx context.Context, re
 	defer respHttp.Body.Close()
 
 	if respHttp.StatusCode == http.StatusOK {
-		var resp response.PatchDelegatedTaskResponse
+		var resp response.PatchDelegatedTasksResponse
 		if err := json.NewDecoder(respHttp.Body).Decode(&resp); err != nil {
 			return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
 		}
@@ -280,7 +280,7 @@ func (api *OrderAPIReq) PatchDelegatedTask(t *testing.T, ctx context.Context, re
 	return nil, &errw
 }
 
-func (api *OrderAPIReq) DeleteDelegatedTask(t *testing.T, ctx context.Context, req *request.DeleteDelegatedTaskRequest) (*response.DeleteDelegatedTaskResponse, errwrap.Error) {
+func (api *OrderAPIReq) DeleteDelegatedTask(t *testing.T, ctx context.Context, req *request.DeleteDelegatedTasksRequest) (*response.DeleteDelegatedTasksResponse, errwrap.Error) {
 	t.Helper()
 
 	reqBytes, err := json.Marshal(req)
@@ -300,7 +300,7 @@ func (api *OrderAPIReq) DeleteDelegatedTask(t *testing.T, ctx context.Context, r
 	defer respHttp.Body.Close()
 
 	if respHttp.StatusCode == http.StatusNoContent {
-		return &response.DeleteDelegatedTaskResponse{}, nil
+		return &response.DeleteDelegatedTasksResponse{}, nil
 	}
 	var errw errwrap.Err
 	if err := json.NewDecoder(respHttp.Body).Decode(&errw); err != nil {
@@ -313,7 +313,7 @@ func (api *OrderAPIReq) DeleteDelegatedTask(t *testing.T, ctx context.Context, r
 
 ////
 
-func (api *OrderAPIReq) PutSitRep(t *testing.T, ctx context.Context, req *request.PutSitRepRequest) (*response.PutSitRepResponse, errwrap.Error) {
+func (api *OrderAPIReq) PutSitRep(t *testing.T, ctx context.Context, req *request.PutSitRepsRequest) (*response.PutSitRepsResponse, errwrap.Error) {
 	t.Helper()
 
 	reqBytes, err := json.Marshal(req)
@@ -334,7 +334,7 @@ func (api *OrderAPIReq) PutSitRep(t *testing.T, ctx context.Context, req *reques
 	defer respHttp.Body.Close()
 
 	if respHttp.StatusCode == http.StatusOK {
-		var resp response.PutSitRepResponse
+		var resp response.PutSitRepsResponse
 		if err := json.NewDecoder(respHttp.Body).Decode(&resp); err != nil {
 			return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
 		}
@@ -349,7 +349,7 @@ func (api *OrderAPIReq) PutSitRep(t *testing.T, ctx context.Context, req *reques
 	return nil, &errw
 }
 
-func (api *OrderAPIReq) PatchSitRep(t *testing.T, ctx context.Context, req *request.PatchSitRepRequest) (*response.PatchSitRepResponse, errwrap.Error) {
+func (api *OrderAPIReq) PatchSitRep(t *testing.T, ctx context.Context, req *request.PatchSitRepsRequest) (*response.PatchSitRepsResponse, errwrap.Error) {
 	t.Helper()
 
 	reqBytes, err := json.Marshal(req)
@@ -370,7 +370,7 @@ func (api *OrderAPIReq) PatchSitRep(t *testing.T, ctx context.Context, req *requ
 	defer respHttp.Body.Close()
 
 	if respHttp.StatusCode == http.StatusOK {
-		var resp response.PatchSitRepResponse
+		var resp response.PatchSitRepsResponse
 		if err := json.NewDecoder(respHttp.Body).Decode(&resp); err != nil {
 			return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
 		}
@@ -385,7 +385,7 @@ func (api *OrderAPIReq) PatchSitRep(t *testing.T, ctx context.Context, req *requ
 	return nil, &errw
 }
 
-func (api *OrderAPIReq) DeleteSitRep(t *testing.T, ctx context.Context, req *request.DeleteSitRepRequest) (*response.DeleteSitRepResponse, errwrap.Error) {
+func (api *OrderAPIReq) DeleteSitRep(t *testing.T, ctx context.Context, req *request.DeleteSitRepsRequest) (*response.DeleteSitRepsResponse, errwrap.Error) {
 	t.Helper()
 
 	reqBytes, err := json.Marshal(req)
@@ -405,7 +405,7 @@ func (api *OrderAPIReq) DeleteSitRep(t *testing.T, ctx context.Context, req *req
 	defer respHttp.Body.Close()
 
 	if respHttp.StatusCode == http.StatusNoContent {
-		return &response.DeleteSitRepResponse{}, nil
+		return &response.DeleteSitRepsResponse{}, nil
 	}
 	var errw errwrap.Err
 	if err := json.NewDecoder(respHttp.Body).Decode(&errw); err != nil {

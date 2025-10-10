@@ -194,7 +194,7 @@ func ValidateDeleteOrderRequest(req *request.DeleteOrderRequest) errwrap.Error {
 
 ////////
 
-func ValidatePutDelegatedTaskRequest(req *request.PutDelegatedTaskRequest) errwrap.Error {
+func ValidatePutDelegatedTaskRequest(req *request.PutDelegatedTasksRequest) errwrap.Error {
 
 	err := validation.ValidateID(req.GetOrderID())
 	if err != nil {
@@ -218,7 +218,7 @@ func ValidatePutDelegatedTaskRequest(req *request.PutDelegatedTaskRequest) errwr
 	return nil
 }
 
-func ValidatePatchDelegatedTaskRequest(req *request.PatchDelegatedTaskRequest) errwrap.Error {
+func ValidatePatchDelegatedTaskRequest(req *request.PatchDelegatedTasksRequest) errwrap.Error {
 
 	err := validation.ValidateID(req.GetOrderID())
 	if err != nil {
@@ -235,7 +235,7 @@ func ValidatePatchDelegatedTaskRequest(req *request.PatchDelegatedTaskRequest) e
 			return errwrap.NewError(http.StatusBadRequest, "invalid tasks.%v.id: %s", i, err.GetStatusMessage())
 		}
 
-		err = ValidateTask(tsk, validation.IgnoreNothing)
+		err = ValidateTask(tsk, validation.IgnoreEmpty)
 		if err != nil {
 			return err
 		}
@@ -243,7 +243,7 @@ func ValidatePatchDelegatedTaskRequest(req *request.PatchDelegatedTaskRequest) e
 	return nil
 }
 
-func ValidateDeleteDelegatedTaskRequest(req *request.DeleteDelegatedTaskRequest) errwrap.Error {
+func ValidateDeleteDelegatedTaskRequest(req *request.DeleteDelegatedTasksRequest) errwrap.Error {
 
 	err := validation.ValidateID(req.GetOrderID())
 	if err != nil {
@@ -266,7 +266,7 @@ func ValidateDeleteDelegatedTaskRequest(req *request.DeleteDelegatedTaskRequest)
 
 ////////
 
-func ValidatePutSitRepRequest(req *request.PutSitRepRequest) errwrap.Error {
+func ValidatePutSitRepRequest(req *request.PutSitRepsRequest) errwrap.Error {
 
 	err := validation.ValidateID(req.GetOrderID())
 	if err != nil {
@@ -291,7 +291,7 @@ func ValidatePutSitRepRequest(req *request.PutSitRepRequest) errwrap.Error {
 	return nil
 }
 
-func ValidatePatchSitRepRequest(req *request.PatchSitRepRequest) errwrap.Error {
+func ValidatePatchSitRepRequest(req *request.PatchSitRepsRequest) errwrap.Error {
 
 	err := validation.ValidateID(req.GetOrderID())
 	if err != nil {
@@ -308,7 +308,7 @@ func ValidatePatchSitRepRequest(req *request.PatchSitRepRequest) errwrap.Error {
 			return errwrap.NewError(http.StatusBadRequest, "invalid sitreps.%v.id: %s", i, err.GetStatusMessage())
 		}
 
-		err = ValidateSitRep(sitrep, validation.IgnoreNothing)
+		err = ValidateSitRep(sitrep, validation.IgnoreEmpty)
 		if err != nil {
 			return err
 		}
@@ -317,7 +317,7 @@ func ValidatePatchSitRepRequest(req *request.PatchSitRepRequest) errwrap.Error {
 	return nil
 }
 
-func ValidateDeleteSitRepRequest(req *request.DeleteSitRepRequest) errwrap.Error {
+func ValidateDeleteSitRepRequest(req *request.DeleteSitRepsRequest) errwrap.Error {
 
 	err := validation.ValidateID(req.GetOrderID())
 	if err != nil {

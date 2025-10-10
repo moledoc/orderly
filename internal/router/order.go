@@ -117,10 +117,10 @@ func putDelegatedTask(w http.ResponseWriter, r *http.Request) {
 	middleware.SpanStart(ctx, "putDelegatedTask")
 	defer middleware.SpanStop(ctx, "putDelegatedTask")
 
-	var req request.PutDelegatedTaskRequest = request.PutDelegatedTaskRequest{
+	var req request.PutDelegatedTasksRequest = request.PutDelegatedTasksRequest{
 		OrderID: meta.ID(r.PathValue(orderID)),
 	}
-	var resp *response.PutDelegatedTaskResponse
+	var resp *response.PutDelegatedTasksResponse
 	var err errwrap.Error
 
 	err = decodeBody(ctx, r, &req)
@@ -138,10 +138,10 @@ func patchDelegatedTask(w http.ResponseWriter, r *http.Request) {
 	middleware.SpanStart(ctx, "patchDelegatedTask")
 	defer middleware.SpanStop(ctx, "patchDelegatedTask")
 
-	var req request.PatchDelegatedTaskRequest = request.PatchDelegatedTaskRequest{
+	var req request.PatchDelegatedTasksRequest = request.PatchDelegatedTasksRequest{
 		OrderID: meta.ID(r.PathValue(orderID)),
 	}
-	var resp *response.PatchDelegatedTaskResponse
+	var resp *response.PatchDelegatedTasksResponse
 	var err errwrap.Error
 
 	err = decodeBody(ctx, r, &req)
@@ -159,10 +159,10 @@ func deleteDelegatedTask(w http.ResponseWriter, r *http.Request) {
 	middleware.SpanStart(ctx, "deleteDelegatedTask")
 	defer middleware.SpanStop(ctx, "deleteDelegatedTask")
 
-	req := &request.DeleteDelegatedTaskRequest{
+	req := &request.DeleteDelegatedTasksRequest{
 		OrderID: meta.ID(r.PathValue(orderID)),
 	}
-	var resp *response.DeleteDelegatedTaskResponse
+	var resp *response.DeleteDelegatedTasksResponse
 	var err errwrap.Error
 
 	err = decodeBody(ctx, r, &req)
@@ -182,10 +182,10 @@ func putSitRep(w http.ResponseWriter, r *http.Request) {
 	middleware.SpanStart(ctx, "putSitRep")
 	defer middleware.SpanStop(ctx, "putSitRep")
 
-	var req request.PutSitRepRequest = request.PutSitRepRequest{
+	var req request.PutSitRepsRequest = request.PutSitRepsRequest{
 		OrderID: meta.ID(r.PathValue(orderID)),
 	}
-	var resp *response.PutSitRepResponse
+	var resp *response.PutSitRepsResponse
 	var err errwrap.Error
 
 	err = decodeBody(ctx, r, &req)
@@ -203,10 +203,10 @@ func patchSitRep(w http.ResponseWriter, r *http.Request) {
 	middleware.SpanStart(ctx, "patchSitRep")
 	defer middleware.SpanStop(ctx, "patchSitRep")
 
-	var req request.PatchSitRepRequest = request.PatchSitRepRequest{
+	var req request.PatchSitRepsRequest = request.PatchSitRepsRequest{
 		OrderID: meta.ID(r.PathValue(orderID)),
 	}
-	var resp *response.PatchSitRepResponse
+	var resp *response.PatchSitRepsResponse
 	var err errwrap.Error
 
 	err = decodeBody(ctx, r, &req)
@@ -224,10 +224,10 @@ func deleteSitRep(w http.ResponseWriter, r *http.Request) {
 	middleware.SpanStart(ctx, "deleteSitRep")
 	defer middleware.SpanStop(ctx, "deleteSitRep")
 
-	req := &request.DeleteSitRepRequest{
+	req := &request.DeleteSitRepsRequest{
 		OrderID: meta.ID(r.PathValue(orderID)),
 	}
-	var resp *response.DeleteSitRepResponse
+	var resp *response.DeleteSitRepsResponse
 	var err errwrap.Error
 	err = decodeBody(ctx, r, req)
 	if err == nil {

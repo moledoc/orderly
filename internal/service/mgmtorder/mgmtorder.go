@@ -171,7 +171,7 @@ func (s *serviceMgmtOrder) DeleteOrder(ctx context.Context, req *request.DeleteO
 	return &response.DeleteOrderResponse{}, s.Repository.DeleteOrder(ctx, req.GetID())
 }
 
-func (s *serviceMgmtOrder) PutDelegatedTask(ctx context.Context, req *request.PutDelegatedTaskRequest) (*response.PutDelegatedTaskResponse, errwrap.Error) {
+func (s *serviceMgmtOrder) PutDelegatedTask(ctx context.Context, req *request.PutDelegatedTasksRequest) (*response.PutDelegatedTasksResponse, errwrap.Error) {
 	middleware.SpanStart(ctx, "PutDelegatedTask")
 	defer middleware.SpanStop(ctx, "PutDelegatedTask")
 
@@ -199,7 +199,7 @@ func (s *serviceMgmtOrder) PutDelegatedTask(ctx context.Context, req *request.Pu
 	if err != nil {
 		return nil, err
 	}
-	return &response.PutDelegatedTaskResponse{
+	return &response.PutDelegatedTasksResponse{
 		Order: resp,
 	}, nil
 }
@@ -226,7 +226,7 @@ func patchTask(reqTask *order.Task, patchedTask *order.Task) bool {
 	return hasChanges
 }
 
-func (s *serviceMgmtOrder) PatchDelegatedTask(ctx context.Context, req *request.PatchDelegatedTaskRequest) (*response.PatchDelegatedTaskResponse, errwrap.Error) {
+func (s *serviceMgmtOrder) PatchDelegatedTask(ctx context.Context, req *request.PatchDelegatedTasksRequest) (*response.PatchDelegatedTasksResponse, errwrap.Error) {
 	middleware.SpanStart(ctx, "PatchDelegatedTask")
 	defer middleware.SpanStop(ctx, "PatchDelegatedTask")
 
@@ -257,7 +257,7 @@ func (s *serviceMgmtOrder) PatchDelegatedTask(ctx context.Context, req *request.
 
 	}
 	if !hasChanges { // NOTE: no changes, return existing order
-		return &response.PatchDelegatedTaskResponse{
+		return &response.PatchDelegatedTasksResponse{
 			Order: ordr,
 		}, nil
 	}
@@ -269,12 +269,12 @@ func (s *serviceMgmtOrder) PatchDelegatedTask(ctx context.Context, req *request.
 	if err != nil {
 		return nil, err
 	}
-	return &response.PatchDelegatedTaskResponse{
+	return &response.PatchDelegatedTasksResponse{
 		Order: resp,
 	}, nil
 }
 
-func (s *serviceMgmtOrder) DeleteDelegatedTask(ctx context.Context, req *request.DeleteDelegatedTaskRequest) (*response.DeleteDelegatedTaskResponse, errwrap.Error) {
+func (s *serviceMgmtOrder) DeleteDelegatedTask(ctx context.Context, req *request.DeleteDelegatedTasksRequest) (*response.DeleteDelegatedTasksResponse, errwrap.Error) {
 	middleware.SpanStart(ctx, "DeleteDelegatedTask")
 	defer middleware.SpanStop(ctx, "DeleteDelegatedTask")
 
@@ -303,10 +303,10 @@ func (s *serviceMgmtOrder) DeleteDelegatedTask(ctx context.Context, req *request
 			// TODO: log warning
 		}
 	}
-	return &response.DeleteDelegatedTaskResponse{}, nil
+	return &response.DeleteDelegatedTasksResponse{}, nil
 }
 
-func (s *serviceMgmtOrder) PutSitRep(ctx context.Context, req *request.PutSitRepRequest) (*response.PutSitRepResponse, errwrap.Error) {
+func (s *serviceMgmtOrder) PutSitRep(ctx context.Context, req *request.PutSitRepsRequest) (*response.PutSitRepsResponse, errwrap.Error) {
 	middleware.SpanStart(ctx, "PutSitRep")
 	defer middleware.SpanStop(ctx, "PutSitRep")
 
@@ -334,7 +334,7 @@ func (s *serviceMgmtOrder) PutSitRep(ctx context.Context, req *request.PutSitRep
 	if err != nil {
 		return nil, err
 	}
-	return &response.PutSitRepResponse{
+	return &response.PutSitRepsResponse{
 		Order: resp,
 	}, nil
 }
@@ -372,7 +372,7 @@ func patchSitRep(reqSitRep *order.SitRep, patchedSitRep *order.SitRep) bool {
 	}
 	return hasChanges
 }
-func (s *serviceMgmtOrder) PatchSitRep(ctx context.Context, req *request.PatchSitRepRequest) (*response.PatchSitRepResponse, errwrap.Error) {
+func (s *serviceMgmtOrder) PatchSitRep(ctx context.Context, req *request.PatchSitRepsRequest) (*response.PatchSitRepsResponse, errwrap.Error) {
 	middleware.SpanStart(ctx, "PatchSitRep")
 	defer middleware.SpanStop(ctx, "PatchSitRep")
 
@@ -404,7 +404,7 @@ func (s *serviceMgmtOrder) PatchSitRep(ctx context.Context, req *request.PatchSi
 	}
 
 	if !hasChanges { // NOTE: no changes, return current order
-		return &response.PatchSitRepResponse{
+		return &response.PatchSitRepsResponse{
 			Order: o,
 		}, nil
 	}
@@ -416,12 +416,12 @@ func (s *serviceMgmtOrder) PatchSitRep(ctx context.Context, req *request.PatchSi
 	if err != nil {
 		return nil, err
 	}
-	return &response.PatchSitRepResponse{
+	return &response.PatchSitRepsResponse{
 		Order: resp,
 	}, nil
 }
 
-func (s *serviceMgmtOrder) DeleteSitRep(ctx context.Context, req *request.DeleteSitRepRequest) (*response.DeleteSitRepResponse, errwrap.Error) {
+func (s *serviceMgmtOrder) DeleteSitRep(ctx context.Context, req *request.DeleteSitRepsRequest) (*response.DeleteSitRepsResponse, errwrap.Error) {
 	middleware.SpanStart(ctx, "DeleteSitRep")
 	defer middleware.SpanStop(ctx, "DeleteSitRep")
 
@@ -450,5 +450,5 @@ func (s *serviceMgmtOrder) DeleteSitRep(ctx context.Context, req *request.Delete
 			// TODO: log warning
 		}
 	}
-	return &response.DeleteSitRepResponse{}, nil
+	return &response.DeleteSitRepsResponse{}, nil
 }
