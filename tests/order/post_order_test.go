@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/google/go-cmp/cmp"
+	"github.com/moledoc/orderly/internal/domain/order"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
 	"github.com/moledoc/orderly/tests/cleanup"
@@ -16,8 +17,8 @@ func (s *OrderSuite) TestPostOrder_Minimal() {
 	tt := s.T()
 
 	o := setup.OrderObj()
-	o.SetDelegatedTasks(nil)
-	o.SetSitReps(nil)
+	o.SetDelegatedTasks([]*order.Task{})
+	o.SetSitReps([]*order.SitRep{})
 	resp, err := s.API.PostOrder(tt, context.Background(), &request.PostOrderRequest{
 		Order: o,
 	})
@@ -26,6 +27,7 @@ func (s *OrderSuite) TestPostOrder_Minimal() {
 
 	opts := []cmp.Option{
 		compare.IgnoreID,
+		compare.IgnoreMeta,
 	}
 
 	expected := &response.PostOrderResponse{
@@ -39,7 +41,7 @@ func (s *OrderSuite) TestPostOrder_WithDelegatedTasks() {
 	tt := s.T()
 
 	o := setup.OrderObj()
-	o.SetSitReps(nil)
+	o.SetSitReps([]*order.SitRep{})
 	resp, err := s.API.PostOrder(tt, context.Background(), &request.PostOrderRequest{
 		Order: o,
 	})
@@ -48,6 +50,7 @@ func (s *OrderSuite) TestPostOrder_WithDelegatedTasks() {
 
 	opts := []cmp.Option{
 		compare.IgnoreID,
+		compare.IgnoreMeta,
 	}
 
 	expected := &response.PostOrderResponse{
@@ -61,7 +64,7 @@ func (s *OrderSuite) TestPostOrder_WithSitReps() {
 	tt := s.T()
 
 	o := setup.OrderObj()
-	o.SetSitReps(nil)
+	o.SetSitReps([]*order.SitRep{})
 	resp, err := s.API.PostOrder(tt, context.Background(), &request.PostOrderRequest{
 		Order: o,
 	})
@@ -70,6 +73,7 @@ func (s *OrderSuite) TestPostOrder_WithSitReps() {
 
 	opts := []cmp.Option{
 		compare.IgnoreID,
+		compare.IgnoreMeta,
 	}
 
 	expected := &response.PostOrderResponse{
@@ -91,6 +95,7 @@ func (s *OrderSuite) TestPostOrder_Full() {
 
 	opts := []cmp.Option{
 		compare.IgnoreID,
+		compare.IgnoreMeta,
 	}
 
 	expected := &response.PostOrderResponse{

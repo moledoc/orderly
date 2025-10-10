@@ -20,7 +20,7 @@ func (s *serviceMgmtUser) PostUser(ctx context.Context, req *request.PostUserReq
 		return nil, err
 	}
 
-	u := req.GetUser()
+	u := req.GetUser().Clone()
 	u.ID = meta.ID(utils.RandAlphanum())
 
 	now := time.Now().UTC()

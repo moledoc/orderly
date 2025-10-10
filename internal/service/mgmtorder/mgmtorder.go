@@ -22,7 +22,7 @@ func (s *serviceMgmtOrder) PostOrder(ctx context.Context, req *request.PostOrder
 		return nil, err
 	}
 
-	o := req.GetOrder()
+	o := req.GetOrder().Clone()
 	o.SetID(meta.NewID())
 
 	for _, delegated := range o.GetDelegatedTasks() {
