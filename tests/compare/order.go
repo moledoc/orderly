@@ -39,6 +39,10 @@ var (
 		return a.GetID() < b.GetID()
 	}
 
+	SortTaskByAccountable = func(a *order.Task, b *order.Task) bool {
+		return a.GetAccountable() < b.GetAccountable()
+	}
+
 	SorterTask = func(sorters ...func(a *order.Task, b *order.Task) bool) cmp.Option {
 		return cmpopts.SortSlices(func(a *order.Task, b *order.Task) bool {
 			for _, comparer := range sorters {

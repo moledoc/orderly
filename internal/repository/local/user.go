@@ -9,9 +9,18 @@ import (
 	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/internal/middleware"
 	"github.com/moledoc/orderly/internal/repository"
+	"github.com/moledoc/orderly/pkg/utils"
 )
 
-type LocalRepositoryUser map[meta.ID]user.User
+type userInfo struct {
+	ID         meta.ID
+	Name       string
+	Email      user.Email
+	Supervisor user.Email
+	Meta       meta.Meta
+}
+
+type LocalRepositoryUser map[meta.ID]userInfo
 
 var (
 	_ repository.RepositoryUserAPI = (LocalRepositoryUser)(nil)
@@ -40,11 +49,17 @@ func (r LocalRepositoryUser) ReadByID(ctx context.Context, ID meta.ID) (*user.Us
 		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository user uninitialized")
 	}
 
-	user, ok := r[ID]
+	u, ok := r[ID]
 	if !ok {
 		return nil, errwrap.NewError(http.StatusNotFound, "not found")
 	}
-	return &user, nil
+	return &user.User{
+		ID:         u.ID,
+		Name:       u.Name,
+		Email:      u.Email,
+		Supervisor: u.Supervisor,
+		Meta:       &u.Meta,
+	}, nil
 }
 
 func (r LocalRepositoryUser) ReadSubOrdinates(ctx context.Context, ID meta.ID) ([]*user.User, errwrap.Error) {
@@ -62,9 +77,15 @@ func (r LocalRepositoryUser) ReadSubOrdinates(ctx context.Context, ID meta.ID) (
 
 	// MAYBE: TODO: optimize subordinate finding
 	var subOrdinates []*user.User
-	for _, user := range r {
-		if user.GetSupervisor() == supervisor.GetEmail() {
-			subOrdinates = append(subOrdinates, &user)
+	for _, u := range r {
+		if u.Supervisor == supervisor.Email {
+			subOrdinates = append(subOrdinates, &user.User{
+				ID:         u.ID,
+				Name:       u.Name,
+				Email:      u.Email,
+				Supervisor: u.Supervisor,
+				Meta:       &u.Meta,
+			})
 		}
 	}
 
@@ -80,8 +101,14 @@ func (r LocalRepositoryUser) ReadAll(ctx context.Context) ([]*user.User, errwrap
 	}
 
 	var users []*user.User
-	for _, user := range r {
-		users = append(users, &user)
+	for _, u := range r {
+		users = append(users, &user.User{
+			ID:         u.ID,
+			Name:       u.Name,
+			Email:      u.Email,
+			Supervisor: u.Supervisor,
+			Meta:       &u.Meta,
+		})
 	}
 	return users, nil
 }
@@ -95,7 +122,13 @@ func (r LocalRepositoryUser) Write(ctx context.Context, user *user.User) (*user.
 	}
 
 	id := user.GetID()
-	r[id] = *user
+	r[id] = userInfo{
+		ID:         user.GetID(),
+		Name:       user.GetName(),
+		Email:      user.GetEmail(),
+		Supervisor: user.GetSupervisor(),
+		Meta:       utils.Deref(user.GetMeta()),
+	}
 
 	return user, nil
 }

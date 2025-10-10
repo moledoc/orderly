@@ -19,15 +19,15 @@ func ValidateUser(user *user.User, ignore validation.IgnoreField) errwrap.Error 
 		return errwrap.NewError(http.StatusBadRequest, "invalid user.id: %s", err.GetStatusMessage())
 	}
 
-	if len(user.GetName()) == 0 {
+	if !validation.IsIgnoreEmpty(user.GetName(), ignore) && len(user.GetName()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "invalid user.name length")
 	}
 
-	if err := validation.ValidateEmail(user.GetEmail()); err != nil {
+	if err := validation.ValidateEmail(user.GetEmail()); !validation.IsIgnoreEmpty(user.GetEmail(), ignore) && err != nil {
 		return errwrap.NewError(http.StatusBadRequest, "invalid user.email: %s", err.GetStatusMessage())
 	}
 
-	if err := validation.ValidateEmail(user.GetSupervisor()); err != nil {
+	if err := validation.ValidateEmail(user.GetSupervisor()); !validation.IsIgnoreEmpty(user.GetSupervisor(), ignore) && err != nil {
 		return errwrap.NewError(http.StatusBadRequest, "invalid user.supervisor: %s", err.GetStatusMessage())
 	}
 
@@ -90,7 +90,7 @@ func ValidatePatchUserRequest(req *request.PatchUserRequest) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "user.id missing")
 	}
 
-	return ValidateUser(req.GetUser(), validation.IgnoreNothing)
+	return ValidateUser(req.GetUser(), validation.IgnoreEmpty)
 }
 
 func ValidateDeleteUserRequest(req *request.DeleteUserRequest) errwrap.Error {

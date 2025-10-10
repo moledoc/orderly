@@ -19,92 +19,110 @@ import (
 func (s *UserSuite) TestPatchUser() {
 	tt := s.T()
 
-	user := setup.MustCreateUserWithCleanup(tt, context.Background(), s.API, &user.User{
+	u := setup.MustCreateUserWithCleanup(tt, context.Background(), s.API, &user.User{
 		Name:       "name",
 		Email:      user.Email("example@example.com"),
 		Supervisor: user.Email("example.supervisor@example.com"),
 	})
 
-	tt.Run("Name", func(t *testing.T) {
-		pathcedUser := *user
-		pathcedUser.SetName(pathcedUser.GetName() + "-updated")
+	changes := []struct {
+		Name string
+		f    func() *request.PatchUserRequest
+	}{
+		{
+			Name: "name",
+			f: func() *request.PatchUserRequest {
+				u.SetName(u.GetName() + "-updated")
+				u.GetMeta().VersionIncr()
 
-		resp, err := s.API.PatchUser(tt, context.Background(), &request.PatchUserRequest{
-			User: &pathcedUser,
+				return &request.PatchUserRequest{
+					User: &user.User{
+						ID:   u.GetID(),
+						Name: u.GetName(),
+					},
+				}
+			},
+		},
+		{
+			Name: "email",
+			f: func() *request.PatchUserRequest {
+				u.SetEmail("example.updated@example.com")
+				u.GetMeta().VersionIncr()
+
+				return &request.PatchUserRequest{
+					User: &user.User{
+						ID:    u.GetID(),
+						Email: u.GetEmail(),
+					},
+				}
+			},
+		},
+		{
+			Name: "supervisor",
+			f: func() *request.PatchUserRequest {
+				u.SetSupervisor("example.supervisor.updated@example.com")
+				u.GetMeta().VersionIncr()
+
+				return &request.PatchUserRequest{
+					User: &user.User{
+						ID:         u.GetID(),
+						Supervisor: u.GetSupervisor(),
+					},
+				}
+			},
+		},
+		{
+			Name: "meta",
+			f: func() *request.PatchUserRequest {
+
+				return &request.PatchUserRequest{
+					User: &user.User{
+						ID: u.GetID(),
+						Meta: &meta.Meta{
+							Version: 2,
+							Created: time.Now().UTC(),
+							Updated: time.Now().UTC(),
+						},
+					},
+				}
+			},
+		},
+	}
+
+	for _, change := range changes {
+		tt.Run(change.Name, func(t *testing.T) {
+			req := change.f()
+
+			respPatch, err := s.API.PatchUser(t, context.Background(), req)
+			require.NoError(t, err)
+
+			opts := []cmp.Option{
+				compare.IgnorePaths("User.Meta.Updated"),
+			}
+			expectedPatch := &response.PatchUserResponse{
+				User: u,
+			}
+			compare.RequireEqual(t, expectedPatch, respPatch, opts...)
+
+			respGet, err := s.API.GetUserByID(t, context.Background(), &request.GetUserByIDRequest{
+				ID: u.GetID(),
+			})
+			require.NoError(t, err)
+
+			expectedGet := &response.GetUserByIDResponse{
+				User: u,
+			}
+			compare.RequireEqual(t, expectedGet, respGet, opts...)
+
 		})
-		require.NoError(t, err)
-
-		opts := []cmp.Option{}
-
-		expected := &response.PatchUserResponse{
-			User: &pathcedUser,
-		}
-
-		compare.RequireEqual(tt, expected, resp, opts...)
-	})
-	tt.Run("Email", func(t *testing.T) {
-		pathcedUser := *user
-		pathcedUser.SetEmail("example.updated@example.com")
-
-		resp, err := s.API.PatchUser(tt, context.Background(), &request.PatchUserRequest{
-			User: &pathcedUser,
-		})
-		require.NoError(t, err)
-
-		opts := []cmp.Option{}
-
-		expected := &response.PatchUserResponse{
-			User: &pathcedUser,
-		}
-
-		compare.RequireEqual(tt, expected, resp, opts...)
-	})
-	tt.Run("Supervisor", func(t *testing.T) {
-		pathcedUser := *user
-		pathcedUser.SetSupervisor("example.supervisor.updated@example.com")
-
-		resp, err := s.API.PatchUser(tt, context.Background(), &request.PatchUserRequest{
-			User: &pathcedUser,
-		})
-		require.NoError(t, err)
-
-		opts := []cmp.Option{}
-
-		expected := &response.PatchUserResponse{
-			User: &pathcedUser,
-		}
-
-		compare.RequireEqual(tt, expected, resp, opts...)
-	})
-	tt.Run("Meta", func(t *testing.T) {
-		// NOTE: meta is ignored in PATCH call
-		pathcedUser := *user
-		pathcedUser.SetMeta(&meta.Meta{
-			Version: 2,
-			Created: time.Now().UTC(),
-			Updated: time.Now().UTC(),
-		})
-
-		resp, err := s.API.PatchUser(tt, context.Background(), &request.PatchUserRequest{
-			User: &pathcedUser,
-		})
-		require.NoError(t, err)
-
-		opts := []cmp.Option{}
-
-		expected := &response.PatchUserResponse{
-			User: user,
-		}
-
-		compare.RequireEqual(tt, expected, resp, opts...)
-	})
+	}
 }
 
 func (s *UserSuite) TestPatchUser_Failed() {
 	tt := s.T()
 
 	tt.Run("NotFound", func(t *testing.T) {
-		_, err := s.API.PatchUser(tt, context.Background(), &request.PatchUserRequest{
+		_, err := s.API.PatchUser(t, context.Background(), &request.PatchUserRequest{
 
 			User: &user.User{
 				ID:         meta.NewID(),
@@ -113,8 +131,8 @@ func (s *UserSuite) TestPatchUser_Failed() {
 				Supervisor: user.Email("example.supervisor@example.com"),
 			},
 		})
-		require.Error(tt, err)
-		require.Equal(tt, http.StatusNotFound, err.GetStatusCode(), err)
+		require.Error(t, err)
+		require.Equal(t, http.StatusNotFound, err.GetStatusCode(), err)
 	})
 
 }
