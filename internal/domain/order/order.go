@@ -82,12 +82,23 @@ func (o *Order) Clone() *Order {
 			State:       delegatedTask.GetState(),
 			Accountable: delegatedTask.GetAccountable(),
 			Objective:   delegatedTask.GetObjective(),
+			Deadline:    delegatedTask.GetDeadline(),
 		}
 	}
 
 	for i, sitrep := range o.GetSitReps() {
 		clone.SitReps[i] = &SitRep{
-			ID:            sitrep.GetID(),
+			ID: sitrep.GetID(),
+
+			DateTime: sitrep.GetDateTime(),
+			By:       sitrep.GetBy(),
+			Ping:     sitrep.GetPing(),
+
+			Situation: sitrep.GetSituation(),
+			Actions:   sitrep.GetActions(),
+			TBD:       sitrep.GetTBD(),
+			Issues:    sitrep.GetIssues(),
+
 			WorkCompleted: sitrep.GetWorkCompleted(),
 			State:         sitrep.GetState(),
 			Summary:       sitrep.GetSummary(),

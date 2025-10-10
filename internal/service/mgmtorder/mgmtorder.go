@@ -3,6 +3,7 @@ package mgmtorder
 import (
 	"context"
 	"net/http"
+	"slices"
 	"time"
 
 	"github.com/moledoc/orderly/internal/domain/errwrap"
@@ -116,13 +117,13 @@ func (s *serviceMgmtOrder) PatchOrder(ctx context.Context, req *request.PatchOrd
 	hasChanges := false
 	patchedOrder := order.Clone()
 
-	hasChanges = hasChanges || patchTask(req.GetOrder().GetTask(), patchedOrder.GetTask())
+	hasChanges = patchTask(req.GetOrder().GetTask(), patchedOrder.GetTask()) || hasChanges
 
 	// TODO: optimize
 	for _, reqDelegatedTask := range req.GetOrder().GetDelegatedTasks() {
 		for _, patchedDelegatedTask := range patchedOrder.GetDelegatedTasks() {
 			if reqDelegatedTask.GetID() == patchedDelegatedTask.GetID() {
-				hasChanges = hasChanges || patchTask(reqDelegatedTask, patchedDelegatedTask)
+				hasChanges = patchTask(reqDelegatedTask, patchedDelegatedTask) || hasChanges
 				break
 			}
 		}
@@ -132,7 +133,7 @@ func (s *serviceMgmtOrder) PatchOrder(ctx context.Context, req *request.PatchOrd
 	for _, reqSitRep := range req.GetOrder().GetSitReps() {
 		for _, patchedSitRep := range patchedOrder.GetSitReps() {
 			if reqSitRep.GetID() == patchedSitRep.GetID() {
-				hasChanges = hasChanges || patchSitRep(reqSitRep, patchedSitRep)
+				hasChanges = patchSitRep(reqSitRep, patchedSitRep) || hasChanges
 				break
 			}
 		}
@@ -157,7 +158,7 @@ func (s *serviceMgmtOrder) PatchOrder(ctx context.Context, req *request.PatchOrd
 	}
 	return &response.PatchOrderResponse{
 		Order: resp,
-	}, err
+	}, nil
 }
 
 func (s *serviceMgmtOrder) DeleteOrder(ctx context.Context, req *request.DeleteOrderRequest) (*response.DeleteOrderResponse, errwrap.Error) {
@@ -357,6 +358,35 @@ func patchSitRep(reqSitRep *order.SitRep, patchedSitRep *order.SitRep) bool {
 	}
 	if !utils.IsZeroValue(reqSitRep.GetSummary()) && reqSitRep.GetSummary() != patchedSitRep.GetSummary() {
 		patchedSitRep.SetSummary(reqSitRep.GetSummary())
+		hasChanges = true
+	}
+
+	if !utils.IsZeroValue(reqSitRep.GetDateTime()) && reqSitRep.GetDateTime() != patchedSitRep.GetDateTime() {
+		patchedSitRep.SetDateTime(reqSitRep.GetDateTime())
+		hasChanges = true
+	}
+	if !utils.IsZeroValue(reqSitRep.GetBy()) && reqSitRep.GetBy() != patchedSitRep.GetBy() {
+		patchedSitRep.SetBy(reqSitRep.GetBy())
+		hasChanges = true
+	}
+	if !utils.IsZeroValue(reqSitRep.GetPing()) && !slices.Equal(reqSitRep.GetPing(), patchedSitRep.GetPing()) {
+		patchedSitRep.SetPing(reqSitRep.GetPing())
+		hasChanges = true
+	}
+	if !utils.IsZeroValue(reqSitRep.GetSituation()) && reqSitRep.GetSituation() != patchedSitRep.GetSituation() {
+		patchedSitRep.SetSituation(reqSitRep.GetSituation())
+		hasChanges = true
+	}
+	if !utils.IsZeroValue(reqSitRep.GetActions()) && reqSitRep.GetActions() != patchedSitRep.GetActions() {
+		patchedSitRep.SetActions(reqSitRep.GetActions())
+		hasChanges = true
+	}
+	if !utils.IsZeroValue(reqSitRep.GetTBD()) && reqSitRep.GetTBD() != patchedSitRep.GetTBD() {
+		patchedSitRep.SetTBD(reqSitRep.GetTBD())
+		hasChanges = true
+	}
+	if !utils.IsZeroValue(reqSitRep.GetIssues()) && reqSitRep.GetIssues() != patchedSitRep.GetIssues() {
+		patchedSitRep.SetIssues(reqSitRep.GetIssues())
 		hasChanges = true
 	}
 	return hasChanges

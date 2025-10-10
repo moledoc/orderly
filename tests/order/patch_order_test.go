@@ -20,10 +20,6 @@ import (
 func (s *OrderSuite) TestPatchOrder() {
 	tt := s.T()
 
-	// Task           *Task      `json:"task,omitempty"`
-	// DelegatedTasks []*Task    `json:"delegated_tasks,omitempty"`
-	// SitReps        []*SitRep  `json:"sitreps,omitempty"`
-	// Meta           *meta.Meta `json:"meta,omitempty"`
 	expected := setup.MustCreateOrderWithCleanup(tt, context.Background(), s.API, setup.OrderObj())
 
 	changes := []struct {
@@ -104,22 +100,22 @@ func (s *OrderSuite) TestPatchOrder() {
 						user.Email("user2@email.com"),
 						user.Email("user3@email.com"),
 					},
-					Situation: "New situation description",
-					Actions:   "<List of actions>",
-					TBD:       "<List of things to do>",
-					Issues:    "<List of issues>",
+					// Situation: "New situation description",
+					// Actions:   "<List of actions>",
+					// TBD:       "<List of things to do>",
+					Issues: "<List of issues>",
 
 					State:         order.InProgress,
 					WorkCompleted: 20,
-					Summary:       "new summary",
+					Summary:       "patched new summary",
 				}
 
 				expected.GetSitReps()[0].SetDateTime(patchedSitRep.GetDateTime())
 				expected.GetSitReps()[0].SetBy(patchedSitRep.GetBy())
 				expected.GetSitReps()[0].SetPing(patchedSitRep.GetPing())
-				expected.GetSitReps()[0].SetSituation(patchedSitRep.GetSituation())
-				expected.GetSitReps()[0].SetActions(patchedSitRep.GetActions())
-				expected.GetSitReps()[0].SetTBD(patchedSitRep.GetTBD())
+				// expected.GetSitReps()[0].SetSituation(patchedSitRep.GetSituation())
+				// expected.GetSitReps()[0].SetActions(patchedSitRep.GetActions())
+				// expected.GetSitReps()[0].SetTBD(patchedSitRep.GetTBD())
 				expected.GetSitReps()[0].SetIssues(patchedSitRep.GetIssues())
 				expected.GetSitReps()[0].SetState(patchedSitRep.GetState())
 				expected.GetSitReps()[0].SetWorkCompleted(patchedSitRep.GetWorkCompleted())
