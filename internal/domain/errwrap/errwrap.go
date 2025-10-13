@@ -21,10 +21,16 @@ type Err struct {
 }
 
 func (e *Err) Error() string {
+	if e == nil {
+		return ""
+	}
 	return e.String()
 }
 
 func (e *Err) String() string {
+	if e == nil {
+		return ""
+	}
 	bs, err := json.Marshal(e)
 	if err != nil {
 		return fmt.Sprintf("marshalling err failed: %s", err)
@@ -33,18 +39,30 @@ func (e *Err) String() string {
 }
 
 func (e *Err) GetStatusCode() int {
+	if e == nil {
+		return 0
+	}
 	return e.Code
 }
 
 func (e *Err) GetStatusMessage() string {
+	if e == nil {
+		return ""
+	}
 	return e.Message
 }
 
 func (e *Err) GetTraceID() string {
+	if e == nil {
+		return ""
+	}
 	return e.TraceID
 }
 
 func (e *Err) SetTraceID(traceID string) {
+	if e == nil {
+		return
+	}
 	e.TraceID = traceID
 }
 
