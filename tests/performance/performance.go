@@ -22,13 +22,14 @@ type DataPoint struct {
 }
 
 type Statistics struct {
-	Count uint
-	P50   time.Duration
-	P90   time.Duration
-	P95   time.Duration
-	P99   time.Duration
-	Avg   time.Duration
-	Std   time.Duration
+	Count                uint
+	SvcUnderLoadDuration time.Duration
+	P50                  time.Duration
+	P90                  time.Duration
+	P95                  time.Duration
+	P99                  time.Duration
+	Avg                  time.Duration
+	Std                  time.Duration
 }
 
 type Pass struct {
@@ -46,8 +47,9 @@ type Report struct {
 	NFRMs             uint
 	StatisticsSuccess Statistics
 	StatisticsError   Statistics
-	ThroughPut        float64 // req/s
+	ThroughPut        float64 // extrapolated req/s
 	Pass              Pass
+	Datapoints        []DataPoint
 	Notes             []string
 }
 
@@ -124,6 +126,47 @@ func (p *Plan) runSetups() setupsResults {
 	return setupRes
 }
 
+func avg(dps []DataPoint) time.Duration {
+	var average float64
+	for _, dp := range dps {
+		average += float64(dp.Duration) / float64(len(dps))
+	}
+	return time.Duration(average)
+}
+
+func stddev(dps []DataPoint, average time.Duration) time.Duration {
+	var variance float64
+	sampleSize := len(dps) - 1
+	for _, dp := range dps {
+		variance += math.Pow(float64(dp.Duration-average), 2) / float64(sampleSize)
+	}
+	return time.Duration(math.Sqrt(variance))
+}
+
+func calcStatistics(datapoints []DataPoint) Statistics {
+	if len(datapoints) == 0 {
+		return Statistics{}
+	}
+	m := avg(datapoints)
+	slices.SortFunc(datapoints, func(a DataPoint, b DataPoint) int {
+		return int(a.Duration - b.Duration)
+	})
+	var loadDur time.Duration
+	for _, dp := range datapoints {
+		loadDur += dp.Duration
+	}
+	return Statistics{
+		Count:                uint(len(datapoints)),
+		SvcUnderLoadDuration: loadDur,
+		P50:                  datapoints[len(datapoints)*50/100].Duration,
+		P90:                  datapoints[len(datapoints)*90/100].Duration,
+		P95:                  datapoints[len(datapoints)*95/100].Duration,
+		P99:                  datapoints[len(datapoints)*99/100].Duration,
+		Avg:                  m,
+		Std:                  stddev(datapoints, m),
+	}
+}
+
 func (p *Plan) Run() *Report {
 	if p == nil || p.Test == nil {
 		fmt.Fprintf(os.Stderr, "[ERROR]: no plan or testing function defined; run aborted")
@@ -135,16 +178,17 @@ func (p *Plan) Run() *Report {
 	setupRes := p.runSetups()
 
 	iterate := func(iterSetups [][]input, collector chan DataPoint) {
-		for _, setups := range iterSetups {
+		for i, setups := range iterSetups {
 			s := time.Now()
 			go func(ssetups []input) {
 				dist := int64(time.Second) / int64(len(ssetups))
-				for _, setup := range ssetups {
+				for j, setup := range ssetups {
 					ctx := setup.ctxFunc()
 					start := time.Now()
 					resp, err := p.Test(ctx, setup.request, setup.err)
 					end := time.Now()
 					dur := end.Sub(start)
+					fmt.Printf("%v-%v: start: '%v', stop: '%v', err: %s\n", i, j, start, end, err)
 					if collector != nil {
 						collector <- DataPoint{
 							StartTime: start,
@@ -182,52 +226,18 @@ func (p *Plan) Run() *Report {
 		}
 	}
 
-	slices.SortFunc(datapointsSuccess, func(a DataPoint, b DataPoint) int {
-		return int(a.Duration - a.Duration)
-	})
-	slices.SortFunc(datapointsError, func(a DataPoint, b DataPoint) int {
-		return int(a.Duration - a.Duration)
-	})
-
-	avg := func(dps []DataPoint) time.Duration {
-		var average int64
-		for _, dp := range dps {
-			average += dp.Duration.Milliseconds() / int64(len(dps))
-		}
-		return time.Duration(average) * time.Millisecond
-	}
-	stddev := func(dps []DataPoint, average time.Duration) time.Duration {
-		var variance float64
-		for _, dp := range dps {
-			variance += math.Pow(float64(dp.Duration-average), 2)
-		}
-		return time.Duration(math.Sqrt(variance)) * time.Millisecond
-	}
-
-	statsSuccess := Statistics{
-		Count: uint(len(datapointsSuccess)),
-		P50:   datapointsSuccess[len(datapointsSuccess)*50/100].Duration,
-		P90:   datapointsSuccess[len(datapointsSuccess)*90/100].Duration,
-		P95:   datapointsSuccess[len(datapointsSuccess)*95/100].Duration,
-		P99:   datapointsSuccess[len(datapointsSuccess)*99/100].Duration,
-		Avg:   avg(datapointsSuccess),
-		Std:   stddev(datapointsSuccess, avg(datapointsSuccess)),
-	}
-	statsError := Statistics{
-		Count: uint(len(datapointsError)),
-		P50:   datapointsError[len(datapointsError)*50/100].Duration,
-		P90:   datapointsError[len(datapointsError)*90/100].Duration,
-		P95:   datapointsError[len(datapointsError)*95/100].Duration,
-		P99:   datapointsError[len(datapointsError)*99/100].Duration,
-		Avg:   avg(datapointsError),
-		Std:   stddev(datapointsError, avg(datapointsError)),
-	}
+	statsSuccess := calcStatistics(datapointsSuccess)
+	statsError := calcStatistics(datapointsError)
 
 	pass := Pass{
 		P50: statsSuccess.P50.Milliseconds() < int64(p.NFRMs),
 		P90: statsSuccess.P90.Milliseconds() < int64(p.NFRMs),
 		P95: statsSuccess.P95.Milliseconds() < int64(p.NFRMs),
 		P99: statsSuccess.P99.Milliseconds() < int64(p.NFRMs),
+	}
+
+	for _, edp := range datapointsError {
+		p.Notes = append(p.Notes, fmt.Sprintf("trace_id: %v", edp.Error.GetTraceID()))
 	}
 
 	report := Report{
@@ -238,8 +248,9 @@ func (p *Plan) Run() *Report {
 		NFRMs:             p.NFRMs,
 		StatisticsSuccess: statsSuccess,
 		StatisticsError:   statsError,
-		ThroughPut:        float64(len(datapoints)) / float64(p.DurationSec),
+		ThroughPut:        float64(len(datapoints)) / float64(statsSuccess.SvcUnderLoadDuration.Seconds()+statsError.SvcUnderLoadDuration.Seconds()),
 		Pass:              pass,
+		Datapoints:        datapoints,
 		Notes:             p.Notes,
 	}
 	return &report
