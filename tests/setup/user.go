@@ -19,7 +19,6 @@ import (
 func UserObj(extra ...string) *user.User {
 	ee := strings.Join(extra, ".")
 	return &user.User{
-		ID:         meta.NewID(),
 		Name:       fmt.Sprintf("name%v", ee),
 		Email:      user.Email(fmt.Sprintf("example%v@example.com", ee)),
 		Supervisor: user.Email(fmt.Sprintf("example.supervisor%v@example.com", ee)),
@@ -29,6 +28,12 @@ func UserObj(extra ...string) *user.User {
 			Updated: time.Now().UTC(),
 		},
 	}
+}
+
+func UserObjWithID(extra ...string) *user.User {
+	u := UserObj(extra...)
+	u.ID = meta.NewID()
+	return u
 }
 
 func CreateUserWithCleanup(t *testing.T, ctx context.Context, api api.User, userObj *user.User) (*user.User, errwrap.Error) {
