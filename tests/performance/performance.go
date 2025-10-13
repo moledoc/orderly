@@ -22,14 +22,20 @@ type DataPoint struct {
 }
 
 type Statistics struct {
-	Count                uint
-	SvcUnderLoadDuration time.Duration
-	P50                  time.Duration
-	P90                  time.Duration
-	P95                  time.Duration
-	P99                  time.Duration
-	Avg                  time.Duration
-	Std                  time.Duration
+	Count uint
+	P50   time.Duration
+	P90   time.Duration
+	P95   time.Duration
+	P99   time.Duration
+	Avg   time.Duration
+	Std   time.Duration
+}
+
+type NFRs struct {
+	P50 time.Duration
+	P90 time.Duration
+	P95 time.Duration
+	P99 time.Duration
 }
 
 type Pass struct {
@@ -44,12 +50,10 @@ type Report struct {
 	RPS               uint
 	DurationSec       uint
 	RequestCount      uint
-	NFRMs             uint
+	NFR               NFRs
 	StatisticsSuccess Statistics
 	StatisticsError   Statistics
-	ThroughPut        float64 // extrapolated req/s
 	Pass              Pass
-	Datapoints        []DataPoint
 	Notes             []string
 }
 
@@ -60,7 +64,7 @@ type Plan struct {
 	RampDurationSec uint
 	Setup           func() (ctxFunc func() context.Context, request any, err errwrap.Error)
 	Test            func(ctx context.Context, request any, errIn errwrap.Error) (response any, errOut errwrap.Error)
-	NFRMs           uint
+	NFR             NFRs
 	Notes           []string
 }
 
@@ -72,10 +76,9 @@ func lerp(x1 float64, x2 float64, y1 float64, y2 float64, x float64) float64 {
 }
 
 type input struct {
-	ctxFunc  func() context.Context
-	request  any
-	response any
-	err      errwrap.Error
+	ctxFunc func() context.Context
+	request any
+	err     errwrap.Error
 }
 
 type setupsResults struct {
@@ -151,26 +154,21 @@ func calcStatistics(datapoints []DataPoint) Statistics {
 	slices.SortFunc(datapoints, func(a DataPoint, b DataPoint) int {
 		return int(a.Duration - b.Duration)
 	})
-	var loadDur time.Duration
-	for _, dp := range datapoints {
-		loadDur += dp.Duration
-	}
 	return Statistics{
-		Count:                uint(len(datapoints)),
-		SvcUnderLoadDuration: loadDur,
-		P50:                  datapoints[len(datapoints)*50/100].Duration,
-		P90:                  datapoints[len(datapoints)*90/100].Duration,
-		P95:                  datapoints[len(datapoints)*95/100].Duration,
-		P99:                  datapoints[len(datapoints)*99/100].Duration,
-		Avg:                  m,
-		Std:                  stddev(datapoints, m),
+		Count: uint(len(datapoints)),
+		P50:   datapoints[len(datapoints)*50/100].Duration,
+		P90:   datapoints[len(datapoints)*90/100].Duration,
+		P95:   datapoints[len(datapoints)*95/100].Duration,
+		P99:   datapoints[len(datapoints)*99/100].Duration,
+		Avg:   m,
+		Std:   stddev(datapoints, m),
 	}
 }
 
-func (p *Plan) Run() *Report {
+func (p *Plan) Run() (r *Report, success []DataPoint, failures []DataPoint) { // NOTE: currently naked return just to indicate intent in the signature
 	if p == nil || p.Test == nil {
 		fmt.Fprintf(os.Stderr, "[ERROR]: no plan or testing function defined; run aborted")
-		return nil
+		return nil, nil, nil
 	}
 
 	p.T.Helper()
@@ -178,17 +176,17 @@ func (p *Plan) Run() *Report {
 	setupRes := p.runSetups()
 
 	iterate := func(iterSetups [][]input, collector chan DataPoint) {
-		for i, setups := range iterSetups {
+		for _, setups := range iterSetups {
 			s := time.Now()
 			go func(ssetups []input) {
 				dist := int64(time.Second) / int64(len(ssetups))
-				for j, setup := range ssetups {
+				for _, setup := range ssetups {
 					ctx := setup.ctxFunc()
 					start := time.Now()
 					resp, err := p.Test(ctx, setup.request, setup.err)
 					end := time.Now()
 					dur := end.Sub(start)
-					fmt.Printf("%v-%v: start: '%v', stop: '%v', err: %s\n", i, j, start, end, err)
+					// fmt.Printf("%v-%v: start: '%v', stop: '%v', err: %s\n", i, j, start, end, err)
 					if collector != nil {
 						collector <- DataPoint{
 							StartTime: start,
@@ -212,13 +210,17 @@ func (p *Plan) Run() *Report {
 	iterate(setupRes.test, collector)
 	iterate(setupRes.rampdown, nil)
 
-	close(collector)
+	for {
+		if len(collector) >= int(p.DurationSec)*int(p.RPS) {
+			close(collector)
+			break
+		}
+		<-time.After(250 * time.Millisecond)
+	}
 
-	var datapoints []DataPoint
 	var datapointsSuccess []DataPoint
 	var datapointsError []DataPoint
 	for dp := range collector {
-		datapoints = append(datapoints, dp)
 		if dp.Error == nil {
 			datapointsSuccess = append(datapointsSuccess, dp)
 		} else {
@@ -230,10 +232,10 @@ func (p *Plan) Run() *Report {
 	statsError := calcStatistics(datapointsError)
 
 	pass := Pass{
-		P50: statsSuccess.P50.Milliseconds() < int64(p.NFRMs),
-		P90: statsSuccess.P90.Milliseconds() < int64(p.NFRMs),
-		P95: statsSuccess.P95.Milliseconds() < int64(p.NFRMs),
-		P99: statsSuccess.P99.Milliseconds() < int64(p.NFRMs),
+		P50: p.NFR.P50 == time.Duration(0) || statsSuccess.P50 < p.NFR.P50,
+		P90: p.NFR.P90 == time.Duration(0) || statsSuccess.P90 < p.NFR.P90,
+		P95: p.NFR.P95 == time.Duration(0) || statsSuccess.P95 < p.NFR.P95,
+		P99: p.NFR.P99 == time.Duration(0) || statsSuccess.P99 < p.NFR.P99,
 	}
 
 	for _, edp := range datapointsError {
@@ -244,14 +246,12 @@ func (p *Plan) Run() *Report {
 		Name:              p.T.Name(),
 		RPS:               p.RPS,
 		DurationSec:       p.DurationSec,
-		RequestCount:      uint(len(datapoints)),
-		NFRMs:             p.NFRMs,
+		RequestCount:      uint(len(datapointsSuccess) + len(datapointsError)),
+		NFR:               p.NFR,
 		StatisticsSuccess: statsSuccess,
 		StatisticsError:   statsError,
-		ThroughPut:        float64(len(datapoints)) / float64(statsSuccess.SvcUnderLoadDuration.Seconds()+statsError.SvcUnderLoadDuration.Seconds()),
 		Pass:              pass,
-		Datapoints:        datapoints,
 		Notes:             p.Notes,
 	}
-	return &report
+	return &report, datapointsSuccess, datapointsError
 }
