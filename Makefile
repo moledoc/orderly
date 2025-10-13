@@ -27,33 +27,65 @@ up-order: build
 up: build
 	./bin/orderly
 
+clean:
+	rm -rf bin
+	lsof -ti tcp:8080
+
+# FUNCTIONAL TESTING
+
 tests-user-svc: 
 	go test -v -test.count=1 -test.run=TestUserSvcSuite ./tests/user/...
 
 tests-user-http: 
-	go test -v -test.count=1  -test.run=TestUserHTTPTestSuite ./tests/user/...
+	go test -v -test.count=1 -test.run=TestUserHTTPTestSuite ./tests/user/...
 
 tests-user-http-manual: 
-	go test -v -test.count=1  -test.run=TestUserReqSuite ./tests/user/...
+	go test -v -test.count=1 -test.run=TestUserReqSuite ./tests/user/...
 
 tests-user:
-	go test -v -test.count=1  -test.run="TestUser" ./tests/user/...
+	go test -v -test.count=1 -test.run="TestUser" ./tests/user/...
 
 tests-order-svc:
-	go test -v -test.count=1  -test.run=TestOrderSvcSuite ./tests/order/...
+	go test -v -test.count=1 -test.run=TestOrderSvcSuite ./tests/order/...
 
 tests-order-http:
-	go test -v -test.count=1  -test.run=TestOrderHTTPTestSuite ./tests/order/...
+	go test -v -test.count=1 -test.run=TestOrderHTTPTestSuite ./tests/order/...
 
 tests-order-http-manual:
-	go test -v -test.count=1  -test.run=TestOrderReqSuite ./tests/order/...
+	go test -v -test.count=1 -test.run=TestOrderReqSuite ./tests/order/...
 
 tests-order: 
-	go test -v -test.count=1  -test.run="TestOrder" ./tests/order/...
+	go test -v -test.count=1 -test.run="TestOrder" ./tests/order/...
 
 tests-all:
 	go test -v -test.count=1 ./tests/...
 
-clean:
-	rm -rf bin
-	lsof -ti tcp:8080
+
+# PERFORMANCE TESTING
+
+perf-test-user-svc: 
+	go test -v -test.count=1 -test.timeout=15m -test.run=TestUserSvcSuite ./tests/user/... -testmode=1
+
+perf-test-user-http: 
+	go test -v -test.count=1 -test.timeout=15m -test.run=TestUserHTTPTestSuite ./tests/user/... -testmode=1
+
+perf-test-user-http-manual: 
+	go test -v -test.count=1 -test.timeout=15m -test.run=TestUserReqSuite ./tests/user/... -testmode=1
+
+perf-test-user:
+	go test -v -test.count=1 -test.timeout=15m -test.run="TestUser" ./tests/user/... -testmode=1
+
+perf-test-order-svc:
+	go test -v -test.count=1 -test.timeout=15m -test.run=TestOrderSvcSuite ./tests/order/... -testmode=1
+
+perf-test-order-http:
+	go test -v -test.count=1 -test.timeout=15m -test.run=TestOrderHTTPTestSuite ./tests/order/... -testmode=1
+
+perf-test-order-http-manual:
+	go test -v -test.count=1 -test.timeout=15m -test.run=TestOrderReqSuite ./tests/order/... -testmode=1
+
+perf-test-order: 
+	go test -v -test.count=1 -test.timeout=15m -test.run="TestOrder" ./tests/order/... -testmode=1
+
+perf-test-all:
+	go test -v -test.timeout=60m -test.count=1 ./tests/... -testmode=1

@@ -138,7 +138,7 @@ func (s *UserPerformanceSuite) TestPerformance_GetUserSubOrdinates() {
 				return s.API.GetUserSubOrdinates(t, ctx, req.(*request.GetUserSubOrdinatesRequest))
 			}
 			checkLen := func(ctx context.Context, resp any, err errwrap.Error) {
-				require.Len(t, resp.(*response.GetUsersResponse).GetUsers(), userCount)
+				require.Len(t, resp.(*response.GetUserSubOrdinatesResponse).GetSubOrdinates(), userCount)
 			}
 			plan := performance.Plan{
 				T:               t,
