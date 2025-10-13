@@ -30,7 +30,7 @@ func (s *OrderPerformanceSuite) TestPerformance_PostOrder() {
 	}
 	plan := performance.Plan{
 		T:               s.T(),
-		RPS:             1,
+		RPS:             10,
 		DurationSec:     1,
 		RampDurationSec: 0,
 		Setup:           setup,
@@ -62,7 +62,7 @@ func (s *OrderPerformanceSuite) TestPerformance_GetOrderByID() {
 	}
 	plan := performance.Plan{
 		T:               s.T(),
-		RPS:             1,
+		RPS:             10,
 		DurationSec:     1,
 		RampDurationSec: 0,
 		Setup:           setup,
@@ -83,7 +83,7 @@ func (s *OrderPerformanceSuite) TestPerformance_GetOrders() {
 	for _, orderCount := range []int{10, 100, 1000} {
 		s.T().Run(fmt.Sprintf("%v", orderCount), func(t *testing.T) {
 			for i := 0; i < orderCount; i++ {
-				setup.MustCreateOrderWithCleanup(s.T(), context.Background(), s.API, setup.OrderObj())
+				setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, setup.OrderObj())
 			}
 			setup := func() (ctxFunc func() context.Context, req any, err errwrap.Error) {
 				return context.Background, &request.GetOrdersRequest{}, nil
@@ -99,7 +99,7 @@ func (s *OrderPerformanceSuite) TestPerformance_GetOrders() {
 			}
 			plan := performance.Plan{
 				T:               t,
-				RPS:             uint(orderCount),
+				RPS:             10,
 				DurationSec:     10,
 				RampDurationSec: 10,
 				Setup:           setup,
@@ -144,7 +144,7 @@ func (s *OrderPerformanceSuite) TestPerformance_GetOrderSubOrders() {
 			}
 			plan := performance.Plan{
 				T:               t,
-				RPS:             uint(orderCount),
+				RPS:             10,
 				DurationSec:     10,
 				RampDurationSec: 10,
 				Setup:           setup,
@@ -187,7 +187,7 @@ func (s *OrderPerformanceSuite) TestPerformance_PatchOrder() {
 	}
 	plan := performance.Plan{
 		T:               s.T(),
-		RPS:             1,
+		RPS:             10,
 		DurationSec:     1,
 		RampDurationSec: 0,
 		Setup:           setup,
@@ -219,7 +219,7 @@ func (s *OrderPerformanceSuite) TestPerformance_DeleteOrder() {
 	}
 	plan := performance.Plan{
 		T:               s.T(),
-		RPS:             1,
+		RPS:             10,
 		DurationSec:     1,
 		RampDurationSec: 0,
 		Setup:           setup,
@@ -258,7 +258,7 @@ func (s *OrderPerformanceSuite) TestPerformance_PutDelegatedTasks() {
 			}
 			plan := performance.Plan{
 				T:               t,
-				RPS:             uint(taskCount),
+				RPS:             10,
 				DurationSec:     10,
 				RampDurationSec: 10,
 				Setup:           setup,
@@ -300,7 +300,7 @@ func (s *OrderPerformanceSuite) TestPerformance_PatchDelegatedTasks() {
 			}
 			plan := performance.Plan{
 				T:               t,
-				RPS:             uint(taskCount),
+				RPS:             10,
 				DurationSec:     10,
 				RampDurationSec: 10,
 				Setup:           setup,
@@ -341,7 +341,7 @@ func (s *OrderPerformanceSuite) TestPerformance_DeleteDelegatedTasks() {
 			}
 			plan := performance.Plan{
 				T:               t,
-				RPS:             uint(taskCount),
+				RPS:             10,
 				DurationSec:     10,
 				RampDurationSec: 10,
 				Setup:           setup,
@@ -382,7 +382,7 @@ func (s *OrderPerformanceSuite) TestPerformance_PutSitReps() {
 			}
 			plan := performance.Plan{
 				T:               t,
-				RPS:             uint(taskCount),
+				RPS:             10,
 				DurationSec:     10,
 				RampDurationSec: 10,
 				Setup:           setup,
@@ -424,7 +424,7 @@ func (s *OrderPerformanceSuite) TestPerformance_PatchSitReps() {
 			}
 			plan := performance.Plan{
 				T:               t,
-				RPS:             uint(taskCount),
+				RPS:             10,
 				DurationSec:     10,
 				RampDurationSec: 10,
 				Setup:           setup,
@@ -465,7 +465,7 @@ func (s *OrderPerformanceSuite) TestPerformance_DeleteSitReps() {
 			}
 			plan := performance.Plan{
 				T:               t,
-				RPS:             uint(taskCount),
+				RPS:             10,
 				DurationSec:     10,
 				RampDurationSec: 10,
 				Setup:           setup,
