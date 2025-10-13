@@ -27,7 +27,7 @@ func (s *UserSuite) TestValidation_User() {
 	})
 
 	tt.Run("user.name", func(t *testing.T) {
-		u := setup.UserObj()
+		u := setup.UserObjWithID()
 		u.SetName("")
 		err := mgmtuser.ValidateUser(u, validation.IgnoreNothing)
 		require.Error(t, err)
@@ -36,7 +36,7 @@ func (s *UserSuite) TestValidation_User() {
 	})
 
 	tt.Run("user.email", func(t *testing.T) {
-		u := setup.UserObj()
+		u := setup.UserObjWithID()
 		u.SetEmail("")
 		err := mgmtuser.ValidateUser(u, validation.IgnoreNothing)
 		require.Error(t, err)
@@ -45,7 +45,7 @@ func (s *UserSuite) TestValidation_User() {
 	})
 
 	tt.Run("user.supervisor", func(t *testing.T) {
-		u := setup.UserObj()
+		u := setup.UserObjWithID()
 		u.SetSupervisor("")
 		err := mgmtuser.ValidateUser(u, validation.IgnoreNothing)
 		require.Error(t, err)
@@ -54,7 +54,7 @@ func (s *UserSuite) TestValidation_User() {
 	})
 
 	tt.Run("user.meta", func(t *testing.T) {
-		u := setup.UserObj()
+		u := setup.UserObjWithID()
 		u.SetMeta(&meta.Meta{
 			Version: 2,
 			Created: time.Now().UTC(),
@@ -79,7 +79,7 @@ func (s *UserSuite) TestValidation_PostUserRequest() {
 
 	tt.Run("user.id.provided", func(t *testing.T) {
 		resp, err := s.API.PostUser(t, context.Background(), &request.PostUserRequest{
-			User: setup.UserObj(),
+			User: setup.UserObjWithID(),
 		})
 		defer cleanup.User(t, s.API, resp.GetUser())
 		require.Error(t, err)
