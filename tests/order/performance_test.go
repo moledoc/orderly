@@ -10,8 +10,10 @@ import (
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/order"
 	"github.com/moledoc/orderly/internal/domain/request"
+	"github.com/moledoc/orderly/internal/domain/response"
 	"github.com/moledoc/orderly/tests/performance"
 	"github.com/moledoc/orderly/tests/setup"
+	"github.com/stretchr/testify/require"
 )
 
 func (s *OrderPerformanceSuite) TestPerformance_PostOrder() {
@@ -78,7 +80,7 @@ func (s *OrderPerformanceSuite) TestPerformance_GetOrderByID() {
 }
 
 func (s *OrderPerformanceSuite) TestPerformance_GetOrders() {
-	for _, orderCount := range []int{10, 100 /*, 1000*/} {
+	for _, orderCount := range []int{10, 100, 1000} {
 		s.T().Run(fmt.Sprintf("%v", orderCount), func(t *testing.T) {
 			for i := 0; i < orderCount; i++ {
 				setup.MustCreateOrderWithCleanup(s.T(), context.Background(), s.API, setup.OrderObj())
@@ -92,6 +94,9 @@ func (s *OrderPerformanceSuite) TestPerformance_GetOrders() {
 				}
 				return s.API.GetOrders(t, ctx, req.(*request.GetOrdersRequest))
 			}
+			checkLen := func(ctx context.Context, resp any, err errwrap.Error) {
+				require.Len(t, resp.(*response.GetOrdersResponse).GetOrders(), orderCount)
+			}
 			plan := performance.Plan{
 				T:               t,
 				RPS:             uint(orderCount),
@@ -99,6 +104,7 @@ func (s *OrderPerformanceSuite) TestPerformance_GetOrders() {
 				RampDurationSec: 10,
 				Setup:           setup,
 				Test:            tst,
+				Assert:          checkLen,
 				NFR: performance.NFRs{
 					P50: 50 * time.Millisecond,
 					P90: 90 * time.Millisecond,
@@ -114,7 +120,7 @@ func (s *OrderPerformanceSuite) TestPerformance_GetOrders() {
 }
 
 func (s *OrderPerformanceSuite) TestPerformance_GetOrderSubOrders() {
-	for _, orderCount := range []int{10, 100 /*, 1000*/} {
+	for _, orderCount := range []int{10, 100, 1000} {
 		s.T().Run(fmt.Sprintf("%v", orderCount), func(t *testing.T) {
 			o := setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, setup.OrderObj())
 			for i := 0; i < orderCount; i++ {
@@ -133,6 +139,9 @@ func (s *OrderPerformanceSuite) TestPerformance_GetOrderSubOrders() {
 				}
 				return s.API.GetOrderSubOrders(t, ctx, req.(*request.GetOrderSubOrdersRequest))
 			}
+			checkLen := func(ctx context.Context, resp any, err errwrap.Error) {
+				require.Len(t, resp.(*response.GetOrderSubOrdersResponse).GetSubOrders(), orderCount)
+			}
 			plan := performance.Plan{
 				T:               t,
 				RPS:             uint(orderCount),
@@ -140,6 +149,7 @@ func (s *OrderPerformanceSuite) TestPerformance_GetOrderSubOrders() {
 				RampDurationSec: 10,
 				Setup:           setup,
 				Test:            tst,
+				Assert:          checkLen,
 				NFR: performance.NFRs{
 					P50: 50 * time.Millisecond,
 					P90: 90 * time.Millisecond,
@@ -227,7 +237,7 @@ func (s *OrderPerformanceSuite) TestPerformance_DeleteOrder() {
 }
 
 func (s *OrderPerformanceSuite) TestPerformance_PutDelegatedTasks() {
-	for _, taskCount := range []int{10, 100 /*, 1000*/} {
+	for _, taskCount := range []int{10, 100} {
 		s.T().Run(fmt.Sprintf("%v", taskCount), func(t *testing.T) {
 			setup := func() (ctxFunc func() context.Context, req any, err errwrap.Error) {
 				o := setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, setup.OrderObj())
@@ -268,7 +278,7 @@ func (s *OrderPerformanceSuite) TestPerformance_PutDelegatedTasks() {
 }
 
 func (s *OrderPerformanceSuite) TestPerformance_PatchDelegatedTasks() {
-	for _, taskCount := range []int{10, 100 /*, 1000*/} {
+	for _, taskCount := range []int{10, 100} {
 		s.T().Run(fmt.Sprintf("%v", taskCount), func(t *testing.T) {
 			setup := func() (ctxFunc func() context.Context, req any, err errwrap.Error) {
 				o := setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, setup.OrderObj())
@@ -310,7 +320,7 @@ func (s *OrderPerformanceSuite) TestPerformance_PatchDelegatedTasks() {
 }
 
 func (s *OrderPerformanceSuite) TestPerformance_DeleteDelegatedTasks() {
-	for _, taskCount := range []int{10, 100 /*, 1000*/} {
+	for _, taskCount := range []int{10, 100} {
 		s.T().Run(fmt.Sprintf("%v", taskCount), func(t *testing.T) {
 			setup := func() (ctxFunc func() context.Context, req any, err errwrap.Error) {
 				o := setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, setup.OrderObj())
@@ -351,7 +361,7 @@ func (s *OrderPerformanceSuite) TestPerformance_DeleteDelegatedTasks() {
 }
 
 func (s *OrderPerformanceSuite) TestPerformance_PutSitReps() {
-	for _, taskCount := range []int{10, 100 /*, 1000*/} {
+	for _, taskCount := range []int{10, 100} {
 		s.T().Run(fmt.Sprintf("%v", taskCount), func(t *testing.T) {
 			setup := func() (ctxFunc func() context.Context, req any, err errwrap.Error) {
 				o := setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, setup.OrderObj())
@@ -392,7 +402,7 @@ func (s *OrderPerformanceSuite) TestPerformance_PutSitReps() {
 }
 
 func (s *OrderPerformanceSuite) TestPerformance_PatchSitReps() {
-	for _, taskCount := range []int{10, 100 /*, 1000*/} {
+	for _, taskCount := range []int{10, 100} {
 		s.T().Run(fmt.Sprintf("%v", taskCount), func(t *testing.T) {
 			setup := func() (ctxFunc func() context.Context, req any, err errwrap.Error) {
 				o := setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, setup.OrderObj())
@@ -434,7 +444,7 @@ func (s *OrderPerformanceSuite) TestPerformance_PatchSitReps() {
 }
 
 func (s *OrderPerformanceSuite) TestPerformance_DeleteSitReps() {
-	for _, taskCount := range []int{10, 100 /*, 1000*/} {
+	for _, taskCount := range []int{10, 100} {
 		s.T().Run(fmt.Sprintf("%v", taskCount), func(t *testing.T) {
 			setup := func() (ctxFunc func() context.Context, req any, err errwrap.Error) {
 				o := setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, setup.OrderObj())

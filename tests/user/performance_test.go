@@ -8,8 +8,10 @@ import (
 
 	"github.com/moledoc/orderly/internal/domain/errwrap"
 	"github.com/moledoc/orderly/internal/domain/request"
+	"github.com/moledoc/orderly/internal/domain/response"
 	"github.com/moledoc/orderly/tests/performance"
 	"github.com/moledoc/orderly/tests/setup"
+	"github.com/stretchr/testify/require"
 )
 
 func (s *UserPerformanceSuite) TestPerformance_PostUser() {
@@ -76,12 +78,12 @@ func (s *UserPerformanceSuite) TestPerformance_GetUserByID() {
 }
 
 func (s *UserPerformanceSuite) TestPerformance_GetUsers() {
-	for _, userCount := range []int{10, 100 /*, 1000*/} {
+	for _, userCount := range []int{10, 100, 1000} {
 		s.T().Run(fmt.Sprintf("%v", userCount), func(t *testing.T) {
+			for i := 0; i < userCount; i++ {
+				setup.MustCreateUserWithCleanup(t, context.Background(), s.API, setup.UserObj())
+			}
 			setup := func() (ctxFunc func() context.Context, req any, err errwrap.Error) {
-				for i := 0; i < userCount; i++ {
-					setup.MustCreateUserWithCleanup(t, context.Background(), s.API, setup.UserObj())
-				}
 				return context.Background, &request.GetUsersRequest{}, nil
 			}
 			tst := func(ctx context.Context, req any, errReq errwrap.Error) (response any, errResp errwrap.Error) {
@@ -90,6 +92,9 @@ func (s *UserPerformanceSuite) TestPerformance_GetUsers() {
 				}
 				return s.API.GetUsers(t, ctx, req.(*request.GetUsersRequest))
 			}
+			checkLen := func(ctx context.Context, resp any, err errwrap.Error) {
+				require.Len(t, resp.(*response.GetUsersResponse).GetUsers(), userCount)
+			}
 			plan := performance.Plan{
 				T:               t,
 				RPS:             uint(userCount),
@@ -97,6 +102,7 @@ func (s *UserPerformanceSuite) TestPerformance_GetUsers() {
 				RampDurationSec: 10,
 				Setup:           setup,
 				Test:            tst,
+				Assert:          checkLen,
 				NFR: performance.NFRs{
 					P50: 50 * time.Millisecond,
 					P90: 90 * time.Millisecond,
@@ -112,15 +118,15 @@ func (s *UserPerformanceSuite) TestPerformance_GetUsers() {
 }
 
 func (s *UserPerformanceSuite) TestPerformance_GetUserSubOrdinates() {
-	for _, userCount := range []int{10, 100 /*, 1000*/} {
+	for _, userCount := range []int{10, 100, 1000} {
 		s.T().Run(fmt.Sprintf("%v", userCount), func(t *testing.T) {
+			u := setup.MustCreateUserWithCleanup(t, context.Background(), s.API, setup.UserObj())
+			for i := 0; i < userCount; i++ {
+				userObj := setup.UserObj()
+				userObj.SetSupervisor(u.GetEmail())
+				setup.MustCreateUserWithCleanup(t, context.Background(), s.API, userObj)
+			}
 			setup := func() (ctxFunc func() context.Context, req any, err errwrap.Error) {
-				u := setup.MustCreateUserWithCleanup(t, context.Background(), s.API, setup.UserObj())
-				for i := 0; i < userCount; i++ {
-					userObj := setup.UserObj()
-					userObj.SetSupervisor(u.GetEmail())
-					setup.MustCreateUserWithCleanup(t, context.Background(), s.API, userObj)
-				}
 				return context.Background, &request.GetUserSubOrdinatesRequest{
 					ID: u.GetID(),
 				}, nil
@@ -131,6 +137,9 @@ func (s *UserPerformanceSuite) TestPerformance_GetUserSubOrdinates() {
 				}
 				return s.API.GetUserSubOrdinates(t, ctx, req.(*request.GetUserSubOrdinatesRequest))
 			}
+			checkLen := func(ctx context.Context, resp any, err errwrap.Error) {
+				require.Len(t, resp.(*response.GetUsersResponse).GetUsers(), userCount)
+			}
 			plan := performance.Plan{
 				T:               t,
 				RPS:             uint(userCount),
@@ -138,6 +147,7 @@ func (s *UserPerformanceSuite) TestPerformance_GetUserSubOrdinates() {
 				RampDurationSec: 10,
 				Setup:           setup,
 				Test:            tst,
+				Assert:          checkLen,
 				NFR: performance.NFRs{
 					P50: 50 * time.Millisecond,
 					P90: 90 * time.Millisecond,

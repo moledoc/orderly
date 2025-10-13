@@ -17,9 +17,6 @@ import (
 func (s *UserSuite) TestGetUsers() {
 
 	createUsers := func(t *testing.T, count int) []*user.User {
-		if count == 0 {
-			return nil
-		}
 		users := make([]*user.User, count)
 		for i := 1; i <= count; i++ {
 			userObj := &user.User{
