@@ -3,6 +3,7 @@ package local
 import (
 	"context"
 	"net/http"
+	"sync"
 
 	"github.com/moledoc/orderly/internal/domain/errwrap"
 	"github.com/moledoc/orderly/internal/domain/meta"
@@ -21,6 +22,7 @@ type orderInfo struct {
 }
 
 type LocalRepositoryOrder struct {
+	mu      sync.Mutex
 	Orders  map[meta.ID]orderInfo
 	Tasks   map[meta.ID]order.Task
 	SitReps map[meta.ID]order.SitRep
@@ -32,6 +34,7 @@ var (
 
 func NewLocalRepositoryOrder() *LocalRepositoryOrder {
 	return &LocalRepositoryOrder{
+		mu:      sync.Mutex{},
 		Orders:  make(map[meta.ID]orderInfo),
 		Tasks:   make(map[meta.ID]order.Task),
 		SitReps: make(map[meta.ID]order.SitRep),
@@ -122,6 +125,9 @@ func (r *LocalRepositoryOrder) Close(ctx context.Context) errwrap.Error {
 		return errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
 	}
 
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	r = nil
 	return nil
 }
@@ -133,6 +139,8 @@ func (r *LocalRepositoryOrder) ReadByID(ctx context.Context, ID meta.ID) (*order
 	if r == nil {
 		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
 	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
 	storedOrder, ok := r.Orders[ID]
 	if !ok {
@@ -151,6 +159,8 @@ func (r *LocalRepositoryOrder) ReadSubOrders(ctx context.Context, ID meta.ID) ([
 	if r == nil {
 		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
 	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
 	parentOrder, ok := r.Orders[ID]
 	if !ok {
@@ -179,6 +189,8 @@ func (r *LocalRepositoryOrder) ReadAll(ctx context.Context) ([]*order.Order, err
 	if r == nil {
 		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
 	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
 	var orders []*order.Order
 	for _, storedOrder := range r.Orders {
@@ -195,6 +207,8 @@ func (r *LocalRepositoryOrder) Write(ctx context.Context, order *order.Order) (*
 	if r == nil {
 		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
 	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
 	info := r.storeOrder(order)
 	order = r.composeOrder(info)
@@ -209,6 +223,8 @@ func (r *LocalRepositoryOrder) DeleteOrder(ctx context.Context, ID meta.ID) errw
 	if r == nil {
 		return errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
 	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
 	storedOrder, ok := r.Orders[ID]
 	if !ok {
@@ -226,6 +242,8 @@ func (r *LocalRepositoryOrder) DeleteTasks(ctx context.Context, IDs []meta.ID) (
 	if r == nil {
 		return false, errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
 	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
 	didDelete := false
 	for _, id := range IDs {
@@ -244,6 +262,8 @@ func (r *LocalRepositoryOrder) DeleteSitReps(ctx context.Context, IDs []meta.ID)
 	if r == nil {
 		return false, errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
 	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
 	didDelete := false
 	for _, id := range IDs {

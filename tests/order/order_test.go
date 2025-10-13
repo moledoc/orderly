@@ -9,3 +9,8 @@ type OrderSuite struct {
 	suite.Suite
 	API api.Order
 }
+
+type OrderPerformanceSuite struct {
+	suite.Suite
+	API api.Order
+}

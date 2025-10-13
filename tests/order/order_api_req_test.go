@@ -4,14 +4,20 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
+	"sync"
 	"testing"
 
 	"github.com/moledoc/orderly/internal/domain/errwrap"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
+	"github.com/moledoc/orderly/internal/repository/local"
+	"github.com/moledoc/orderly/internal/router"
+	"github.com/moledoc/orderly/internal/service/mgmtorder"
+	"github.com/moledoc/orderly/pkg/flags"
 	"github.com/moledoc/orderly/tests/api"
 	"github.com/stretchr/testify/suite"
 )
@@ -35,8 +41,44 @@ var (
 )
 
 func TestOrderReqSuite(t *testing.T) {
+	flag.Parse()
+	if flags.TestMode(*flags.ModeFlag) != flags.FuncTest {
+		return
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		router.RouteOrder(mgmtorder.NewServiceMgmtOrder(local.NewLocalRepositoryOrder()))
+		wg.Done()
+		http.ListenAndServe(":8080", nil)
+	}()
+	wg.Wait()
+
 	t.Run("OrderAPIReq", func(t *testing.T) {
 		suite.Run(t, &OrderSuite{
+			API: NewOrderAPIReq(),
+		})
+	})
+}
+
+func TestOrderReqPerformanceSuite(t *testing.T) {
+	flag.Parse()
+	if flags.TestMode(*flags.ModeFlag) != flags.PerfTest {
+		return
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		router.RouteOrder(mgmtorder.NewServiceMgmtOrder(local.NewLocalRepositoryOrder()))
+		wg.Done()
+		http.ListenAndServe(":8080", nil)
+	}()
+	wg.Wait()
+
+	t.Run("OrderAPIReqPerformance", func(t *testing.T) {
+		suite.Run(t, &OrderPerformanceSuite{
 			API: NewOrderAPIReq(),
 		})
 	})
