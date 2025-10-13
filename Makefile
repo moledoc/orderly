@@ -51,15 +51,8 @@ tests-order-http-manual:
 tests-order: 
 	go test -v -test.count=1  -test.run="TestOrder" ./tests/order/...
 
-tests:
-	go test -v -test.count=1  ./tests/...
-
-tests-http-manual:
-	go test -v -test.count=1  -test.run="TestOrderReqSuite|TestUserReqSuite" ./tests/...
-
-# NOTE: needs orderly running
 tests-all:
-	go test -v -test.count=1 ./...
+	go test -v -test.count=1 ./tests/...
 
 clean:
 	rm -rf bin
