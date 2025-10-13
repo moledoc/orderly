@@ -43,10 +43,6 @@ func ValidatePostUserRequest(req *request.PostUserRequest) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "user.id disallowed")
 	}
 
-	if req.GetUser().Meta != nil {
-		return errwrap.NewError(http.StatusBadRequest, "user.meta disallowed")
-	}
-
 	return ValidateUser(req.GetUser(), validation.IgnoreID)
 }
 

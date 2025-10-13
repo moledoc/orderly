@@ -13,7 +13,8 @@
         - POST/GET/PATCH/DELETE /ui/<endpoint>
 - [] MAYBE: login
 - [] authorization
-- [] performance testing
+- [x] performance testing
+    - performance improvements on local storage: getting all and subordinates/suborders
 - [] integrate with postgres
 - [] run in docker
 - [] documentation:

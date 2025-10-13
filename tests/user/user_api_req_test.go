@@ -4,14 +4,20 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
+	"sync"
 	"testing"
 
 	"github.com/moledoc/orderly/internal/domain/errwrap"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
+	"github.com/moledoc/orderly/internal/repository/local"
+	"github.com/moledoc/orderly/internal/router"
+	"github.com/moledoc/orderly/internal/service/mgmtuser"
+	"github.com/moledoc/orderly/pkg/flags"
 	"github.com/moledoc/orderly/tests/api"
 	"github.com/stretchr/testify/suite"
 )
@@ -35,8 +41,44 @@ var (
 )
 
 func TestUserReqSuite(t *testing.T) {
+	flag.Parse()
+	if flags.TestMode(*flags.ModeFlag) != flags.FuncTest {
+		return
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		router.RouteUser(mgmtuser.NewServiceMgmtUser(local.NewLocalRepositoryUser()))
+		wg.Done()
+		http.ListenAndServe(":8080", nil)
+	}()
+	wg.Wait()
+
 	t.Run("UserAPIReq", func(t *testing.T) {
 		suite.Run(t, &UserSuite{
+			API: NewUserAPIReq(),
+		})
+	})
+}
+
+func TestUserReqPerformanceSuite(t *testing.T) {
+	flag.Parse()
+	if flags.TestMode(*flags.ModeFlag) != flags.PerfTest {
+		return
+	}
+
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		router.RouteUser(mgmtuser.NewServiceMgmtUser(local.NewLocalRepositoryUser()))
+		wg.Done()
+		http.ListenAndServe(":8080", nil)
+	}()
+	wg.Wait()
+
+	t.Run("UserAPIReqPerformance", func(t *testing.T) {
+		suite.Run(t, &UserPerformanceSuite{
 			API: NewUserAPIReq(),
 		})
 	})
