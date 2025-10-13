@@ -16,6 +16,7 @@ import (
 )
 
 func (s *serviceMgmtOrder) PostOrder(ctx context.Context, req *request.PostOrderRequest) (*response.PostOrderResponse, errwrap.Error) {
+	ctx = middleware.AddTraceToCtx(ctx)
 	middleware.SpanStart(ctx, "PostOrder")
 	defer middleware.SpanStop(ctx, "PostOrder")
 
@@ -50,6 +51,7 @@ func (s *serviceMgmtOrder) PostOrder(ctx context.Context, req *request.PostOrder
 }
 
 func (s *serviceMgmtOrder) GetOrderByID(ctx context.Context, req *request.GetOrderByIDRequest) (*response.GetOrderByIDResponse, errwrap.Error) {
+	ctx = middleware.AddTraceToCtx(ctx)
 	middleware.SpanStart(ctx, "GetOrderByID")
 	defer middleware.SpanStop(ctx, "GetOrderByID")
 
@@ -67,6 +69,7 @@ func (s *serviceMgmtOrder) GetOrderByID(ctx context.Context, req *request.GetOrd
 }
 
 func (s *serviceMgmtOrder) GetOrders(ctx context.Context, req *request.GetOrdersRequest) (*response.GetOrdersResponse, errwrap.Error) {
+	ctx = middleware.AddTraceToCtx(ctx)
 	middleware.SpanStart(ctx, "GetOrders")
 	defer middleware.SpanStop(ctx, "GetOrders")
 
@@ -84,6 +87,7 @@ func (s *serviceMgmtOrder) GetOrders(ctx context.Context, req *request.GetOrders
 }
 
 func (s *serviceMgmtOrder) GetOrderSubOrders(ctx context.Context, req *request.GetOrderSubOrdersRequest) (*response.GetOrderSubOrdersResponse, errwrap.Error) {
+	ctx = middleware.AddTraceToCtx(ctx)
 	middleware.SpanStart(ctx, "GetOrderSubOrders")
 	defer middleware.SpanStop(ctx, "GetOrderSubOrders")
 
@@ -101,6 +105,7 @@ func (s *serviceMgmtOrder) GetOrderSubOrders(ctx context.Context, req *request.G
 }
 
 func (s *serviceMgmtOrder) PatchOrder(ctx context.Context, req *request.PatchOrderRequest) (*response.PatchOrderResponse, errwrap.Error) {
+	ctx = middleware.AddTraceToCtx(ctx)
 	middleware.SpanStart(ctx, "PatchOrder")
 	defer middleware.SpanStop(ctx, "PatchOrder")
 
@@ -162,6 +167,7 @@ func (s *serviceMgmtOrder) PatchOrder(ctx context.Context, req *request.PatchOrd
 }
 
 func (s *serviceMgmtOrder) DeleteOrder(ctx context.Context, req *request.DeleteOrderRequest) (*response.DeleteOrderResponse, errwrap.Error) {
+	ctx = middleware.AddTraceToCtx(ctx)
 	middleware.SpanStart(ctx, "DeleteOrder")
 	defer middleware.SpanStop(ctx, "DeleteOrder")
 
@@ -189,6 +195,7 @@ func (s *serviceMgmtOrder) DeleteOrder(ctx context.Context, req *request.DeleteO
 }
 
 func (s *serviceMgmtOrder) PutDelegatedTasks(ctx context.Context, req *request.PutDelegatedTasksRequest) (*response.PutDelegatedTasksResponse, errwrap.Error) {
+	ctx = middleware.AddTraceToCtx(ctx)
 	middleware.SpanStart(ctx, "PutDelegatedTasks")
 	defer middleware.SpanStop(ctx, "PutDelegatedTasks")
 
@@ -245,6 +252,7 @@ func patchTask(reqTask *order.Task, patchedTask *order.Task) bool {
 }
 
 func (s *serviceMgmtOrder) PatchDelegatedTasks(ctx context.Context, req *request.PatchDelegatedTasksRequest) (*response.PatchDelegatedTasksResponse, errwrap.Error) {
+	ctx = middleware.AddTraceToCtx(ctx)
 	middleware.SpanStart(ctx, "PatchDelegatedTasks")
 	defer middleware.SpanStop(ctx, "PatchDelegatedTasks")
 
@@ -293,6 +301,7 @@ func (s *serviceMgmtOrder) PatchDelegatedTasks(ctx context.Context, req *request
 }
 
 func (s *serviceMgmtOrder) DeleteDelegatedTasks(ctx context.Context, req *request.DeleteDelegatedTasksRequest) (*response.DeleteDelegatedTasksResponse, errwrap.Error) {
+	ctx = middleware.AddTraceToCtx(ctx)
 	middleware.SpanStart(ctx, "DeleteDelegatedTasks")
 	defer middleware.SpanStop(ctx, "DeleteDelegatedTasks")
 
@@ -331,6 +340,7 @@ func (s *serviceMgmtOrder) DeleteDelegatedTasks(ctx context.Context, req *reques
 }
 
 func (s *serviceMgmtOrder) PutSitReps(ctx context.Context, req *request.PutSitRepsRequest) (*response.PutSitRepsResponse, errwrap.Error) {
+	ctx = middleware.AddTraceToCtx(ctx)
 	middleware.SpanStart(ctx, "PutSitReps")
 	defer middleware.SpanStop(ctx, "PutSitReps")
 
@@ -397,6 +407,7 @@ func patchSitReps(reqSitRep *order.SitRep, patchedSitRep *order.SitRep) bool {
 	return hasChanges
 }
 func (s *serviceMgmtOrder) PatchSitReps(ctx context.Context, req *request.PatchSitRepsRequest) (*response.PatchSitRepsResponse, errwrap.Error) {
+	ctx = middleware.AddTraceToCtx(ctx)
 	middleware.SpanStart(ctx, "PatchSitReps")
 	defer middleware.SpanStop(ctx, "PatchSitReps")
 
@@ -446,6 +457,7 @@ func (s *serviceMgmtOrder) PatchSitReps(ctx context.Context, req *request.PatchS
 }
 
 func (s *serviceMgmtOrder) DeleteSitReps(ctx context.Context, req *request.DeleteSitRepsRequest) (*response.DeleteSitRepsResponse, errwrap.Error) {
+	ctx = middleware.AddTraceToCtx(ctx)
 	middleware.SpanStart(ctx, "DeleteSitReps")
 	defer middleware.SpanStop(ctx, "DeleteSitReps")
 

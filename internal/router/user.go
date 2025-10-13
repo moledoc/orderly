@@ -12,7 +12,7 @@ import (
 )
 
 func handlePostUser(w http.ResponseWriter, r *http.Request) {
-	ctx := middleware.AddTrace(context.Background(), w)
+	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "postUser")
@@ -32,7 +32,7 @@ func handlePostUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
-	ctx := middleware.AddTrace(context.Background(), w)
+	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "getUserByID")
@@ -48,7 +48,7 @@ func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetUsers(w http.ResponseWriter, r *http.Request) {
-	ctx := middleware.AddTrace(context.Background(), w)
+	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "getUsers")
@@ -61,7 +61,7 @@ func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
-	ctx := middleware.AddTrace(context.Background(), w)
+	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "getUserSubOrdinates")
@@ -76,7 +76,7 @@ func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlePatchUser(w http.ResponseWriter, r *http.Request) {
-	ctx := middleware.AddTrace(context.Background(), w)
+	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "patchUser")
@@ -96,7 +96,7 @@ func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
-	ctx := middleware.AddTrace(context.Background(), w)
+	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "deleteUser")
