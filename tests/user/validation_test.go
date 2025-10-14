@@ -107,7 +107,7 @@ func (s *UserSuite) TestValidation_GetUsersRequest() {
 	tt.Run("empty.request", func(t *testing.T) {
 		resp, err := s.API.GetUsers(t, context.Background(), &request.GetUsersRequest{})
 		require.NoError(t, err)
-		require.Empty(t, resp)
+		require.Empty(t, resp.GetUsers())
 	})
 }
 

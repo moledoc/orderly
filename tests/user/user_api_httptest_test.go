@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -18,7 +17,6 @@ import (
 	"github.com/moledoc/orderly/internal/repository/local"
 	"github.com/moledoc/orderly/internal/router"
 	"github.com/moledoc/orderly/internal/service/mgmtuser"
-	"github.com/moledoc/orderly/pkg/flags"
 	"github.com/moledoc/orderly/tests/api"
 	"github.com/stretchr/testify/suite"
 )
@@ -39,11 +37,6 @@ var (
 )
 
 func TestUserHTTPTestSuite(t *testing.T) {
-	flag.Parse()
-	if flags.TestMode(*flags.ModeFlag) != flags.FuncTest {
-		return
-	}
-
 	mux := router.RouteUser(mgmtuser.NewServiceMgmtUser(local.NewLocalRepositoryUser()))
 
 	t.Run("UserAPIHTTPTest", func(t *testing.T) {
@@ -54,10 +47,6 @@ func TestUserHTTPTestSuite(t *testing.T) {
 }
 
 func TestUserHTTPTestPerformanceSuite(t *testing.T) {
-	flag.Parse()
-	if flags.TestMode(*flags.ModeFlag) != flags.PerfTest {
-		return
-	}
 	mux := router.RouteUser(mgmtuser.NewServiceMgmtUser(local.NewLocalRepositoryUser()))
 	t.Run("UserAPIHTTPTestPerformance", func(t *testing.T) {
 		suite.Run(t, &UserPerformanceSuite{

@@ -10,7 +10,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/order"
 	"github.com/moledoc/orderly/internal/middleware"
 	"github.com/moledoc/orderly/internal/repository"
-	"github.com/moledoc/orderly/pkg/utils"
 )
 
 type orderInfo struct {
@@ -18,14 +17,14 @@ type orderInfo struct {
 	ParentOrderID    meta.ID
 	DelegatedTaskIDs []meta.ID
 	SitRepIDs        []meta.ID
-	Meta             meta.Meta
+	Meta             *meta.Meta
 }
 
 type LocalRepositoryOrder struct {
 	mu      sync.Mutex
 	Orders  map[meta.ID]orderInfo
-	Tasks   map[meta.ID]order.Task
-	SitReps map[meta.ID]order.SitRep
+	Tasks   map[meta.ID]*order.Task
+	SitReps map[meta.ID]*order.SitRep
 }
 
 var (
@@ -36,8 +35,8 @@ func NewLocalRepositoryOrder() *LocalRepositoryOrder {
 	return &LocalRepositoryOrder{
 		mu:      sync.Mutex{},
 		Orders:  make(map[meta.ID]orderInfo),
-		Tasks:   make(map[meta.ID]order.Task),
-		SitReps: make(map[meta.ID]order.SitRep),
+		Tasks:   make(map[meta.ID]*order.Task),
+		SitReps: make(map[meta.ID]*order.SitRep),
 	}
 }
 
@@ -51,7 +50,7 @@ func (r *LocalRepositoryOrder) composeOrder(storedOrder orderInfo) *order.Order 
 			// TODO: log warning
 			continue
 		}
-		delegatedTasks = append(delegatedTasks, &d)
+		delegatedTasks = append(delegatedTasks, d)
 	}
 
 	var sitreps []*order.SitRep
@@ -61,7 +60,7 @@ func (r *LocalRepositoryOrder) composeOrder(storedOrder orderInfo) *order.Order 
 			// TODO: log warning
 			continue
 		}
-		sitreps = append(sitreps, &sr)
+		sitreps = append(sitreps, sr)
 	}
 
 	if len(delegatedTasks) == 0 {
@@ -71,35 +70,35 @@ func (r *LocalRepositoryOrder) composeOrder(storedOrder orderInfo) *order.Order 
 		sitreps = nil
 	}
 	resp := &order.Order{
-		Task:           &task,
+		Task:           task,
 		ParentOrderID:  storedOrder.ParentOrderID,
 		DelegatedTasks: delegatedTasks,
 		SitReps:        sitreps,
-		Meta:           &storedOrder.Meta,
+		Meta:           storedOrder.Meta,
 	}
 	return resp
 }
 
 func (r *LocalRepositoryOrder) storeOrder(o *order.Order) orderInfo {
 
-	r.Tasks[o.GetTask().GetID()] = utils.Deref(o.GetTask())
+	r.Tasks[o.GetTask().GetID()] = o.GetTask()
 
 	var delegatedTaskIDs []meta.ID
 	var sitrepIDs []meta.ID
 	for _, delegated := range o.GetDelegatedTasks() {
 		delegatedTaskIDs = append(delegatedTaskIDs, delegated.GetID())
-		r.Tasks[delegated.GetID()] = utils.Deref(delegated)
+		r.Tasks[delegated.GetID()] = delegated
 	}
 	for _, sitrep := range o.GetSitReps() {
 		sitrepIDs = append(sitrepIDs, sitrep.GetID())
-		r.SitReps[sitrep.GetID()] = utils.Deref(sitrep)
+		r.SitReps[sitrep.GetID()] = sitrep
 	}
 	info := orderInfo{
 		TaskID:           o.GetID(),
 		ParentOrderID:    o.GetParentOrderID(),
 		DelegatedTaskIDs: delegatedTaskIDs,
 		SitRepIDs:        sitrepIDs,
-		Meta:             utils.Deref(o.GetMeta()),
+		Meta:             o.GetMeta(),
 	}
 	r.Orders[o.GetID()] = info
 	return info

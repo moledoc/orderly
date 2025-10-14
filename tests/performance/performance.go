@@ -64,6 +64,7 @@ type Plan struct {
 	RampDurationSec uint
 	Setup           func() (ctxFunc func() context.Context, request any, err errwrap.Error)
 	Test            func(ctx context.Context, request any, errIn errwrap.Error) (response any, errOut errwrap.Error)
+	Assert          func(ctx context.Context, response any, errIn errwrap.Error)
 	NFR             NFRs
 	Notes           []string
 }
@@ -196,6 +197,9 @@ func (p *Plan) Run() (r *Report, success []DataPoint, failures []DataPoint) { //
 							Response:  resp,
 							Error:     err,
 						}
+					}
+					if p.Assert != nil {
+						p.Assert(ctx, resp, err)
 					}
 					<-time.After(time.Duration(dist))
 				}

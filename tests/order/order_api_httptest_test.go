@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -18,7 +17,6 @@ import (
 	"github.com/moledoc/orderly/internal/repository/local"
 	"github.com/moledoc/orderly/internal/router"
 	"github.com/moledoc/orderly/internal/service/mgmtorder"
-	"github.com/moledoc/orderly/pkg/flags"
 	"github.com/moledoc/orderly/tests/api"
 	"github.com/stretchr/testify/suite"
 )
@@ -40,11 +38,6 @@ var (
 )
 
 func TestOrderHTTPTestSuite(t *testing.T) {
-	flag.Parse()
-	if flags.TestMode(*flags.ModeFlag) != flags.FuncTest {
-		return
-	}
-
 	mux := router.RouteOrder(mgmtorder.NewServiceMgmtOrder(local.NewLocalRepositoryOrder()))
 	t.Run("OrderAPIHTTPTest", func(t *testing.T) {
 		suite.Run(t, &OrderSuite{
@@ -54,11 +47,6 @@ func TestOrderHTTPTestSuite(t *testing.T) {
 }
 
 func TestOrderHTTPTestPerformanceSuite(t *testing.T) {
-	flag.Parse()
-	if flags.TestMode(*flags.ModeFlag) != flags.PerfTest {
-		return
-	}
-
 	mux := router.RouteOrder(mgmtorder.NewServiceMgmtOrder(local.NewLocalRepositoryOrder()))
 
 	t.Run("OrderAPIHTTPTestPerformance", func(t *testing.T) {
