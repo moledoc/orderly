@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"net/http"
 	"net/http/httputil"
@@ -17,7 +16,6 @@ import (
 	"github.com/moledoc/orderly/internal/repository/local"
 	"github.com/moledoc/orderly/internal/router"
 	"github.com/moledoc/orderly/internal/service/mgmtuser"
-	"github.com/moledoc/orderly/pkg/flags"
 	"github.com/moledoc/orderly/tests/api"
 	"github.com/stretchr/testify/suite"
 )
@@ -41,10 +39,6 @@ var (
 )
 
 func TestUserReqSuite(t *testing.T) {
-	flag.Parse()
-	if flags.TestMode(*flags.ModeFlag) != flags.FuncTest {
-		return
-	}
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -63,10 +57,6 @@ func TestUserReqSuite(t *testing.T) {
 }
 
 func TestUserReqPerformanceSuite(t *testing.T) {
-	flag.Parse()
-	if flags.TestMode(*flags.ModeFlag) != flags.PerfTest {
-		return
-	}
 
 	var wg sync.WaitGroup
 	wg.Add(1)

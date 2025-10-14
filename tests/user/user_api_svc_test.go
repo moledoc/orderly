@@ -2,7 +2,6 @@ package tests
 
 import (
 	"context"
-	"flag"
 	"testing"
 
 	"github.com/moledoc/orderly/internal/domain/errwrap"
@@ -10,7 +9,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/response"
 	"github.com/moledoc/orderly/internal/repository/local"
 	"github.com/moledoc/orderly/internal/service/mgmtuser"
-	"github.com/moledoc/orderly/pkg/flags"
 	"github.com/moledoc/orderly/tests/api"
 	"github.com/stretchr/testify/suite"
 )
@@ -31,10 +29,6 @@ var (
 )
 
 func TestUserSvcSuite(t *testing.T) {
-	flag.Parse()
-	if flags.TestMode(*flags.ModeFlag) != flags.FuncTest {
-		return
-	}
 	t.Run("UserAPISvc", func(t *testing.T) {
 		suite.Run(t, &UserSuite{
 			API: NewUserAPISvc(),
@@ -43,10 +37,6 @@ func TestUserSvcSuite(t *testing.T) {
 }
 
 func TestUserSvcPerformanceSuite(t *testing.T) {
-	flag.Parse()
-	if flags.TestMode(*flags.ModeFlag) != flags.PerfTest {
-		return
-	}
 	t.Run("UserAPISvcPerformance", func(t *testing.T) {
 		suite.Run(t, &UserPerformanceSuite{
 			API: NewUserAPISvc(),
