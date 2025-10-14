@@ -17,7 +17,7 @@ import (
 )
 
 func UserObj(extra ...string) *user.User {
-	ee := strings.Join(extra, ".")
+	ee := strings.Join(append([]string{""}, extra...), ".")
 	return &user.User{
 		Name:       fmt.Sprintf("name%v", ee),
 		Email:      user.Email(fmt.Sprintf("example%v@example.com", ee)),

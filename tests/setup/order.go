@@ -2,8 +2,6 @@ package setup
 
 import (
 	"context"
-	"fmt"
-	"strings"
 	"testing"
 	"time"
 
@@ -18,10 +16,9 @@ import (
 )
 
 func TaskObj(extra ...string) *order.Task {
-	ee := strings.Join(extra, ".")
 	return &order.Task{
 		State:       order.NotStarted,
-		Accountable: user.Email(fmt.Sprintf("example%v@example.com", ee)),
+		Accountable: UserObjWithID(append(extra, "accountable")...),
 		Objective:   "objective description",
 		Deadline:    time.Now().UTC(),
 	}
@@ -33,14 +30,12 @@ func TaskObjWithID(extra ...string) *order.Task {
 }
 
 func SitrepObj(extra ...string) *order.SitRep {
-	ee := strings.Join(extra, ".")
 	return &order.SitRep{
-
 		DateTime: time.Now().UTC(),
-		By:       user.Email(fmt.Sprintf("by%v@example.com", ee)),
-		Ping: []user.Email{
-			user.Email(fmt.Sprintf("ping1%v@example.com", ee)),
-			user.Email(fmt.Sprintf("ping2%v@example.com", ee)),
+		By:       UserObjWithID(append(extra, "by")...),
+		Ping: []*user.User{
+			UserObj(append(extra, "ping1")...),
+			UserObj(append(extra, "ping2")...),
 		},
 		Situation: "situation description",
 		Actions:   "list of actions taken",

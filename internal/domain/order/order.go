@@ -9,6 +9,23 @@ import (
 
 type State int
 
+func (s State) String() string {
+	switch s {
+	case NotStarted:
+		return "Not Started"
+	case InProgress:
+		return "In Progress"
+	case HavingIssues:
+		return "Having Issues"
+	case Blocked:
+		return "Blocked"
+	case Completed:
+		return "Completed"
+	default:
+		return "Unknown"
+	}
+}
+
 const (
 	NotStarted State = iota + 1
 	InProgress
@@ -20,7 +37,7 @@ const (
 type Task struct {
 	ID          meta.ID    `json:"id,omitempty"`
 	State       State      `json:"state,omitempty"`
-	Accountable user.Email `json:"accountable,omitempty"`
+	Accountable *user.User `json:"accountable,omitempty"`
 	Objective   string     `json:"objective,omitempty"`
 	Deadline    time.Time  `json:"deadline,omitempty"`
 }
@@ -29,8 +46,8 @@ type SitRep struct {
 	ID meta.ID `json:"id,omitempty"`
 
 	DateTime time.Time    `json:"datetime,omitempty"`
-	By       user.Email   `json:"email,omitempty"`
-	Ping     []user.Email `json:"ping"`
+	By       *user.User   `json:"email,omitempty"`
+	Ping     []*user.User `json:"ping,omitempty"`
 
 	Situation string `json:"situation,omitempty"`
 	Actions   string `json:"actions,omitempty"`

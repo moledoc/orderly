@@ -46,7 +46,7 @@ func (s *OrderSuite) TestPatchOrder() {
 				patchedTask := utils.RePtr(expected.GetTask())
 
 				patchedTask.SetState(order.Blocked)
-				patchedTask.SetAccountable("changed@email.com")
+				patchedTask.GetAccountable().SetEmail("changed@email.com")
 				patchedTask.SetObjective("patched main objective")
 				patchedTask.SetDeadline(time.Now().UTC())
 
@@ -68,7 +68,7 @@ func (s *OrderSuite) TestPatchOrder() {
 				patchedDelegatedTask := &order.Task{
 					ID:          expected.GetDelegatedTasks()[0].GetID(),
 					State:       order.InProgress,
-					Accountable: user.Email("new.accountable@email.com"),
+					Accountable: setup.UserObjWithID("new.accountable"),
 					Objective:   "new objective",
 					Deadline:    time.Now().UTC().Add(30 * 24 * time.Hour),
 				}
@@ -95,10 +95,10 @@ func (s *OrderSuite) TestPatchOrder() {
 					ID: expected.GetSitReps()[0].GetID(),
 
 					DateTime: time.Now().UTC(),
-					By:       user.Email("user1@email.com"),
-					Ping: []user.Email{
-						user.Email("user2@email.com"),
-						user.Email("user3@email.com"),
+					By:       setup.UserObjWithID("user1"),
+					Ping: []*user.User{
+						setup.UserObjWithID("user2"),
+						setup.UserObjWithID("user3"),
 					},
 					// Situation: "New situation description",
 					// Actions:   "<List of actions>",

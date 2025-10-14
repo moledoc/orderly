@@ -21,7 +21,7 @@ func (tt *Task) SetState(state State) {
 	tt.State = state
 }
 
-func (tt *Task) SetAccountable(accountable user.Email) {
+func (tt *Task) SetAccountable(accountable *user.User) {
 	if tt == nil {
 		return
 	}
@@ -58,14 +58,14 @@ func (sr *SitRep) SetDateTime(dateTime time.Time) {
 	sr.DateTime = dateTime
 }
 
-func (sr *SitRep) SetBy(by user.Email) {
+func (sr *SitRep) SetBy(by *user.User) {
 	if sr == nil {
 		return
 	}
 	sr.By = by
 }
 
-func (sr *SitRep) SetPing(ping []user.Email) {
+func (sr *SitRep) SetPing(ping []*user.User) {
 	if sr == nil {
 		return
 	}

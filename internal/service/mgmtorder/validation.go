@@ -8,6 +8,7 @@ import (
 	"github.com/moledoc/orderly/internal/domain/order"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/service/common/validation"
+	"github.com/moledoc/orderly/internal/service/mgmtuser"
 )
 
 func ValidateTask(task *order.Task, ignore validation.IgnoreField) errwrap.Error {
@@ -24,7 +25,7 @@ func ValidateTask(task *order.Task, ignore validation.IgnoreField) errwrap.Error
 		return errwrap.NewError(http.StatusBadRequest, "invalid task.state")
 	}
 
-	err = validation.ValidateEmail(task.GetAccountable())
+	err = mgmtuser.ValidateUser(task.GetAccountable(), ignore)
 	if !validation.IsIgnoreEmpty(task.GetAccountable(), ignore) && err != nil {
 		return err
 	}
@@ -55,14 +56,14 @@ func ValidateSitRep(sitrep *order.SitRep, ignore validation.IgnoreField) errwrap
 		return errwrap.NewError(http.StatusBadRequest, "invalid sitrep.datetime")
 	}
 
-	err = validation.ValidateEmail(sitrep.GetBy())
+	err = mgmtuser.ValidateUser(sitrep.GetBy(), ignore)
 	if !validation.IsIgnoreEmpty(sitrep.GetBy(), ignore) && err != nil {
 		return errwrap.NewError(http.StatusBadRequest, "invalid sitrep.by: %s", err.GetStatusMessage())
 	}
 
 	if len(sitrep.GetPing()) > 0 {
 		for i, ping := range sitrep.GetPing() {
-			if err := validation.ValidateEmail(ping); err != nil {
+			if err = mgmtuser.ValidateUser(ping, ignore); !validation.IsIgnoreEmpty(ping, ignore) && err != nil {
 				return errwrap.NewError(http.StatusBadRequest, "invalid sitrep.ping.%v: %s", i, err.GetStatusMessage())
 			}
 		}

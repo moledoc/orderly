@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 
@@ -48,7 +49,7 @@ func (s *OrderSuite) TestPatchSitReps() {
 				if len(expected.GetSitReps()) == 0 {
 					return nil
 				}
-				expected.GetSitReps()[0].SetBy("example.by.updated@email.com")
+				expected.GetSitReps()[0].GetBy().SetEmail("example.by.updated@email.com")
 				return &request.PatchSitRepsRequest{
 					OrderID: expected.GetID(),
 					SitReps: []*order.SitRep{
@@ -66,7 +67,9 @@ func (s *OrderSuite) TestPatchSitReps() {
 				if len(expected.GetSitReps()) == 0 {
 					return nil
 				}
-				expected.GetSitReps()[0].SetPing([]user.Email{"user1@email.com", "user2@email.com"})
+				for i, u := range expected.GetSitReps()[0].GetPing() {
+					u.SetEmail(user.Email(fmt.Sprintf("user%v@email.com", i)))
+				}
 				return &request.PatchSitRepsRequest{
 					OrderID: expected.GetID(),
 					SitReps: []*order.SitRep{
@@ -158,8 +161,10 @@ func (s *OrderSuite) TestPatchSitReps() {
 				}
 
 				expected.GetSitReps()[1].SetDateTime(time.Now().UTC())
-				expected.GetSitReps()[1].SetBy("example.by.updated@email.com")
-				expected.GetSitReps()[1].SetPing([]user.Email{"user1@email.com", "user2@email.com"})
+				expected.GetSitReps()[1].GetBy().SetEmail("example.by.updated@email.com")
+				for i, u := range expected.GetSitReps()[1].GetPing() {
+					u.SetEmail(user.Email(fmt.Sprintf("user%v@email.com", i)))
+				}
 				expected.GetSitReps()[1].SetSituation("updated situation")
 				expected.GetSitReps()[1].SetActions("updated actions")
 				expected.GetSitReps()[1].SetTBD("updated tbd")

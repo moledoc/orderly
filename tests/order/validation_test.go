@@ -44,7 +44,7 @@ func (s *OrderSuite) TestValidation_Task() {
 	})
 	tt.Run("task.accountable", func(t *testing.T) {
 		to := setup.TaskObjWithID()
-		to.SetAccountable("")
+		to.SetAccountable(nil)
 		err := mgmtorder.ValidateTask(to, validation.IgnoreNothing)
 		require.Error(t, err)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
@@ -88,7 +88,7 @@ func (s *OrderSuite) TestValidation_SitReps() {
 	})
 	tt.Run("sitrep.by", func(t *testing.T) {
 		sp := setup.SitrepObjWithID()
-		sp.SetBy("")
+		sp.SetBy(nil)
 		err := mgmtorder.ValidateSitRep(sp, validation.IgnoreNothing)
 		require.Error(t, err)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
@@ -96,7 +96,7 @@ func (s *OrderSuite) TestValidation_SitReps() {
 	})
 	tt.Run("sitrep.ping", func(t *testing.T) {
 		sp := setup.SitrepObjWithID()
-		sp.SetPing(append([]user.Email{""}, setup.SitrepObjWithID().GetPing()...))
+		sp.SetPing(append([]*user.User{nil}, setup.SitrepObjWithID().GetPing()...))
 		err := mgmtorder.ValidateSitRep(sp, validation.IgnoreNothing)
 		require.Error(t, err)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
