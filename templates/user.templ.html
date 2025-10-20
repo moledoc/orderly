@@ -1,3 +1,98 @@
 {{define "user"}}
+<!DOCTYPE html>
+<html lang="en">
 
+<head>
+    <meta charset="UTF-8">
+    <title>user - {{.User.ID}}</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/table.css">
+    <link rel="stylesheet" href="/static/css/searchbar.css">
+</head>
+
+<body>
+    <div class="container">
+        <details class="card" open>
+            <summary>Info</summary>
+
+            <b>ID:</b> {{.User.ID}}<br>
+            <b>Email:</b> {{.User.Email}}<br>
+
+            <div>
+                <label for="user-name">Name:</label>
+                <input type="text" class="text-input" id="user-name" name="user" value="{{.User.Name}}" required>
+            </div>
+
+
+            <div>
+                <label for="user-supervisor">Supervisor:</label>
+                <input type="text" class="text-input" id="user-supervisor" name="user" value="{{.User.Supervisor}}"
+                    required>
+            </div>
+        </details>
+
+        <hr style="border: none; height: 2px; background-color: #333; width: 50%; margin: 20px auto;">
+
+        <div>
+            <input class="searchbar" type="text" id="searchInput" placeholder="Search...">
+        </div>
+
+        <details open>
+            <summary>Accountable for</summary>
+
+            <table class="styled-table" id="datatable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Objective</th>
+                        <th>Deadline</th>
+                        <th>State</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range .AccountableOrders}}
+                    <tr>
+                        <td><a href="/order/{{.Task.ID}}">{{.Task.ID}}</a>
+                        </td>
+                        <td>{{.Task.Objective}}</td>
+                        <td><input type="date" value="{{formatToDate .Task.Deadline}}" min="1970-01-01" max="3000-01-01"
+                                required />
+                        </td>
+                        <td>{{.Task.State}}</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </details>
+
+        <details open>
+            <summary>Sub-Ordinates</summary>
+
+            <table class="styled-table" id="datatable">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{range SubOrdinates .ID}}
+                    <tr>
+                        <td><a href="/user/{{.ID}}">{{.ID}}</a></td>
+                        <td>{{.Name}}</td>
+                        <td>{{.Email}}</td>
+                    </tr>
+                    {{end}}
+                </tbody>
+            </table>
+        </details>
+
+
+        <script src="/static/scripts/datalist.js"></script>
+        <script src="/static/scripts/search_table.js"></script>
+
+</body>
+
+</html>
 {{end}}

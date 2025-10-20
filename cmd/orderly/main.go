@@ -502,6 +502,16 @@ func getParentOrder(id meta.ID) *order.Order {
 	return o
 }
 
+func getSubOrdinates(id meta.ID) []*user.User {
+	// TODO: get user sub-ordinates
+	userCount := 5
+	us := make([]*user.User, userCount)
+	for i := 0; i < userCount; i++ {
+		us[i] = setup.UserObjWithID(fmt.Sprintf("%v", i))
+	}
+	return us
+}
+
 func formatToDate(t time.Time) string {
 	return t.Format("2006-01-02")
 }
@@ -527,6 +537,7 @@ var (
 		"UserEmails":   getUserEmails,
 		"Orders":       getOrders,
 		"ParentOrder":  getParentOrder,
+		"SubOrdinates": getSubOrdinates,
 	}
 
 	templOrders = template.Must(template.New("orders").Funcs(templFuncMap).ParseFiles("../../templates/orders.templ.html"))
@@ -581,9 +592,6 @@ func serveUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveUser(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.New("page").Funcs(template.FuncMap{
-		"formatToDate": formatToDate,
-	}).Parse(htmlUser))
 
 	// TODO: get user by ID
 	// REMOVEME: START: when getting user by ID
@@ -621,7 +629,7 @@ func serveUser(w http.ResponseWriter, r *http.Request) {
 	}
 
 	w.Header().Set("Content-Type", "text/html")
-	err := tmpl.Execute(w, ue)
+	err := templUser.Execute(w, ue)
 	if err != nil {
 		log.Printf("[ERROR]: executing html tmpl failed: %s\n", err)
 	}
