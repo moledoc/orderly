@@ -25,9 +25,15 @@
 
 
             <div>
+
                 <label for="user-supervisor">Supervisor:</label>
-                <input type="text" class="text-input" id="user-supervisor" name="user" value="{{.User.Supervisor}}"
-                    required>
+                <input list="users" class="text-input" id="user-supervisor" name="user"
+                    value="{{.User.Supervisor}}" />
+                <datalist id="users">
+                    {{range UserEmails}}
+                    <option value="{{.}}">{{.}}</option>
+                    {{end}}
+                </datalist>
             </div>
         </details>
 
@@ -39,53 +45,52 @@
 
         <details open>
             <summary>Accountable for</summary>
-
-            <table class="styled-table" id="datatable">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Objective</th>
-                        <th>Deadline</th>
-                        <th>State</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{range .AccountableOrders}}
-                    <tr>
-                        <td><a href="/order/{{.Task.ID}}">{{.Task.ID}}</a>
-                        </td>
-                        <td>{{.Task.Objective}}</td>
-                        <td><input type="date" value="{{formatToDate .Task.Deadline}}" min="1970-01-01" max="3000-01-01"
-                                required />
-                        </td>
-                        <td>{{.Task.State}}</td>
-                    </tr>
-                    {{end}}
-                </tbody>
-            </table>
+            <div class="scroll-container">
+                <table class="styled-table" id="datatable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Objective</th>
+                            <th>State</th>
+                            <th>Deadline</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range AccountableFor .ID}}
+                        <tr>
+                            <td><a href="/order/{{.Task.ID}}">{{.Task.ID}}</a></td>
+                            <td>{{.Task.Objective}}</td>
+                            <td>{{.Task.State}}</td>
+                            <td><input type="date" value="{{formatToDate .Task.Deadline}}" disabled></td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
         </details>
 
         <details open>
             <summary>Sub-Ordinates</summary>
-
-            <table class="styled-table" id="datatable">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{range SubOrdinates .ID}}
-                    <tr>
-                        <td><a href="/user/{{.ID}}">{{.ID}}</a></td>
-                        <td>{{.Name}}</td>
-                        <td>{{.Email}}</td>
-                    </tr>
-                    {{end}}
-                </tbody>
-            </table>
+            <div class="scroll-container">
+                <table class="styled-table" id="datatable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range SubOrdinates .ID}}
+                        <tr>
+                            <td><a href="/user/{{.ID}}">{{.ID}}</a></td>
+                            <td>{{.Name}}</td>
+                            <td>{{.Email}}</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
         </details>
 
 

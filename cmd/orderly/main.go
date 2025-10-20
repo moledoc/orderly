@@ -15,6 +15,7 @@ import (
 	"github.com/moledoc/orderly/internal/router"
 	"github.com/moledoc/orderly/internal/service/mgmtorder"
 	"github.com/moledoc/orderly/internal/service/mgmtuser"
+	"github.com/moledoc/orderly/pkg/utils"
 	"github.com/moledoc/orderly/tests/setup"
 )
 
@@ -488,13 +489,14 @@ func getOrders() []*order.Order {
 	os := make([]*order.Order, orderCount)
 	for i := 0; i < orderCount; i++ {
 		os[i] = setup.OrderObjWithIDs(fmt.Sprintf("%v", i))
+		os[i].Task.Objective += utils.RandAlphanum() + utils.RandAlphanum() + utils.RandAlphanum()
 	}
 	return os
 }
 
-func getParentOrder(id meta.ID) *order.Order {
+func getParentOrder(orderID meta.ID) *order.Order {
 	// TODO: get parent order by id
-	if id == "" {
+	if orderID == "" {
 		return nil
 	}
 	o := setup.OrderObjWithIDs("parent")
@@ -502,14 +504,24 @@ func getParentOrder(id meta.ID) *order.Order {
 	return o
 }
 
-func getSubOrdinates(id meta.ID) []*user.User {
+func getSubOrdinates(userID meta.ID) []*user.User {
 	// TODO: get user sub-ordinates
-	userCount := 5
+	userCount := 50
 	us := make([]*user.User, userCount)
 	for i := 0; i < userCount; i++ {
 		us[i] = setup.UserObjWithID(fmt.Sprintf("%v", i))
 	}
 	return us
+}
+
+func getAccountableForOrders(userID meta.ID) []*order.Order {
+	// TODO: get user accountable for orders
+	orderCount := 100
+	os := make([]*order.Order, orderCount)
+	for i := 0; i < orderCount; i++ {
+		os[i] = setup.OrderObjWithIDs(fmt.Sprintf("%v", i))
+	}
+	return os
 }
 
 func formatToDate(t time.Time) string {
@@ -531,13 +543,14 @@ func firstLine(lines string) string {
 
 var (
 	templFuncMap = template.FuncMap{
-		"formatToDate": formatToDate,
-		"firstLine":    firstLine,
-		"States":       getStates,
-		"UserEmails":   getUserEmails,
-		"Orders":       getOrders,
-		"ParentOrder":  getParentOrder,
-		"SubOrdinates": getSubOrdinates,
+		"formatToDate":   formatToDate,
+		"firstLine":      firstLine,
+		"States":         getStates,
+		"UserEmails":     getUserEmails,
+		"Orders":         getOrders,
+		"ParentOrder":    getParentOrder,
+		"AccountableFor": getAccountableForOrders,
+		"SubOrdinates":   getSubOrdinates,
 	}
 
 	templOrders = template.Must(template.New("orders").Funcs(templFuncMap).ParseFiles("../../templates/orders.templ.html"))
@@ -548,20 +561,10 @@ var (
 )
 
 func serveOrders(w http.ResponseWriter, r *http.Request) {
-
-	// TODO: get orders
-
-	// REMOVEME: START: when getting order by ID
-	orders := []*order.Order{}
-	for i := 0; i < 100; i++ {
-		orders = append(orders, setup.OrderObjWithIDs(fmt.Sprintf("%v", i)))
-	}
-	// REMOVEME: END: when getting order by ID
-
 	w.Header().Set("Content-Type", "text/html")
-	err := templOrders.Execute(w, orders)
+	err := templOrders.Execute(w, getOrders())
 	if err != nil {
-		log.Printf("[ERROR]: executing html tmpl failed: %s\n", err)
+		log.Printf("[ERROR]: executing orders html tmpl failed: %s\n", err)
 	}
 }
 

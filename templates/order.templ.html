@@ -59,26 +59,28 @@
             <summary>Delegated Tasks</summary>
             <input class="searchbar" type="text" id="searchInput" placeholder="Search...">
 
-            <table class="styled-table" id="datatable">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Objective</th>
-                        <th>Accountable</th>
-                        <th>Deadline</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {{range .DelegatedTasks}}
-                    <tr>
-                        <td><a href="/order/{{.ID}}">{{.ID}}</a></td>
-                        <td>{{.Objective}}</td>
-                        <td><a href="/user/{{.Accountable.ID}}">{{.Accountable.Email}}</a></td>
-                        <td><input type="date" value="{{formatToDate .Deadline}}" required disabled></td>
-                    </tr>
-                    {{end}}
-                </tbody>
-            </table>
+            <div class="scroll-container">
+                <table class="styled-table" id="datatable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Objective</th>
+                            <th>Accountable</th>
+                            <th>Deadline</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .DelegatedTasks}}
+                        <tr>
+                            <td><a href="/order/{{.ID}}">{{.ID}}</a></td>
+                            <td>{{.Objective}}</td>
+                            <td><a href="/user/{{.Accountable.ID}}">{{.Accountable.Email}}</a></td>
+                            <td><input type="date" value="{{formatToDate .Deadline}}" disabled></td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
         </details>
 
         <details open>
@@ -103,9 +105,9 @@
                     </div>
 
                     <div>
-                        <label for="sitrep-tbd-{{.ID}}">TBD:</label>
+                        <label for="sitrep-tbd-{{.ID}}">TODO:</label>
                         <textarea class="text-input" id="sitrep-tbd-{{.ID}}" name="order-sitrep"
-                            placeholder="Things to do...">{{.TBD}}</textarea>
+                            placeholder="Things to do...">{{.TODO}}</textarea>
                     </div>
 
                     <div>
