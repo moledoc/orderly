@@ -12,12 +12,12 @@
 
 <body>
     <div class="container">
-        <h1>{{.Task.ID}}: {{.Task.Objective}}</h1>
+        <h1>{{.Task.ID}}: {{firstLine .Task.Objective}}</h1>
 
         <div>
             <a href="/order/{{.ParentOrderID}}">Parent Order:</a>
             <input list="orders" class="text-input" id="parent-order-id" name="order-task"
-                value="{{.ParentOrderID}}: {{(ParentOrder .ParentOrderID).Task.Objective}}" />
+                value="{{.ParentOrderID}}: {{firstLine (ParentOrder .ParentOrderID).Task.Objective}}" />
             <datalist id="orders">
                 {{range Orders}}
                 <option value="{{.Task.ID}}: {{.Task.Objective}}">{{.Task.ID}}: {{.Task.Objective}}</option>
@@ -27,7 +27,7 @@
 
         <div>
             <label for="task-objective">Objective:</label>
-            <input type="text" class="text-input" id="task-objective" name="order-task" value="{{.Task.Objective}}" required>
+            <textarea class="text-input" id="task-objective" name="order-task" required>{{.Task.Objective}}</textarea>
         </div>
 
         <div>
@@ -42,22 +42,24 @@
         </div>
 
         <div>
-            <label for="task-deadline">Deadline:</label>
+            <strong>Deadline:</strong>
             <input type="date" id="task-deadline" name="order-task" value="{{formatToDate .Task.Deadline}}" required>
         </div>
 
         <div>
-            <label for="task-state">State:</label>
-            <select id="task-state" name="order-task" required>
+            <strong>State:</strong>
+            <select id="task-state" name="order-task" style="border: none;" required>
                 {{range States}}
                 <option value="{{.}}" {{if eq . $.Task.State}}selected{{end}}>{{.}}</option>
                 {{end}}
             </select>
         </div>
 
-        <details>
+        <details open>
             <summary>Delegated Tasks</summary>
-            <table>
+            <input class="searchbar" , type="text" id="searchInput" placeholder="Search...">
+
+            <table class="styled-table" id="datatable">
                 <thead>
                     <tr>
                         <th>ID</th>
@@ -79,44 +81,47 @@
             </table>
         </details>
 
-        <details>
+        <details open>
             <summary>SitReps</summary>
             {{range .SitReps}}
-            <div class="card">
-                <div><strong>ID:</strong> {{.ID}}</div>
-                <div><strong>By:</strong> <a href="/user/{{.By.ID}}">{{.By.Email}}</a></div>
-                <div><strong>DateTime:</strong> {{formatToDate .DateTime}}</div>
-                <div><strong>Ping:</strong>
-                    {{range $index, $ping := .Ping}}
-                    <a href="/user/{{.ID}}">{{.Email}}</a>
-                    {{end}}
-                </div>
+            <details class="card" open>
+                <summary id="sitrep-{{.ID}}-summary"
+                    style="font-size: 0.9em; font-weight: 300; cursor: pointer; color: #555;">{{.DateTime}} by <a
+                        href="/user/{{.By.ID}}">{{.By.Email}}</a></summary>
 
-                <div>
-                    <label for="sitrep-situation-{{.ID}}">Situation:</label>
-                    <input type="text" id="sitrep-situation-{{.ID}}" name="order-sitrep" value="{{.Situation}}">
-                </div>
+                <div id="sitrep-{{.ID}}-body">
+                    <div>
+                        <label for="sitrep-situation-{{.ID}}">Situation:</label>
+                        <textarea class="text-input" id="sitrep-situation-{{.ID}}" name="order-sitrep"
+                            placeholder="Situation to date...">{{.Situation}}</textarea>
+                    </div>
 
-                <div>
-                    <label for="sitrep-actions-{{.ID}}">Actions:</label>
-                    <input type="text" id="sitrep-actions-{{.ID}}" name="order-sitrep" value="{{.Actions}}">
-                </div>
+                    <div>
+                        <label for="sitrep-actions-{{.ID}}">Actions:</label>
+                        <textarea class="text-input" id="sitrep-actions-{{.ID}}" name="order-sitrep"
+                            placeholder="Actions to date...">{{.Actions}}</textarea>
+                    </div>
 
-                <div>
-                    <label for="sitrep-tbd-{{.ID}}">TBD:</label>
-                    <input type="text" id="sitrep-tbd-{{.ID}}" name="order-sitrep" value="{{.TBD}}">
-                </div>
+                    <div>
+                        <label for="sitrep-tbd-{{.ID}}">TBD:</label>
+                        <textarea class="text-input" id="sitrep-tbd-{{.ID}}" name="order-sitrep"
+                            placeholder="Things to do...">{{.TBD}}</textarea>
+                    </div>
 
-                <div>
-                    <label for="sitrep-issues-{{.ID}}">Issues:</label>
-                    <input type="text" id="sitrep-issues-{{.ID}}" name="order-sitrep" value="{{.Issues}}">
+                    <div>
+                        <label for="sitrep-issues-{{.ID}}">Issues:</label>
+                        <textarea class="text-input" id="sitrep-issues-{{.ID}}" name="order-sitrep"
+                            placeholder="Issues...">{{.Issues}}</textarea>
+                    </div>
+
                 </div>
-            </div>
+            </details>
             {{end}}
         </details>
     </div>
 
     <script src="/static/scripts/datalist.js"></script>
+    <script src="/static/scripts/search_table.js"></script>
 
 </body>
 

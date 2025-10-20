@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/moledoc/orderly/internal/domain/meta"
@@ -496,16 +497,32 @@ func getParentOrder(id meta.ID) *order.Order {
 	if id == "" {
 		return nil
 	}
-	return setup.OrderObjWithIDs("parent")
+	o := setup.OrderObjWithIDs("parent")
+	o.Task.Objective += "\nnewlined parent order objective"
+	return o
 }
 
 func formatToDate(t time.Time) string {
 	return t.Format("2006-01-02")
 }
 
+func firstLine(lines string) string {
+	elems := strings.Split(lines, "\n")
+	if len(elems) == 0 {
+		return ""
+	}
+	for _, el := range elems {
+		if len(el) > 0 {
+			return el
+		}
+	}
+	return ""
+}
+
 var (
 	templFuncMap = template.FuncMap{
 		"formatToDate": formatToDate,
+		"firstLine":    firstLine,
 		"States":       getStates,
 		"UserEmails":   getUserEmails,
 		"Orders":       getOrders,
@@ -543,6 +560,7 @@ func serveOrder(w http.ResponseWriter, r *http.Request) {
 
 	// REMOVEME: START: when getting order by ID
 	order := setup.OrderObjWithIDs("1")
+	order.Task.Objective += "\nnewlined objective\nsimulates textarea"
 	// REMOVEME: END: when getting order by ID
 
 	w.Header().Set("Content-Type", "text/html")
