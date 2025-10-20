@@ -23,11 +23,17 @@ type serviceMgmtUser struct {
 }
 
 var (
-	_ ServiceMgmtUserAPI = (*serviceMgmtUser)(nil)
+	_   ServiceMgmtUserAPI = (*serviceMgmtUser)(nil)
+	svc ServiceMgmtUserAPI = nil
 )
 
+func GetServiceMgmtUser() ServiceMgmtUserAPI {
+	return svc
+}
+
 func NewServiceMgmtUser(repo repository.RepositoryUserAPI) ServiceMgmtUserAPI {
-	return &serviceMgmtUser{
+	svc = &serviceMgmtUser{
 		Repository: repo,
 	}
+	return svc
 }

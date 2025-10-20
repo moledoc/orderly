@@ -13,26 +13,49 @@ import (
 )
 
 func handlePostUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "postUser")
 	defer middleware.SpanStop(ctx, "postUser")
 
-	var req request.PostUserRequest
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
+		return
+	}
+
+	var req request.PostUserRequest = request.PostUserRequest{
+		User: &user.User{
+			Name:       r.FormValue("name"),
+			Email:      user.Email(r.FormValue("email")),
+			Supervisor: user.Email(r.FormValue("supervisor")),
+		},
+	}
 	var resp *response.PostUserResponse
 	var err errwrap.Error
 
-	err = decodeBody(ctx, r, &req)
-	if err == nil {
-		middleware.SpanLog(ctx, "PostUserRequest", &req)
-		resp, err = mgmtusersvc.PostUser(ctx, &req)
-	}
+	// err = decodeBody(ctx, r, &req)
+	// if err == nil {
+	// 	middleware.SpanLog(ctx, "PostUserRequest", &req)
+	// 	resp, err = mgmtusersvc.PostUser(ctx, &req)
+	// }
+	middleware.SpanLog(ctx, "PostUserRequest", &req)
+	resp, err = mgmtusersvc.PostUser(ctx, &req)
 
 	writeResponse(ctx, w, resp, err, http.StatusCreated)
 }
 
 func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
@@ -62,6 +85,11 @@ func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
@@ -115,6 +143,11 @@ func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 

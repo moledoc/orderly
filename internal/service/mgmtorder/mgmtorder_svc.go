@@ -31,11 +31,17 @@ type serviceMgmtOrder struct {
 }
 
 var (
-	_ ServiceMgmtOrderAPI = (*serviceMgmtOrder)(nil)
+	_   ServiceMgmtOrderAPI = (*serviceMgmtOrder)(nil)
+	svc ServiceMgmtOrderAPI = nil
 )
 
+func GetServiceMgmtOrder() ServiceMgmtOrderAPI {
+	return svc
+}
+
 func NewServiceMgmtOrder(repo repository.RepositoryOrderAPI) ServiceMgmtOrderAPI {
-	return &serviceMgmtOrder{
+	svc = &serviceMgmtOrder{
 		Repository: repo,
 	}
+	return svc
 }
