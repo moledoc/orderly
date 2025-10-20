@@ -1,0 +1,45 @@
+{{define "users"}}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>users</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/table.css">
+    <link rel="stylesheet" href="/static/css/searchbar.css">
+</head>
+
+<body>
+    <div class="container">
+        <input class="searchbar", type="text" id="searchInput" placeholder="Search...">
+
+        <table class="styled-table" id="datatable">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {{range .}}
+                <tr>
+                    <td><a href="/user/{{.ID}}">{{.ID}}</a></td>
+                    <td>{{.Name}}</td>
+                    <td>{{.Email}}</td>
+                </tr>
+                {{end}}
+            </tbody>
+
+        </table>
+    </div>
+
+    <script src="/static/scripts/search_table.js"></script>
+
+</body>
+
+</html>
+{{end}}
