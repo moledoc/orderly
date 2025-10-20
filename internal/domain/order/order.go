@@ -45,13 +45,12 @@ type Task struct {
 type SitRep struct {
 	ID meta.ID `json:"id,omitempty"`
 
-	DateTime time.Time    `json:"datetime,omitempty"`
-	By       *user.User   `json:"email,omitempty"`
-	Ping     []*user.User `json:"ping,omitempty"`
+	DateTime time.Time  `json:"datetime,omitempty"`
+	By       *user.User `json:"email,omitempty"`
 
 	Situation string `json:"situation,omitempty"`
 	Actions   string `json:"actions,omitempty"`
-	TBD       string `json:"tbd,omitempty"`
+	TODO      string `json:"todo,omitempty"`
 	Issues    string `json:"issues,omitempty"`
 }
 
@@ -101,11 +100,10 @@ func (o *Order) Clone() *Order {
 
 			DateTime: sitrep.GetDateTime(),
 			By:       sitrep.GetBy(),
-			Ping:     sitrep.GetPing(),
 
 			Situation: sitrep.GetSituation(),
 			Actions:   sitrep.GetActions(),
-			TBD:       sitrep.GetTBD(),
+			TODO:      sitrep.GetTODO(),
 			Issues:    sitrep.GetIssues(),
 		}
 	}

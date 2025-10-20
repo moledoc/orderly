@@ -384,10 +384,6 @@ func patchSitReps(reqSitRep *order.SitRep, patchedSitRep *order.SitRep) bool {
 		patchedSitRep.SetBy(reqSitRep.GetBy())
 		hasChanges = true
 	}
-	if !utils.IsZeroValue(reqSitRep.GetPing()) && !slices.Equal(reqSitRep.GetPing(), patchedSitRep.GetPing()) {
-		patchedSitRep.SetPing(reqSitRep.GetPing())
-		hasChanges = true
-	}
 	if !utils.IsZeroValue(reqSitRep.GetSituation()) && reqSitRep.GetSituation() != patchedSitRep.GetSituation() {
 		patchedSitRep.SetSituation(reqSitRep.GetSituation())
 		hasChanges = true
@@ -396,8 +392,8 @@ func patchSitReps(reqSitRep *order.SitRep, patchedSitRep *order.SitRep) bool {
 		patchedSitRep.SetActions(reqSitRep.GetActions())
 		hasChanges = true
 	}
-	if !utils.IsZeroValue(reqSitRep.GetTBD()) && reqSitRep.GetTBD() != patchedSitRep.GetTBD() {
-		patchedSitRep.SetTBD(reqSitRep.GetTBD())
+	if !utils.IsZeroValue(reqSitRep.GetTODO()) && reqSitRep.GetTODO() != patchedSitRep.GetTODO() {
+		patchedSitRep.SetTODO(reqSitRep.GetTODO())
 		hasChanges = true
 	}
 	if !utils.IsZeroValue(reqSitRep.GetIssues()) && reqSitRep.GetIssues() != patchedSitRep.GetIssues() {

@@ -9,7 +9,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/order"
 	"github.com/moledoc/orderly/internal/domain/request"
-	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/tests/api"
 	"github.com/moledoc/orderly/tests/cleanup"
 	"github.com/stretchr/testify/require"
@@ -31,15 +30,11 @@ func TaskObjWithID(extra ...string) *order.Task {
 
 func SitrepObj(extra ...string) *order.SitRep {
 	return &order.SitRep{
-		DateTime: time.Now().UTC(),
-		By:       UserObjWithID(append(extra, "by")...),
-		Ping: []*user.User{
-			UserObj(append(extra, "ping1")...),
-			UserObj(append(extra, "ping2")...),
-		},
+		DateTime:  time.Now().UTC(),
+		By:        UserObjWithID(append(extra, "by")...),
 		Situation: "situation description",
 		Actions:   "list of actions taken",
-		TBD:       "list of things to do still",
+		TODO:      "list of things to do still",
 		Issues:    "list of encountered issues",
 	}
 }

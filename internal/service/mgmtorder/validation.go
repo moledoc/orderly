@@ -61,22 +61,14 @@ func ValidateSitRep(sitrep *order.SitRep, ignore validation.IgnoreField) errwrap
 		return errwrap.NewError(http.StatusBadRequest, "invalid sitrep.by: %s", err.GetStatusMessage())
 	}
 
-	if len(sitrep.GetPing()) > 0 {
-		for i, ping := range sitrep.GetPing() {
-			if err = mgmtuser.ValidateUser(ping, ignore); !validation.IsIgnoreEmpty(ping, ignore) && err != nil {
-				return errwrap.NewError(http.StatusBadRequest, "invalid sitrep.ping.%v: %s", i, err.GetStatusMessage())
-			}
-		}
-	}
-
 	if !validation.IsIgnoreEmpty(sitrep.GetSituation()+
 		sitrep.GetActions()+
-		sitrep.GetTBD()+
+		sitrep.GetTODO()+
 		sitrep.GetIssues(), ignore) &&
 		//
 		len(sitrep.GetSituation()) == 0 &&
 		len(sitrep.GetActions()) == 0 &&
-		len(sitrep.GetTBD()) == 0 &&
+		len(sitrep.GetTODO()) == 0 &&
 		len(sitrep.GetIssues()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "empty sitrep")
 	}

@@ -10,7 +10,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/order"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
-	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/pkg/utils"
 	"github.com/moledoc/orderly/tests/compare"
 	"github.com/moledoc/orderly/tests/setup"
@@ -96,22 +95,18 @@ func (s *OrderSuite) TestPatchOrder() {
 
 					DateTime: time.Now().UTC(),
 					By:       setup.UserObjWithID("user1"),
-					Ping: []*user.User{
-						setup.UserObjWithID("user2"),
-						setup.UserObjWithID("user3"),
-					},
-					// Situation: "New situation description",
-					// Actions:   "<List of actions>",
-					// TBD:       "<List of things to do>",
-					Issues: "<List of issues>",
+
+					Situation: "New situation description",
+					Actions:   "<List of actions>",
+					TODO:      "<List of things to do>",
+					Issues:    "<List of issues>",
 				}
 
 				expected.GetSitReps()[0].SetDateTime(patchedSitRep.GetDateTime())
 				expected.GetSitReps()[0].SetBy(patchedSitRep.GetBy())
-				expected.GetSitReps()[0].SetPing(patchedSitRep.GetPing())
-				// expected.GetSitReps()[0].SetSituation(patchedSitRep.GetSituation())
-				// expected.GetSitReps()[0].SetActions(patchedSitRep.GetActions())
-				// expected.GetSitReps()[0].SetTBD(patchedSitRep.GetTBD())
+				expected.GetSitReps()[0].SetSituation(patchedSitRep.GetSituation())
+				expected.GetSitReps()[0].SetActions(patchedSitRep.GetActions())
+				expected.GetSitReps()[0].SetTODO(patchedSitRep.GetTODO())
 				expected.GetSitReps()[0].SetIssues(patchedSitRep.GetIssues())
 
 				return &request.PatchOrderRequest{

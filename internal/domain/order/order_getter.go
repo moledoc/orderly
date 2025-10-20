@@ -65,13 +65,6 @@ func (sr *SitRep) GetBy() *user.User {
 	return sr.By
 }
 
-func (sr *SitRep) GetPing() []*user.User {
-	if sr == nil {
-		return []*user.User{}
-	}
-	return sr.Ping
-}
-
 func (sr *SitRep) GetSituation() string {
 	if sr == nil {
 		return ""
@@ -86,11 +79,11 @@ func (sr *SitRep) GetActions() string {
 	return sr.Actions
 }
 
-func (sr *SitRep) GetTBD() string {
+func (sr *SitRep) GetTODO() string {
 	if sr == nil {
 		return ""
 	}
-	return sr.TBD
+	return sr.TODO
 }
 
 func (sr *SitRep) GetIssues() string {

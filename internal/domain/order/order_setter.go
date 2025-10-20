@@ -65,13 +65,6 @@ func (sr *SitRep) SetBy(by *user.User) {
 	sr.By = by
 }
 
-func (sr *SitRep) SetPing(ping []*user.User) {
-	if sr == nil {
-		return
-	}
-	sr.Ping = ping
-}
-
 func (sr *SitRep) SetSituation(situation string) {
 	if sr == nil {
 		return
@@ -86,11 +79,11 @@ func (sr *SitRep) SetActions(actions string) {
 	sr.Actions = actions
 }
 
-func (sr *SitRep) SetTBD(tBD string) {
+func (sr *SitRep) SetTODO(todo string) {
 	if sr == nil {
 		return
 	}
-	sr.TBD = tBD
+	sr.TODO = todo
 }
 
 func (sr *SitRep) SetIssues(issues string) {
