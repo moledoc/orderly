@@ -4,6 +4,10 @@
 
 ## TODOs
 
+- [] rework patch to read url encoded data
+- [] split Write method to specific methods
+- [] add necessary new endpoints
+- [] fix testcases
 - [] order UI
     - [] check [order.html](./order.html) for first idea draft
     - [] idea to use htmx, so there might be some UI related endpoints

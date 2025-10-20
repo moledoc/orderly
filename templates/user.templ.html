@@ -3,6 +3,7 @@
 <html lang="en">
 
 <head>
+    <script src="https://unpkg.com/htmx.org@1.9.5"></script>
     <meta charset="UTF-8">
     <title>user - {{.User.ID}}</title>
     <link rel="stylesheet" href="/static/css/main.css">
@@ -20,15 +21,15 @@
 
             <div>
                 <label for="user-name">Name:</label>
-                <input type="text" class="text-input" id="user-name" name="user" value="{{.User.Name}}" required>
+                <input type="text" class="text-input" id="user-name" name="name" value="{{.User.Name}}" required
+                    hx-patch="/v1/mgmt/user/{{.ID}}" hx-trigger="change">
             </div>
 
-
             <div>
-
                 <label for="user-supervisor">Supervisor:</label>
-                <input list="users" class="text-input" id="user-supervisor" name="user"
-                    value="{{.User.Supervisor}}" />
+                <input list="users" class="text-input" id="user-supervisor" name="supervisor"
+                    value="{{.User.Supervisor}}" 
+                    hx-patch="/v1/mgmt/user/{{.ID}}" hx-trigger="change">
                 <datalist id="users">
                     {{range UserEmails}}
                     <option value="{{.}}">{{.}}</option>
@@ -94,7 +95,6 @@
         </details>
 
 
-        <script src="/static/scripts/datalist.js"></script>
         <script src="/static/scripts/search_table.js"></script>
 
 </body>

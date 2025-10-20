@@ -50,16 +50,18 @@ func writeResponse(ctx context.Context, w http.ResponseWriter, resp any, err err
 		}
 		err.SetTraceID(traceID)
 
-		w.WriteHeader(err.GetStatusCode())
-		w.Write([]byte(err.String()))
+		// w.WriteHeader(err.GetStatusCode())
+		// w.Write([]byte(err.String()))
+		http.Error(w, err.String(), err.GetStatusCode())
 		return
 	}
 
 	bs, jsonerr := json.Marshal(resp)
 	if jsonerr != nil {
 		err := errwrap.NewError(http.StatusInternalServerError, "marshalling resp failed")
-		w.WriteHeader(err.GetStatusCode())
-		w.Write([]byte(err.String()))
+		// w.WriteHeader(err.GetStatusCode())
+		// w.Write([]byte(err.String()))
+		http.Error(w, err.String(), err.GetStatusCode())
 		return
 	}
 
@@ -130,12 +132,13 @@ func RouteUser(svc mgmtuser.ServiceMgmtUserAPI) *http.ServeMux {
 		http.HandleFunc(fmt.Sprintf("GET /v1/mgmt/user/{%v}", userID), handleGetUserByID)
 		http.HandleFunc("GET /v1/mgmt/users", handleGetUsers)
 		http.HandleFunc(fmt.Sprintf("GET /v1/mgmt/user/{%v}/subordinates", userID), handleGetUserSubOrdinates)
-		http.HandleFunc("PATCH /v1/mgmt/user", handlePatchUser)
+		http.HandleFunc(fmt.Sprintf("PATCH /v1/mgmt/user/{%v}", userID), handlePatchUser)
 		http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/user/{%v}", userID), handleDeleteUser)
 
 		// NOTE: handle empty ids
 		http.HandleFunc("GET /v1/mgmt/user/", handleGetUserByID)
 		http.HandleFunc("GET /v1/mgmt/user/subordinates", handleGetUserSubOrdinates)
+		http.HandleFunc("PATCH /v1/mgmt/user/", handlePatchUser)
 		http.HandleFunc("DELETE /v1/mgmt/user/", handleDeleteUser)
 	})
 

@@ -8,6 +8,7 @@ import (
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
+	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/internal/middleware"
 )
 
@@ -76,21 +77,39 @@ func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlePatchUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPatch {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
 	middleware.SpanStart(ctx, "patchUser")
 	defer middleware.SpanStop(ctx, "patchUser")
 
-	var req request.PatchUserRequest
+	if err := r.ParseForm(); err != nil {
+		http.Error(w, "Error parsing form", http.StatusBadRequest)
+		return
+	}
+
+	var req request.PatchUserRequest = request.PatchUserRequest{
+		User: &user.User{
+			ID:         meta.ID(r.PathValue(userID)),
+			Name:       r.FormValue("name"),
+			Supervisor: user.Email(r.FormValue("supervisor")),
+		},
+	}
 	var resp *response.PatchUserResponse
 	var err errwrap.Error
 
-	err = decodeBody(ctx, r, &req)
-	if err == nil {
-		middleware.SpanLog(ctx, "PatchUserRequest", &req)
-		resp, err = mgmtusersvc.PatchUser(ctx, &req)
-	}
+	// err = decodeBody(ctx, r, &req)
+	// if err == nil {
+	// 	middleware.SpanLog(ctx, "PatchUserRequest", &req)
+	// 	resp, err = mgmtusersvc.PatchUser(ctx, &req)
+	// }
+	middleware.SpanLog(ctx, "PatchUserRequest", &req)
+	resp, err = mgmtusersvc.PatchUser(ctx, &req)
 
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
