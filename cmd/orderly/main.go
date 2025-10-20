@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/order"
 	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/internal/repository/local"
@@ -480,6 +481,24 @@ func getUserEmails() []string {
 	return emails
 }
 
+func getOrders() []*order.Order {
+	// TODO: get all orders
+	orderCount := 1000
+	os := make([]*order.Order, orderCount)
+	for i := 0; i < orderCount; i++ {
+		os[i] = setup.OrderObjWithIDs(fmt.Sprintf("%v", i))
+	}
+	return os
+}
+
+func getParentOrder(id meta.ID) *order.Order {
+	// TODO: get parent order by id
+	if id == "" {
+		return nil
+	}
+	return setup.OrderObjWithIDs("parent")
+}
+
 func formatToDate(t time.Time) string {
 	return t.Format("2006-01-02")
 }
@@ -489,6 +508,8 @@ var (
 		"formatToDate": formatToDate,
 		"States":       getStates,
 		"UserEmails":   getUserEmails,
+		"Orders":       getOrders,
+		"ParentOrder":  getParentOrder,
 	}
 
 	templOrders = template.Must(template.New("orders").Funcs(templFuncMap).ParseFiles("../../templates/orders.templ.html"))
@@ -517,11 +538,6 @@ func serveOrders(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveOrder(w http.ResponseWriter, r *http.Request) {
-	tmpl := template.Must(template.New("page").Funcs(template.FuncMap{
-		"formatToDate": formatToDate,
-		"States":       getStates,
-		"UserEmails":   getUserEmails,
-	}).Parse(htmlOrder))
 
 	// TODO: get order by ID
 
@@ -530,7 +546,7 @@ func serveOrder(w http.ResponseWriter, r *http.Request) {
 	// REMOVEME: END: when getting order by ID
 
 	w.Header().Set("Content-Type", "text/html")
-	err := tmpl.Execute(w, order)
+	err := templOrder.Execute(w, order)
 	if err != nil {
 		log.Printf("[ERROR]: executing html tmpl failed: %s\n", err)
 	}
