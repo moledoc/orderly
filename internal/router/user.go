@@ -8,7 +8,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
-	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/internal/middleware"
 )
 
@@ -24,28 +23,15 @@ func handlePostUser(w http.ResponseWriter, r *http.Request) {
 	middleware.SpanStart(ctx, "postUser")
 	defer middleware.SpanStop(ctx, "postUser")
 
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Error parsing form", http.StatusBadRequest)
-		return
-	}
-
-	var req request.PostUserRequest = request.PostUserRequest{
-		User: &user.User{
-			Name:       r.FormValue("name"),
-			Email:      user.Email(r.FormValue("email")),
-			Supervisor: user.Email(r.FormValue("supervisor")),
-		},
-	}
+	var req request.PostUserRequest
 	var resp *response.PostUserResponse
 	var err errwrap.Error
 
-	// err = decodeBody(ctx, r, &req)
-	// if err == nil {
-	// 	middleware.SpanLog(ctx, "PostUserRequest", &req)
-	// 	resp, err = mgmtusersvc.PostUser(ctx, &req)
-	// }
-	middleware.SpanLog(ctx, "PostUserRequest", &req)
-	resp, err = mgmtusersvc.PostUser(ctx, &req)
+	err = decodeBody(ctx, r, &req)
+	if err == nil {
+		middleware.SpanLog(ctx, "PostUserRequest", &req)
+		resp, err = mgmtusersvc.PostUser(ctx, &req)
+	}
 
 	writeResponse(ctx, w, resp, err, http.StatusCreated)
 }
@@ -116,28 +102,15 @@ func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 	middleware.SpanStart(ctx, "patchUser")
 	defer middleware.SpanStop(ctx, "patchUser")
 
-	if err := r.ParseForm(); err != nil {
-		http.Error(w, "Error parsing form", http.StatusBadRequest)
-		return
-	}
-
-	var req request.PatchUserRequest = request.PatchUserRequest{
-		User: &user.User{
-			ID:         meta.ID(r.PathValue(userID)),
-			Name:       r.FormValue("name"),
-			Supervisor: user.Email(r.FormValue("supervisor")),
-		},
-	}
+	var req request.PatchUserRequest
 	var resp *response.PatchUserResponse
 	var err errwrap.Error
 
-	// err = decodeBody(ctx, r, &req)
-	// if err == nil {
-	// 	middleware.SpanLog(ctx, "PatchUserRequest", &req)
-	// 	resp, err = mgmtusersvc.PatchUser(ctx, &req)
-	// }
-	middleware.SpanLog(ctx, "PatchUserRequest", &req)
-	resp, err = mgmtusersvc.PatchUser(ctx, &req)
+	err = decodeBody(ctx, r, &req)
+	if err == nil {
+		middleware.SpanLog(ctx, "PatchUserRequest", &req)
+		resp, err = mgmtusersvc.PatchUser(ctx, &req)
+	}
 
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
