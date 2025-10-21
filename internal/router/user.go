@@ -2,6 +2,7 @@ package router
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/moledoc/orderly/internal/domain/errwrap"
@@ -33,6 +34,7 @@ func handlePostUser(w http.ResponseWriter, r *http.Request) {
 		resp, err = mgmtusersvc.PostUser(ctx, &req)
 	}
 
+	w.Header().Set("HX-Redirect", fmt.Sprintf("/user/%v", resp.GetUser().GetID()))
 	writeResponse(ctx, w, resp, err, http.StatusCreated)
 }
 

@@ -1,0 +1,47 @@
+{{ define "footer" }}
+<style>
+    .footer-bar {
+        font: inherit;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 25px;
+        z-index: 9999;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.1rem 1rem;
+        background-color: #f4f4f4;
+        border-top: 1px solid #ddd;
+    }
+
+    .footer-bar button {
+        font: inherit;
+        font-size: 80%;
+        /* background: #007bff; */
+        height: 24px;
+        width: 32px;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        padding: 0;
+        line-height: 24px;
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.2s ease;
+    }
+
+    .footer-bar button:hover {
+        background: #0056b3;
+    }
+</style>
+
+<footer class="footer-bar" role="banner" aria-label="Navigation">
+    <script src="https://unpkg.com/htmx.org@1.9.5"></script>
+
+    <button hx-on="click: history.back()" aria-label="Go Back">&larr;</button>
+    <button hx-on="click: history.forward()" aria-label="Go Forward">&rarr;</button>
+</footer>
+{{ end }}

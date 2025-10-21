@@ -1,0 +1,47 @@
+{{ define "header" }}
+<style>
+    .header-bar {
+        font: inherit;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 25px;
+        z-index: 9999;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.1rem 1rem;
+        background-color: #f4f4f4;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .header-bar a {
+        font: inherit;
+        font-size: 80%;
+        background: #f0f0f0;
+        height: 24px;
+        line-height: 24px;
+        color: white;
+        border: none;
+        border-radius: 3px;
+        padding: 0.1rem 0.2rem;
+        cursor: pointer;
+        user-select: none;
+        transition: background-color 0.2s ease;
+    }
+
+    .header-bar a:hover {
+        background: #0056b3;
+        text-decoration: none;
+    }
+</style>
+
+<header class="header-bar" role="banner" aria-label="Navigation">
+    <a href="/users" aria-label="Users">Users</a>
+    <a href="/user/new" aria-label="New User">New User</a>
+    <a href="/order/new" aria-label="New Order">New Order</a>
+    <a href="/orders" aria-label="Orders">Orders</a>
+</header>
+{{ end }}

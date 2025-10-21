@@ -115,11 +115,32 @@ var (
 		"SubOrdinates":   getSubOrdinates,
 	}
 
-	templOrders = template.Must(template.New("orders").Funcs(templFuncMap).ParseFiles("../../templates/orders.templ.html"))
-	templOrder  = template.Must(template.New("order").Funcs(templFuncMap).ParseFiles("../../templates/order.templ.html"))
+	templOrders = template.Must(template.New("orders").Funcs(templFuncMap).ParseFiles(
+		"../../templates/header.templ.html",
+		"../../templates/footer.templ.html",
+		"../../templates/orders.templ.html",
+	))
+	templOrder = template.Must(template.New("order").Funcs(templFuncMap).ParseFiles(
+		"../../templates/header.templ.html",
+		"../../templates/footer.templ.html",
+		"../../templates/order.templ.html",
+	))
 
-	templUsers = template.Must(template.New("users").Funcs(templFuncMap).ParseFiles("../../templates/users.templ.html"))
-	templUser  = template.Must(template.New("user").Funcs(templFuncMap).ParseFiles("../../templates/user.templ.html"))
+	templUsers = template.Must(template.New("users").Funcs(templFuncMap).ParseFiles(
+		"../../templates/header.templ.html",
+		"../../templates/footer.templ.html",
+		"../../templates/users.templ.html",
+	))
+	templUser = template.Must(template.New("user").Funcs(templFuncMap).ParseFiles(
+		"../../templates/header.templ.html",
+		"../../templates/footer.templ.html",
+		"../../templates/user.templ.html",
+	))
+	templNewUser = template.Must(template.New("new_user").Funcs(templFuncMap).ParseFiles(
+		"../../templates/header.templ.html",
+		"../../templates/footer.templ.html",
+		"../../templates/new_user.templ.html",
+	))
 )
 
 func serveOrders(w http.ResponseWriter, r *http.Request) {
@@ -198,6 +219,13 @@ func serveUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func serveNewUser(w http.ResponseWriter, r *http.Request) {
+	err := templNewUser.Execute(w, nil)
+	if err != nil {
+		log.Printf("[ERROR]: executing new_user html tmpl failed: %s\n", err)
+	}
+}
+
 func main() {
 
 	router.Route(&router.Service{
@@ -215,6 +243,7 @@ func main() {
 
 	http.HandleFunc("GET /users", serveUsers)
 	http.HandleFunc("GET /user/{id}", serveUser)
+	http.HandleFunc("GET /user/new", serveNewUser)
 
 	fmt.Println("Server running on http://localhost:8080")
 	http.ListenAndServe(":8080", nil)

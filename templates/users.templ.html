@@ -13,54 +13,7 @@
 </head>
 
 <body>
-    <form hx-post="/v1/mgmt/user" hx-target="#datatable tbody" hx-swap="beforeend" hx-trigger="submit"
-        hx-headers='{"Content-Type": "application/json"}' hx-ext=json-enc hx-vals='js:{
-        user: {
-            name: document.getElementById("post-name")?.value,
-            email: document.getElementById("post-email")?.value,
-            supervisor: document.getElementById("post-supervisor")?.value,
-        }  
-    }'>
-        <div>
-            <label for="name">Name:</label>
-            <input type="text" id="post-name" name="post-name" required />
-        </div>
-        <div>
-            <label for="email">Email:</label>
-            <input type="email" id="post-email" name="post-email" required />
-        </div>
-
-        <div>
-            <label for="user-supervisor">Supervisor:</label>
-            <input list="users" class="text-input" id="post-supervisor" name="post-supervisor">
-            <datalist id="users">
-                {{range UserEmails}}
-                <option value="{{.}}">{{.}}</option>
-                {{end}}
-            </datalist>
-        </div>
-        <button type="submit">Add User</button>
-    </form>
-    <!-- <div id="myModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-        <div class="modal-content">
-            <button class="close-btn" id="closeModalBtn" aria-label="Close">&times;</button>
-            <h2 id="modalTitle">Add New Resource</h2>
-            <form id="resourceForm">
-                <div>
-                    <label for="resourceName">Name</label>
-                    <input type="text" id="resourceName" name="name" required />
-                </div>
-                <div>
-                    <label for="resourceQty">Quantity</label>
-                    <input type="number" id="resourceQty" name="quantity" min="1" required />
-                </div>
-                <button type="submit" class="submit-btn">Add</button>
-            </form>
-        </div>
-    </div> -->
-
-    <hr style="border: none; height: 2px; background-color: #333; width: 50%; margin: 20px auto;">
-
+    {{ template "header" .}}
 
     <div class="container">
         <input class="searchbar" , type="text" id="searchInput" placeholder="Search...">
@@ -87,6 +40,8 @@
 
         </table>
     </div>
+
+    {{ template "footer" .}}
 
     <script src="/static/scripts/search_table.js"></script>
 
