@@ -15,7 +15,7 @@
 <body>
     {{ template "header" .}}
     <div class="container">
-        <details class="card" open>
+        <details class="card">
             <summary>Info</summary>
 
             <b>ID:</b> {{.User.ID}}<br>
@@ -83,7 +83,7 @@
             </div>
         </details>
 
-        <details open>
+        <details>
             <summary>Sub-Ordinates</summary>
             <div class="scroll-container">
                 <table class="styled-table" id="datatable">

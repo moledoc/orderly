@@ -1,6 +1,8 @@
 {{ define "new_task" }}
 <div class="task-entry">
+    {{if .Delegated}}
     <hr />
+    {{end}}
     <div>
         {{if not .Delegated}}
         <label>Parent Order ID:</label>

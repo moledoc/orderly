@@ -155,6 +155,11 @@ var (
 	templNewTask = template.Must(template.New("new_task").Funcs(templFuncMap).ParseFiles(
 		"./templates/new_task.templ.html",
 	))
+	templHome = template.Must(template.New("home").Funcs(templFuncMap).ParseFiles(
+		"./templates/header.templ.html",
+		"./templates/footer.templ.html",
+		"./templates/home.templ.html",
+	))
 
 	templSomethingWrong = template.Must(template.New("something_wrong").Funcs(templFuncMap).ParseFiles(
 		"./templates/header.templ.html",
@@ -174,6 +179,13 @@ func serveOrders(w http.ResponseWriter, r *http.Request) {
 	err := templOrders.Execute(w, os)
 	if err != nil {
 		log.Printf("[ERROR]: executing orders html tmpl failed: %s\n", err)
+	}
+}
+
+func serveHome(w http.ResponseWriter, _ *http.Request) {
+	err := templHome.Execute(w, nil)
+	if err != nil {
+		log.Printf("[ERROR]: executing home html tmpl failed: %s\n", err)
 	}
 }
 
@@ -287,7 +299,7 @@ func serveUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func serveNewUser(w http.ResponseWriter, r *http.Request) {
+func serveNewUser(w http.ResponseWriter, _ *http.Request) {
 	err := templNewUser.Execute(w, nil)
 	if err != nil {
 		log.Printf("[ERROR]: executing new_user html tmpl failed: %s\n", err)
@@ -315,7 +327,7 @@ func serveNewTask(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func serveNewOrder(w http.ResponseWriter, r *http.Request) {
+func serveNewOrder(w http.ResponseWriter, _ *http.Request) {
 	os, errr := getOrders()
 	if errr != nil {
 		somethingWentWrong(w, errr)
@@ -346,7 +358,8 @@ func main() {
 	// http.HandleFunc("GET /", serveLogin) // NOTE: login
 	// http.HandleFunc("GET /", serveLogin) // NOTE: login
 
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+	http.Handle("GET /static", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+	http.HandleFunc("GET /", serveHome)
 
 	http.HandleFunc("GET /orders", serveOrders)
 	http.HandleFunc("GET /order/{id}", serveOrder)

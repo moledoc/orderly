@@ -17,10 +17,13 @@
         border-bottom: 1px solid #ddd;
     }
 
-    .header-bar a {
+    .header-bar a,
+    .header-bar button,
+    .header-bar select {
         font: inherit;
         font-size: 80%;
-        background: #60adff; /*#f0f0f0;*/
+        background: #60adff;
+        /*#f0f0f0;*/
         height: 24px;
         line-height: 24px;
         color: white;
@@ -32,16 +35,41 @@
         transition: background-color 0.2s ease;
     }
 
-    .header-bar a:hover {
+    .header-bar a:hover,
+    .header-bar button:hover,
+    .header-bar select:hover {
         background: #0056b3;
         text-decoration: none;
+    }
+
+    .header-bar select {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        padding-right: 0.0rem;
+        /* background-repeat: no-repeat;
+        background-position: right 0.4rem center;
+        background-size: 0.6rem; */
     }
 </style>
 
 <header class="header-bar" role="banner" aria-label="Navigation">
-    <a href="/users" aria-label="Users">Users</a>
-    <a href="/user/new" aria-label="New User">New User</a>
-    <a href="/order/new" aria-label="New Order">New Order</a>
-    <a href="/orders" aria-label="Orders">Orders</a>
+    <!-- <a href="/users" aria-label="Users">Users</a> -->
+    <!-- <a href="/user/new" aria-label="New User">New User</a> -->
+
+    <button hx-on="click: history.back()" aria-label="Go Back">&larr;</button>
+    <!-- <a href="/new" aria-label="New">New</a> -->
+    <select onchange="window.location.href=this.value;this.selectedIndex = 0;" style="text-align: center; text-align-last: center;">
+        <option value="">+</option>
+        <option value="/">Home</option>
+        <option value="/order/new">New Order</option>
+        <option value="/user/new">New User</option>
+        <option value="/orders">Orders</option>
+        <option value="/users">Users</option>
+    </select>
+    <button hx-on="click: history.forward()" aria-label="Go Forward">&rarr;</button>
+
+    <!-- <a href="/order/new" aria-label="New Order">New Order</a> -->
+    <!-- <a href="/orders" aria-label="Orders">Orders</a> -->
 </header>
 {{ end }}
