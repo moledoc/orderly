@@ -9,6 +9,7 @@ import (
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/order"
 	"github.com/moledoc/orderly/internal/domain/request"
+	"github.com/moledoc/orderly/pkg/utils"
 	"github.com/moledoc/orderly/tests/api"
 	"github.com/moledoc/orderly/tests/cleanup"
 	"github.com/stretchr/testify/require"
@@ -16,7 +17,7 @@ import (
 
 func TaskObj(extra ...string) *order.Task {
 	return &order.Task{
-		State:       order.NotStarted,
+		State:       utils.Ptr(order.NotStarted),
 		Accountable: UserObjWithID(append(extra, "accountable")...),
 		Objective:   "objective description",
 		Deadline:    time.Now().UTC(),

@@ -18,7 +18,7 @@ func (tt *Task) SetState(state State) {
 	if tt == nil {
 		return
 	}
-	tt.State = state
+	tt.State = &state
 }
 
 func (tt *Task) SetAccountable(accountable *user.User) {

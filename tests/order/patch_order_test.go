@@ -66,7 +66,7 @@ func (s *OrderSuite) TestPatchOrder() {
 				}
 				patchedDelegatedTask := &order.Task{
 					ID:          expected.GetDelegatedTasks()[0].GetID(),
-					State:       order.InProgress,
+					State:       utils.Ptr(order.InProgress),
 					Accountable: setup.UserObjWithID("new.accountable"),
 					Objective:   "new objective",
 					Deadline:    time.Now().UTC().Add(30 * 24 * time.Hour),

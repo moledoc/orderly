@@ -18,7 +18,7 @@ func (tt *Task) GetState() State {
 	if tt == nil {
 		return NotStarted
 	}
-	return tt.State
+	return *tt.State
 }
 
 func (tt *Task) GetAccountable() *user.User {

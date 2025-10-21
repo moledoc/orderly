@@ -32,6 +32,9 @@ func decodeBody(ctx context.Context, r *http.Request, req any) errwrap.Error {
 
 	var err errwrap.Error
 	if errj := json.NewDecoder(r.Body).Decode(req); errj != nil {
+		// bytedata, _ := io.ReadAll(r.Body)
+		// reqBodyString := string(bytedata)
+		// middleware.SpanLog(ctx, "RequestDecodeFailed", reqBodyString)
 		err = errwrap.NewError(http.StatusBadRequest, "invalid payload: %s", errj)
 	}
 	return err

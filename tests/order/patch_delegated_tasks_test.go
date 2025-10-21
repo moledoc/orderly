@@ -9,6 +9,7 @@ import (
 	"github.com/moledoc/orderly/internal/domain/order"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
+	"github.com/moledoc/orderly/pkg/utils"
 	"github.com/moledoc/orderly/tests/compare"
 	"github.com/moledoc/orderly/tests/setup"
 	"github.com/stretchr/testify/require"
@@ -35,7 +36,7 @@ func (s *OrderSuite) TestPatchDelegatedTasks() {
 					Tasks: []*order.Task{
 						{
 							ID:    expected.GetDelegatedTasks()[0].GetID(),
-							State: expected.GetDelegatedTasks()[0].GetState(),
+							State: utils.Ptr(expected.GetDelegatedTasks()[0].GetState()),
 						},
 					},
 				}
@@ -110,7 +111,7 @@ func (s *OrderSuite) TestPatchDelegatedTasks() {
 					Tasks: []*order.Task{
 						{
 							ID:          expected.GetDelegatedTasks()[1].GetID(),
-							State:       expected.GetDelegatedTasks()[1].GetState(),
+							State:       utils.Ptr(expected.GetDelegatedTasks()[1].GetState()),
 							Accountable: expected.GetDelegatedTasks()[1].GetAccountable(),
 							Objective:   expected.GetDelegatedTasks()[1].GetObjective(),
 							Deadline:    expected.GetDelegatedTasks()[1].GetDeadline(),

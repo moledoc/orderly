@@ -41,28 +41,36 @@
 
         <script>
             function serializePostOrderPayload() {
-                return JSON.stringify({
+                return {
                     order: {
-                        parent_order_id: document.getElementById("post-parent-order-id")?.value,
+                        parent_order_id: document.querySelector("[name='post-parent-order-id']")?.value,
                         task: (() => {
                             const entry = document.querySelector(".task-entry");
                             return {
-                                parentOrderID: entry?.querySelector("[name='post-parent-order-id']")?.value,
                                 objective: entry?.querySelector("[name='post-objective']")?.value,
-                                accountable: entry?.querySelector("[name='post-accountable']")?.value,
+                                accountable: {
+                                    name: "TODO:",
+                                    email: entry?.querySelector("[name='post-accountable']")?.value,
+                                    supervisor: "todo@todo.com",
+                                },
                                 state: entry?.querySelector("[name='task-state']")?.value,
+                                deadline: entry?.querySelector("[name='task-deadline']")?.value+"T00:00:00Z",
                             };
                         })(),
                         delegated_tasks: Array.from(document.querySelectorAll(".task-entry"))
                             .slice(1)
                             .map(entry => ({
-                                parent_order_id: entry.querySelector("[name='post-parent-order-id']")?.value,
                                 objective: entry.querySelector("[name='post-objective']")?.value,
-                                accountable: entry.querySelector("[name='post-accountable']")?.value,
+                                accountable: {
+                                    name: "TODO:",
+                                    email: entry.querySelector("[name='post-accountable']")?.value,
+                                    supervisor: "todo@todo.com",
+                                },
                                 state: entry.querySelector("[name='task-state']")?.value,
+                                deadline: entry.querySelector("[name='task-deadline']")?.value+"T00:00:00Z",
                             }))
                     }
-                });
+                };
             }
         </script>
 

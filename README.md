@@ -11,6 +11,8 @@
     - [] getting orders a user is accountable for
     - [] get user by email
 - [] fix testcases
+    - task.accountable went from id to user obj
+    - task.state went from str to *str
 - [] MAYBE: login
 - [] authorization
 - [] integrate with postgres

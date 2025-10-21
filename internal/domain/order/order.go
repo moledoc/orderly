@@ -6,6 +6,7 @@ import (
 
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/user"
+	"github.com/moledoc/orderly/pkg/utils"
 )
 
 type State int
@@ -29,6 +30,12 @@ func (s State) String() string {
 }
 
 func (s *State) UnmarshalJSON(data []byte) error {
+
+	var nr int
+	if err := json.Unmarshal(data, &nr); err == nil && NotStarted <= State(nr) && State(nr) <= Completed {
+		*s = State(nr)
+		return nil
+	}
 	var str string
 	if err := json.Unmarshal(data, &str); err != nil {
 		return err
@@ -45,6 +52,8 @@ func (s *State) UnmarshalJSON(data []byte) error {
 		*s = Blocked
 	case "Completed":
 		*s = Completed
+	default:
+		*s = NotStarted
 	}
 
 	return nil
@@ -64,7 +73,7 @@ const (
 
 type Task struct {
 	ID          meta.ID    `json:"id,omitempty"`
-	State       State      `json:"state,omitempty"`
+	State       *State     `json:"state,omitempty"`
 	Accountable *user.User `json:"accountable,omitempty"`
 	Objective   string     `json:"objective,omitempty"`
 	Deadline    time.Time  `json:"deadline,omitempty"`
@@ -101,7 +110,7 @@ func (o *Order) Clone() *Order {
 	var clone Order = Order{
 		Task: &Task{
 			ID:          o.GetTask().GetID(),
-			State:       o.GetTask().GetState(),
+			State:       utils.Ptr(o.GetTask().GetState()),
 			Accountable: o.GetTask().GetAccountable(),
 			Objective:   o.GetTask().GetObjective(),
 			Deadline:    o.GetTask().GetDeadline(),
@@ -115,7 +124,7 @@ func (o *Order) Clone() *Order {
 	for i, delegatedTask := range o.GetDelegatedTasks() {
 		clone.DelegatedTasks[i] = &Task{
 			ID:          delegatedTask.GetID(),
-			State:       delegatedTask.GetState(),
+			State:       utils.Ptr(delegatedTask.GetState()),
 			Accountable: delegatedTask.GetAccountable(),
 			Objective:   delegatedTask.GetObjective(),
 			Deadline:    delegatedTask.GetDeadline(),

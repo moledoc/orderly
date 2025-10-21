@@ -6,7 +6,7 @@
     <script src="https://unpkg.com/htmx.org@1.9.5"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
     <meta charset="UTF-8">
-    <title>order - {{.Task.ID}}</title>
+    <title>order - {{.Order.Task.ID}}</title>
     <link rel="stylesheet" href="/static/css/main.css">
     <link rel="stylesheet" href="/static/css/table.css">
     <link rel="stylesheet" href="/static/css/searchbar.css">
@@ -15,12 +15,12 @@
 <body>
     {{ template "header" .}}
     <div class="container">
-        <h1>{{.Task.ID}}: {{firstLine .Task.Objective}}</h1>
+        <h1>{{.Order.Task.ID}}: {{firstLine .Order.Task.Objective}}</h1>
 
         <div>
-            <a href="/order/{{.ParentOrderID}}">Parent Order:</a>
+            <a href="/order/{{.Order.ParentOrderID}}">Parent Order:</a>
             <input list="orders" class="text-input" id="parent-order-id" name="order-task"
-                value="{{.ParentOrderID}}: {{firstLine (ParentOrder .ParentOrderID).Task.Objective}}" />
+                value="{{.Order.ParentOrderID}}: {{firstLine (ParentOrder .Order.ParentOrderID).Task.Objective}}" />
             <datalist id="orders">
                 {{range .Orders}}
                 <option value="{{.Task.ID}}: {{.Task.Objective}}">{{.Task.ID}}: {{.Task.Objective}}</option>
@@ -30,13 +30,13 @@
 
         <div>
             <label for="task-objective">Objective:</label>
-            <textarea class="text-input" id="task-objective" name="order-task" required>{{.Task.Objective}}</textarea>
+            <textarea class="text-input" id="task-objective" name="order-task" required>{{.Order.Task.Objective}}</textarea>
         </div>
 
         <div>
-            <a href="/user/{{.Task.Accountable.ID}}">Accountable:</a>
+            <a href="/user/{{.Order.Task.Accountable.ID}}">Accountable:</a>
             <input list="users" class="text-input" id="task-accountable" name="order-task"
-                value="{{.Task.Accountable.Email}}" />
+                value="{{.Order.Task.Accountable.Email}}" />
             <datalist id="users">
                 {{range UserEmails}}
                 <option value="{{.}}">{{.}}</option>
@@ -46,14 +46,14 @@
 
         <div>
             <strong>Deadline:</strong>
-            <input type="date" id="task-deadline" name="order-task" value="{{formatToDate .Task.Deadline}}" required>
+            <input type="date" id="task-deadline" name="order-task" value="{{formatToDate .Order.Task.Deadline}}" required>
         </div>
 
         <div>
             <strong>State:</strong>
             <select id="task-state" name="order-task" style="border: none;" required>
                 {{range States}}
-                <option value="{{.}}" {{if eq . $.Task.State}}selected{{end}}>{{.}}</option>
+                <option value="{{.}}" {{if eq . $.Order.Task.State}}selected{{end}}>{{.}}</option>
                 {{end}}
             </select>
         </div>
@@ -73,7 +73,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{range .DelegatedTasks}}
+                        {{range .Order.DelegatedTasks}}
                         <tr>
                             <td><a href="/order/{{.ID}}">{{.ID}}</a></td>
                             <td>{{.Objective}}</td>
@@ -88,7 +88,7 @@
 
         <details open>
             <summary>SitReps</summary>
-            {{range .SitReps}}
+            {{range .Order.SitReps}}
             <details class="card" open>
                 <summary id="sitrep-{{.ID}}-summary"
                     style="font-size: 0.9em; font-weight: 300; cursor: pointer; color: #555;">{{.DateTime}} by <a

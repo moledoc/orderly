@@ -22,10 +22,10 @@ import (
 	"github.com/moledoc/orderly/tests/setup"
 )
 
-func getStates() []order.State {
-	states := []order.State{}
+func getStates() []*order.State {
+	states := []*order.State{}
 	for i := order.NotStarted; i <= order.Completed; i++ {
-		states = append(states, i)
+		states = append(states, &i)
 	}
 	return states
 }
@@ -179,12 +179,13 @@ func serveOrders(w http.ResponseWriter, r *http.Request) {
 
 func serveOrder(w http.ResponseWriter, r *http.Request) {
 
-	// TODO: get order by ID
-
-	// REMOVEME: START: when getting order by ID
-	o := setup.OrderObjWithIDs("1")
-	o.Task.Objective += "\nnewlined objective\nsimulates textarea"
-	// REMOVEME: END: when getting order by ID
+	respGetOrderByID, errr := mgmtorder.GetServiceMgmtOrder().GetOrderByID(context.Background(), &request.GetOrderByIDRequest{
+		ID: meta.ID(r.PathValue("id")),
+	})
+	if errr != nil {
+		somethingWentWrong(w, errr)
+		return
+	}
 
 	type extendedOrder struct {
 		Order  *order.Order
@@ -198,7 +199,7 @@ func serveOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	eo := &extendedOrder{
-		Order:  o,
+		Order:  respGetOrderByID.GetOrder(),
 		Orders: os,
 	}
 
