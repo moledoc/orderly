@@ -70,7 +70,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{range AccountableFor .ID}}
+                        {{range .AccountableFor}}
                         <tr>
                             <td><a href="/order/{{.Task.ID}}">{{.Task.ID}}</a></td>
                             <td>{{.Task.Objective}}</td>
@@ -95,7 +95,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{range SubOrdinates .ID}}
+                        {{range .SubOrdinates}}
                         <tr>
                             <td><a href="/user/{{.ID}}">{{.ID}}</a></td>
                             <td>{{.Name}}</td>

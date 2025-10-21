@@ -7,8 +7,10 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
 
+	"github.com/moledoc/orderly/internal/domain/errwrap"
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/order"
 	"github.com/moledoc/orderly/internal/domain/request"
@@ -105,14 +107,12 @@ func firstLine(lines string) string {
 
 var (
 	templFuncMap = template.FuncMap{
-		"formatToDate":   formatToDate,
-		"firstLine":      firstLine,
-		"States":         getStates,
-		"UserEmails":     getUserEmails,
-		"Orders":         getOrders,
-		"ParentOrder":    getParentOrder,
-		"AccountableFor": getAccountableForOrders,
-		"SubOrdinates":   getSubOrdinates,
+		"formatToDate": formatToDate,
+		"firstLine":    firstLine,
+		"States":       getStates,
+		"UserEmails":   getUserEmails,  // REMOVEME: move to handleFunc
+		"Orders":       getOrders,      // REMOVEME: move to handleFunc
+		"ParentOrder":  getParentOrder, // REMOVEME: move to handleFunc
 	}
 
 	templOrders = template.Must(template.New("orders").Funcs(templFuncMap).ParseFiles(
@@ -140,6 +140,12 @@ var (
 		"../../templates/header.templ.html",
 		"../../templates/footer.templ.html",
 		"../../templates/new_user.templ.html",
+	))
+
+	templSomethingWrong = template.Must(template.New("something_wrong").Funcs(templFuncMap).ParseFiles(
+		"../../templates/header.templ.html",
+		"../../templates/footer.templ.html",
+		"../../templates/something_wrong.templ.html",
 	))
 )
 
@@ -177,19 +183,44 @@ func serveUsers(w http.ResponseWriter, r *http.Request) {
 
 func serveUser(w http.ResponseWriter, r *http.Request) {
 
-	// TODO: get user by ID
-	// REMOVEME: START: when getting user by ID
-	u := setup.UserObjWithID()
-	// REMOVEME: END: when getting user by ID
+	var wg sync.WaitGroup
+	var u *user.User
+	var subordinates []*user.User
+	cherr := make(chan errwrap.Error, 2)
+	defer close(cherr)
 
-	// TODO: get user subordinates
-	// REMOVEME: START: when getting user subordinates
-	subOrdinatesCount := 5
-	subOrdinates := make([]*user.User, subOrdinatesCount)
-	for i := 0; i < subOrdinatesCount; i++ {
-		subOrdinates[i] = setup.UserObjWithID(fmt.Sprintf("%v", i))
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		respGetUserByID, errr := mgmtuser.GetServiceMgmtUser().GetUserByID(context.Background(), &request.GetUserByIDRequest{
+			ID: meta.ID(r.PathValue("id")),
+		})
+		if errr != nil {
+			cherr <- errr
+		} else {
+			u = respGetUserByID.GetUser()
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		respGetSubOrdinates, errr := mgmtuser.GetServiceMgmtUser().GetUserSubOrdinates(context.Background(), &request.GetUserSubOrdinatesRequest{
+			ID: meta.ID(r.PathValue("id")),
+		})
+		if errr != nil {
+			cherr <- errr
+		} else {
+			subordinates = respGetSubOrdinates.GetSubOrdinates()
+		}
+	}()
+	wg.Wait()
+
+	if len(cherr) > 0 {
+		err := templSomethingWrong.Execute(w, nil)
+		if err != nil {
+			log.Printf("[ERROR]: executing SomethingWrong html tmpl failed: %s\n", err)
+		}
+		return
 	}
-	// REMOVEME: END: when getting user subordinates
 
 	// TODO: get user accountable orders
 	// REMOVEME: START: when getting user accountable orders
@@ -202,14 +233,14 @@ func serveUser(w http.ResponseWriter, r *http.Request) {
 
 	type userExtended struct {
 		*user.User
-		SubOrdinates      []*user.User
-		AccountableOrders []*order.Order
+		SubOrdinates   []*user.User
+		AccountableFor []*order.Order
 	}
 
 	ue := &userExtended{
-		User:              u,
-		SubOrdinates:      subOrdinates,
-		AccountableOrders: accountableOrders,
+		User:           u,
+		SubOrdinates:   subordinates,
+		AccountableFor: accountableOrders,
 	}
 
 	w.Header().Set("Content-Type", "text/html")
