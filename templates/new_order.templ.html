@@ -1,0 +1,64 @@
+{{define "new_order"}}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://unpkg.com/htmx.org@1.9.5"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+    <meta charset="UTF-8">
+    <title>new order</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/new_order.css">
+</head>
+
+<body>
+
+    {{ template "header" .}}
+
+    <form class="order-form" hx-post="/v1/mgmt/order" hx-trigger="submit"
+        hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc" hx-vals='js:{
+    order: {
+        task: {
+            state: document.getElementById("post-state")?.value,
+            accountable: document.getElementById("post-accountable")?.value,
+            objective: document.getElementById("post-objective")?.value,
+            deadline: document.getElementById("post-deadline")?.value,
+        },
+        parent_order_id: document.getElementById("post-parent-order-id")?.value,
+        delegated_tasks: [{
+
+        },
+        ]
+    }
+  }'>
+        <div>
+            <label for="post-parent-order-id">Parent Order ID:</label>
+            {{if .Orders}}
+            <input list="orders" class="text-input" id="post-parent-order-id" name="post-parent-order-id" />
+            <datalist id="orders">
+                {{range .Orders}}
+                <option value="{{.Task.ID}}: {{.Task.Objective}}">{{.Task.ID}}: {{.Task.Objective}}</option>
+                {{end}}
+            </datalist>
+            {{else}}
+            0: Root Task <!-- TODO: change -->
+            {{end}}
+        </div>
+
+        <div>
+            <label for="post-state">State:</label>
+            <select id="task-state" name="order-task" style="border: none;" required autocomplete="state">
+                {{range States}}
+                <option value="{{.}}">{{.}}</option>
+                {{end}}
+            </select>
+        </div>
+
+
+        <button type="submit">Add Order</button>
+        {{ template "footer" .}}
+
+</body>
+
+</html>
+{{end}}

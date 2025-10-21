@@ -5,6 +5,7 @@
 ## TODOs
 
 - [] initial UI
+    - use errr-s
 - [] split Write method to specific methods
 - [] add necessary new endpoints
     - [] getting orders a user is accountable for

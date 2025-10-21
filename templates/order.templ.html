@@ -22,7 +22,7 @@
             <input list="orders" class="text-input" id="parent-order-id" name="order-task"
                 value="{{.ParentOrderID}}: {{firstLine (ParentOrder .ParentOrderID).Task.Objective}}" />
             <datalist id="orders">
-                {{range Orders}}
+                {{range .Orders}}
                 <option value="{{.Task.ID}}: {{.Task.Objective}}">{{.Task.ID}}: {{.Task.Objective}}</option>
                 {{end}}
             </datalist>

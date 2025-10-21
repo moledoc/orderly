@@ -1,0 +1,57 @@
+form.order-form {
+    max-width: 400px;
+    margin: 1rem auto;
+    padding: 1rem 1.5rem;
+    background: #fafafa;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    font-family: system-ui, sans-serif;
+}
+
+form.order-form>div {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1rem;
+}
+
+form.order-form label {
+    margin-bottom: 0.25rem;
+    font-weight: 600;
+    color: #333;
+}
+
+form.order-form input[type="text"],
+form.order-form input[type="email"],
+form.order-form input[list] {
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    border: 1px solid #bbb;
+    border-radius: 4px;
+    transition: border-color 0.2s ease;
+}
+
+form.order-form input[type="text"]:focus,
+form.order-form input[type="email"]:focus,
+form.order-form input[list]:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+form.order-form button[type="submit"] {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.25s ease;
+}
+
+form.order-form button[type="submit"]:hover,
+form.order-form button[type="submit"]:focus {
+    background-color: #0056b3;
+}

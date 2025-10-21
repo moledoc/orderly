@@ -19,7 +19,6 @@ import (
 	"github.com/moledoc/orderly/internal/router"
 	"github.com/moledoc/orderly/internal/service/mgmtorder"
 	"github.com/moledoc/orderly/internal/service/mgmtuser"
-	"github.com/moledoc/orderly/pkg/utils"
 	"github.com/moledoc/orderly/tests/setup"
 )
 
@@ -47,15 +46,12 @@ func getUserEmails() []string {
 	return emails
 }
 
-func getOrders() []*order.Order {
-	// TODO: get all orders
-	orderCount := 1000
-	os := make([]*order.Order, orderCount)
-	for i := 0; i < orderCount; i++ {
-		os[i] = setup.OrderObjWithIDs(fmt.Sprintf("%v", i))
-		os[i].Task.Objective += utils.RandAlphanum() + utils.RandAlphanum() + utils.RandAlphanum()
+func getOrders() ([]*order.Order, errwrap.Error) {
+	resp, err := mgmtorder.GetServiceMgmtOrder().GetOrders(context.Background(), &request.GetOrdersRequest{})
+	if err != nil {
+		return nil, err
 	}
-	return os
+	return resp.GetOrders(), nil
 }
 
 func getParentOrder(orderID meta.ID) *order.Order {
@@ -105,13 +101,22 @@ func firstLine(lines string) string {
 	return ""
 }
 
+func somethingWentWrong(w http.ResponseWriter, err errwrap.Error) {
+	log.Printf("[ERROR]: %s\n", err)
+
+	w.Header().Set("Content-Type", "text/html")
+	e := templSomethingWrong.Execute(w, nil)
+	if e != nil {
+		log.Printf("[ERROR]: executing SomethingWrong html tmpl failed: %s\n", e)
+	}
+}
+
 var (
 	templFuncMap = template.FuncMap{
 		"formatToDate": formatToDate,
 		"firstLine":    firstLine,
 		"States":       getStates,
 		"UserEmails":   getUserEmails,  // REMOVEME: move to handleFunc
-		"Orders":       getOrders,      // REMOVEME: move to handleFunc
 		"ParentOrder":  getParentOrder, // REMOVEME: move to handleFunc
 	}
 
@@ -141,6 +146,11 @@ var (
 		"../../templates/footer.templ.html",
 		"../../templates/new_user.templ.html",
 	))
+	templNewOrder = template.Must(template.New("new_order").Funcs(templFuncMap).ParseFiles(
+		"../../templates/header.templ.html",
+		"../../templates/footer.templ.html",
+		"../../templates/new_order.templ.html",
+	))
 
 	templSomethingWrong = template.Must(template.New("something_wrong").Funcs(templFuncMap).ParseFiles(
 		"../../templates/header.templ.html",
@@ -150,8 +160,14 @@ var (
 )
 
 func serveOrders(w http.ResponseWriter, r *http.Request) {
+	os, errr := getOrders()
+	if errr != nil {
+		somethingWentWrong(w, errr)
+		return
+	}
+
 	w.Header().Set("Content-Type", "text/html")
-	err := templOrders.Execute(w, getOrders())
+	err := templOrders.Execute(w, os)
 	if err != nil {
 		log.Printf("[ERROR]: executing orders html tmpl failed: %s\n", err)
 	}
@@ -162,12 +178,28 @@ func serveOrder(w http.ResponseWriter, r *http.Request) {
 	// TODO: get order by ID
 
 	// REMOVEME: START: when getting order by ID
-	order := setup.OrderObjWithIDs("1")
-	order.Task.Objective += "\nnewlined objective\nsimulates textarea"
+	o := setup.OrderObjWithIDs("1")
+	o.Task.Objective += "\nnewlined objective\nsimulates textarea"
 	// REMOVEME: END: when getting order by ID
 
+	type extendedOrder struct {
+		Order  *order.Order
+		Orders []*order.Order
+	}
+
+	os, errr := getOrders()
+	if errr != nil {
+		somethingWentWrong(w, errr)
+		return
+	}
+
+	eo := &extendedOrder{
+		Order:  o,
+		Orders: os,
+	}
+
 	w.Header().Set("Content-Type", "text/html")
-	err := templOrder.Execute(w, order)
+	err := templOrder.Execute(w, eo)
 	if err != nil {
 		log.Printf("[ERROR]: executing html tmpl failed: %s\n", err)
 	}
@@ -257,6 +289,26 @@ func serveNewUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func serveNewOrder(w http.ResponseWriter, r *http.Request) {
+	os, errr := getOrders()
+	if errr != nil {
+		somethingWentWrong(w, errr)
+		return
+	}
+
+	type extendedOrder struct {
+		Orders []*order.Order
+	}
+	eo := &extendedOrder{
+		Orders: os,
+	}
+
+	err := templNewOrder.Execute(w, eo)
+	if err != nil {
+		log.Printf("[ERROR]: executing new_user html tmpl failed: %s\n", err)
+	}
+}
+
 func main() {
 
 	router.Route(&router.Service{
@@ -271,6 +323,7 @@ func main() {
 
 	http.HandleFunc("GET /orders", serveOrders)
 	http.HandleFunc("GET /order/{id}", serveOrder)
+	http.HandleFunc("GET /order/new", serveNewOrder)
 
 	http.HandleFunc("GET /users", serveUsers)
 	http.HandleFunc("GET /user/{id}", serveUser)
