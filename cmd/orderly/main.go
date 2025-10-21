@@ -121,41 +121,45 @@ var (
 	}
 
 	templOrders = template.Must(template.New("orders").Funcs(templFuncMap).ParseFiles(
-		"../../templates/header.templ.html",
-		"../../templates/footer.templ.html",
-		"../../templates/orders.templ.html",
+		"./templates/header.templ.html",
+		"./templates/footer.templ.html",
+		"./templates/orders.templ.html",
 	))
 	templOrder = template.Must(template.New("order").Funcs(templFuncMap).ParseFiles(
-		"../../templates/header.templ.html",
-		"../../templates/footer.templ.html",
-		"../../templates/order.templ.html",
+		"./templates/header.templ.html",
+		"./templates/footer.templ.html",
+		"./templates/order.templ.html",
 	))
 
 	templUsers = template.Must(template.New("users").Funcs(templFuncMap).ParseFiles(
-		"../../templates/header.templ.html",
-		"../../templates/footer.templ.html",
-		"../../templates/users.templ.html",
+		"./templates/header.templ.html",
+		"./templates/footer.templ.html",
+		"./templates/users.templ.html",
 	))
 	templUser = template.Must(template.New("user").Funcs(templFuncMap).ParseFiles(
-		"../../templates/header.templ.html",
-		"../../templates/footer.templ.html",
-		"../../templates/user.templ.html",
+		"./templates/header.templ.html",
+		"./templates/footer.templ.html",
+		"./templates/user.templ.html",
 	))
 	templNewUser = template.Must(template.New("new_user").Funcs(templFuncMap).ParseFiles(
-		"../../templates/header.templ.html",
-		"../../templates/footer.templ.html",
-		"../../templates/new_user.templ.html",
+		"./templates/header.templ.html",
+		"./templates/footer.templ.html",
+		"./templates/new_user.templ.html",
 	))
 	templNewOrder = template.Must(template.New("new_order").Funcs(templFuncMap).ParseFiles(
-		"../../templates/header.templ.html",
-		"../../templates/footer.templ.html",
-		"../../templates/new_order.templ.html",
+		"./templates/header.templ.html",
+		"./templates/footer.templ.html",
+		"./templates/new_order.templ.html",
+		"./templates/new_task.templ.html",
+	))
+	templNewTask = template.Must(template.New("new_task").Funcs(templFuncMap).ParseFiles(
+		"./templates/new_task.templ.html",
 	))
 
 	templSomethingWrong = template.Must(template.New("something_wrong").Funcs(templFuncMap).ParseFiles(
-		"../../templates/header.templ.html",
-		"../../templates/footer.templ.html",
-		"../../templates/something_wrong.templ.html",
+		"./templates/header.templ.html",
+		"./templates/footer.templ.html",
+		"./templates/something_wrong.templ.html",
 	))
 )
 
@@ -289,6 +293,27 @@ func serveNewUser(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func serveNewTask(w http.ResponseWriter, r *http.Request) {
+	os, errr := getOrders()
+	if errr != nil {
+		somethingWentWrong(w, errr)
+		return
+	}
+
+	type extendedOrder struct {
+		Orders    []*order.Order
+		Delegated bool
+	}
+	eo := &extendedOrder{
+		Orders:    os,
+		Delegated: true,
+	}
+	err := templNewTask.Execute(w, eo)
+	if err != nil {
+		log.Printf("[ERROR]: executing new_task html tmpl failed: %s\n", err)
+	}
+}
+
 func serveNewOrder(w http.ResponseWriter, r *http.Request) {
 	os, errr := getOrders()
 	if errr != nil {
@@ -297,7 +322,8 @@ func serveNewOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	type extendedOrder struct {
-		Orders []*order.Order
+		Orders    []*order.Order
+		Delegated bool
 	}
 	eo := &extendedOrder{
 		Orders: os,
@@ -319,11 +345,12 @@ func main() {
 	// http.HandleFunc("GET /", serveLogin) // NOTE: login
 	// http.HandleFunc("GET /", serveLogin) // NOTE: login
 
-	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("../../static"))))
+	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 
 	http.HandleFunc("GET /orders", serveOrders)
 	http.HandleFunc("GET /order/{id}", serveOrder)
 	http.HandleFunc("GET /order/new", serveNewOrder)
+	http.HandleFunc("GET /order/new/task", serveNewTask)
 
 	http.HandleFunc("GET /users", serveUsers)
 	http.HandleFunc("GET /user/{id}", serveUser)

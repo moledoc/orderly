@@ -16,47 +16,55 @@
     {{ template "header" .}}
 
     <form class="order-form" hx-post="/v1/mgmt/order" hx-trigger="submit"
-        hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc" hx-vals='js:{
-    order: {
-        task: {
-            state: document.getElementById("post-state")?.value,
-            accountable: document.getElementById("post-accountable")?.value,
-            objective: document.getElementById("post-objective")?.value,
-            deadline: document.getElementById("post-deadline")?.value,
-        },
-        parent_order_id: document.getElementById("post-parent-order-id")?.value,
-        delegated_tasks: [{
+        hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc" 
+        hx-on="htmx:configRequest: event.detail.parameters = serializePostOrderPayload()">
 
-        },
-        ]
-    }
-  }'>
-        <div>
-            <label for="post-parent-order-id">Parent Order ID:</label>
-            {{if .Orders}}
-            <input list="orders" class="text-input" id="post-parent-order-id" name="post-parent-order-id" />
-            <datalist id="orders">
-                {{range .Orders}}
-                <option value="{{.Task.ID}}: {{.Task.Objective}}">{{.Task.ID}}: {{.Task.Objective}}</option>
-                {{end}}
-            </datalist>
-            {{else}}
-            0: Root Task <!-- TODO: change -->
-            {{end}}
-        </div>
+        {{ template "new_task" .}}
 
-        <div>
-            <label for="post-state">State:</label>
-            <select id="task-state" name="order-task" style="border: none;" required autocomplete="state">
-                {{range States}}
-                <option value="{{.}}">{{.}}</option>
-                {{end}}
-            </select>
-        </div>
+        <details open>
+            <summary style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Delegated Tasks</span>
 
+                <button type="button" aria-label="Add task" hx-get="/order/new/task" hx-target="#task-forms"
+                    hx-swap="afterbegin" style="font-size: 1.2rem;">
+                    +
+                </button>
+            </summary>
 
-        <button type="submit">Add Order</button>
+            <div id="task-forms" style="margin-top: 1rem;"></div>
+        </details>
+
+        <button type="submit" style="margin-top: 1rem;">Add Order</button>
+
         {{ template "footer" .}}
+
+
+        <script>
+            function serializePostOrderPayload() {
+                return JSON.stringify({
+                    order: {
+                        parent_order_id: document.getElementById("post-parent-order-id")?.value,
+                        task: (() => {
+                            const entry = document.querySelector(".task-entry");
+                            return {
+                                parentOrderID: entry?.querySelector("[name='post-parent-order-id']")?.value,
+                                objective: entry?.querySelector("[name='post-objective']")?.value,
+                                accountable: entry?.querySelector("[name='post-accountable']")?.value,
+                                state: entry?.querySelector("[name='task-state']")?.value,
+                            };
+                        })(),
+                        delegated_tasks: Array.from(document.querySelectorAll(".task-entry"))
+                            .slice(1)
+                            .map(entry => ({
+                                parent_order_id: entry.querySelector("[name='post-parent-order-id']")?.value,
+                                objective: entry.querySelector("[name='post-objective']")?.value,
+                                accountable: entry.querySelector("[name='post-accountable']")?.value,
+                                state: entry.querySelector("[name='task-state']")?.value,
+                            }))
+                    }
+                });
+            }
+        </script>
 
 </body>
 

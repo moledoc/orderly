@@ -1,6 +1,7 @@
 package order
 
 import (
+	"encoding/json"
 	"time"
 
 	"github.com/moledoc/orderly/internal/domain/meta"
@@ -10,6 +11,7 @@ import (
 type State int
 
 func (s State) String() string {
+
 	switch s {
 	case NotStarted:
 		return "Not Started"
@@ -24,6 +26,32 @@ func (s State) String() string {
 	default:
 		return "Unknown"
 	}
+}
+
+func (s *State) UnmarshalJSON(data []byte) error {
+	var str string
+	if err := json.Unmarshal(data, &str); err != nil {
+		return err
+	}
+
+	switch str {
+	case "Not Started":
+		*s = NotStarted
+	case "In Progress":
+		*s = InProgress
+	case "Having Issues":
+		*s = HavingIssues
+	case "Blocked":
+		*s = Blocked
+	case "Completed":
+		*s = Completed
+	}
+
+	return nil
+}
+
+func (s *State) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.String())
 }
 
 const (

@@ -25,17 +25,17 @@
   }'>
         <div>
             <label for="post-name">Name:</label>
-            <input type="text" id="post-name" name="post-name" required autocomplete="name" />
+            <input type="text" id="post-name" name="post-name" required autocomplete="user-name" />
         </div>
 
         <div>
             <label for="post-email">Email:</label>
-            <input type="email" id="post-email" name="post-email" required autocomplete="email" />
+            <input type="email" id="post-email" name="post-email" required autocomplete="user-email" />
         </div>
 
         <div>
             <label for="post-supervisor">Supervisor:</label>
-            <input list="users" id="post-supervisor" name="post-supervisor" autocomplete="off" />
+            <input list="users" id="post-supervisor" name="post-supervisor" autocomplete="supervisor-email" />
             <datalist id="users">
                 {{range UserEmails}}
                 <option value="{{.}}">{{.}}</option>

@@ -1,0 +1,45 @@
+{{ define "new_task" }}
+<div class="task-entry">
+    <hr />
+    <div>
+        <label>Parent Order ID:</label>
+        <input list="orders" class="text-input" name="post-parent-order-id" />
+        <datalist id="orders">
+            <option value="d5047ad9adad2ce13f0f1686536be5d2">d5047ad9adad2ce13f0f1686536be5d2</option>
+
+            {{range .Orders}}
+            <option value="{{.Task.ID}}: {{.Task.Objective}}">{{.Task.ID}}: {{.Task.Objective}}</option>
+            {{end}}
+        </datalist>
+    </div>
+
+    <div>
+        <label>Objective:</label>
+        <textarea class="text-input" name="post-objective" required></textarea>
+    </div>
+
+    <div>
+        <label>Accountable:</label>
+        <input list="users" name="post-accountable" autocomplete="order-accountable" />
+        <datalist id="users">
+            {{range UserEmails}}
+            <option value="{{.}}">{{.}}</option>
+            {{end}}
+        </datalist>
+    </div>
+
+    <div>
+        <label>State:</label>
+        <select name="task-state" style="border: none;" required autocomplete="order-state">
+            {{range States}}
+            <option value="{{.}}">{{.}}</option>
+            {{end}}
+        </select>
+    </div>
+
+    {{if .Delegated}}
+    <button type="button" class="remove-task" onclick="this.closest('.task-entry').remove()">Remove</button>
+    {{end}}
+
+</div>
+{{end}}
