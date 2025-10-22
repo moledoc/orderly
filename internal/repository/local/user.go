@@ -74,9 +74,6 @@ func (r *LocalRepositoryUser) ReadBy(ctx context.Context, req *request.GetUserBy
 		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository user uninitialized")
 	}
 
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
 	id := req.GetID()
 	email := req.GetEmail()
 	supervisor := req.GetSupervisor()
@@ -84,6 +81,9 @@ func (r *LocalRepositoryUser) ReadBy(ctx context.Context, req *request.GetUserBy
 	if len(id) > 0 && len(email) == 0 && len(supervisor) == 0 {
 		return r.ReadByID(ctx, req.GetID())
 	}
+
+	r.mu.Lock()
+	defer r.mu.Unlock()
 
 	for _, u := range r.db {
 		if (id == "" || id == u.GetID()) &&

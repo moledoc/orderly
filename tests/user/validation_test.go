@@ -101,6 +101,18 @@ func (s *UserSuite) TestValidation_GetUserByIDRequest() {
 	})
 }
 
+func (s *UserSuite) TestValidation_GetUserByRequest() {
+	tt := s.T()
+
+	tt.Run("empty.request", func(t *testing.T) {
+		resp, err := s.API.GetUserBy(t, context.Background(), &request.GetUserByRequest{})
+		require.Error(t, err)
+		require.Empty(t, resp)
+		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+		require.Equal(t, "empty request", err.GetStatusMessage())
+	})
+}
+
 func (s *UserSuite) TestValidation_GetUsersRequest() {
 	tt := s.T()
 
