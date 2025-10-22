@@ -7,10 +7,12 @@ import (
 
 type OrderSuite struct {
 	suite.Suite
-	API api.Order
+	API     api.Order
+	UserAPI api.User
 }
 
 type OrderPerformanceSuite struct {
 	suite.Suite
-	API api.Order
+	API     api.Order
+	UserAPI api.User
 }

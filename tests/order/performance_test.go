@@ -483,3 +483,48 @@ func (s *OrderPerformanceSuite) TestPerformance_DeleteSitReps() {
 		})
 	}
 }
+
+func (s *OrderPerformanceSuite) TestPerformance_GetUserOrders() {
+	for _, orderCount := range []int{10, 100, 1000} {
+		s.T().Run(fmt.Sprintf("%v", orderCount), func(t *testing.T) {
+			u := setup.MustCreateUserWithCleanup(t, context.Background(), s.UserAPI, setup.UserObj())
+			for i := 0; i < orderCount; i++ {
+				orderObj := setup.OrderObj()
+				orderObj.GetTask().SetAccountable(u)
+				setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, orderObj)
+			}
+			setup := func() (ctxFunc func() context.Context, req any, err errwrap.Error) {
+				return context.Background, &request.GetUserOrdersRequest{
+					UserID: u.GetID(),
+				}, nil
+			}
+			tst := func(ctx context.Context, req any, errReq errwrap.Error) (response any, errResp errwrap.Error) {
+				if errReq != nil {
+					return nil, errReq
+				}
+				return s.API.GetUserOrders(t, ctx, req.(*request.GetUserOrdersRequest))
+			}
+			checkLen := func(ctx context.Context, resp any, err errwrap.Error) {
+				require.Len(t, resp.(*response.GetUserOrdersResponse).GetOrders(), orderCount)
+			}
+			plan := performance.Plan{
+				T:               t,
+				RPS:             10,
+				DurationSec:     10,
+				RampDurationSec: 10,
+				Setup:           setup,
+				Test:            tst,
+				Assert:          checkLen,
+				NFR: performance.NFRs{
+					P50: 50 * time.Millisecond,
+					P90: 90 * time.Millisecond,
+					P95: 95 * time.Millisecond,
+					P99: 99 * time.Millisecond,
+				},
+				Notes: []string{"test", "test", "test"},
+			}
+			report, _, _ := plan.Run()
+			fmt.Printf("%s: %+v\n", t.Name(), report)
+		})
+	}
+}
