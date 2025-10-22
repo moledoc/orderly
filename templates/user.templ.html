@@ -24,25 +24,29 @@
             <div>
                 <label for="user-name">Name:</label>
                 <input type="text" class="text-input" id="user-name" name="name" value="{{.User.Name}}" required
-                    hx-patch="/v1/mgmt/user" hx-trigger="change"
-                    hx-headers='{"Content-Type": "application/json"}' hx-vals='js:{
+                    hx-patch="/v1/mgmt/user" hx-trigger="keyup[key=='Enter']"
+                    hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc" hx-vals='js:{
                         user: {
                             id: "{{.User.ID}}",
-                            name: document.getElementById("name")?.value,
+                            name: document.getElementById("user-name")?.value,
                         }  
                     }'>
             </div>
 
             <div>
-                <label for="user-supervisor">Supervisor:</label>
+                <label for="user-supervisor">
+                    <span id="supervisor-link">
+                        <a href="/user/{{.SupervisorID}}">Supervisor:</a>
+                    </span>
+                </label>
                 <input list="users" class="text-input" id="user-supervisor" name="supervisor"
-                    value="{{.User.Supervisor}}" hx-patch="/v1/mgmt/user/{{.ID}}" hx-trigger="change"
-                    hx-headers='{"Content-Type": "application/json"}' hx-vals='js:{
+                    value="{{.User.Supervisor}}" hx-patch="/v1/mgmt/user" hx-trigger="keyup[key=='Enter']"
+                    hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc" hx-vals='js:{
                         user: {
                             id: "{{.User.ID}}",
-                            supervisor: document.getElementById("supervisor")?.value,
+                            supervisor: document.getElementById("user-supervisor")?.value,
                         }  
-                    }'>
+                    }' hx-on="htmx:afterRequest: updateSupervisorLink(event.detail.xhr.responseText)">
                 <datalist id="users">
                     {{range UserEmails}}
                     <option value="{{.}}">{{.}}</option>
@@ -110,8 +114,23 @@
         {{ template "footer" .}}
 
         <script src="/static/scripts/search_table.js"></script>
+        <script>
+            function updateSupervisorLink(responseText) {
+                try {
+                    const data = JSON.parse(responseText);
+                    const newID = data.user?.id; // TODO: get supervisor email, GetUserByEmail and take ID from there
+                    if (!newID) return;
 
-    </body>
+                    const linkContainer = document.getElementById("supervisor-link");
+                    linkContainer.innerHTML = `<a href="/user/${newID}">Supervisor:</a>`;
+                } catch (e) {
+                    console.error("Failed to update supervisor link:", e);
+                }
+            }
+        </script>
+
+
+</body>
 
 </html>
 {{end}}

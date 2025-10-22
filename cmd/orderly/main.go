@@ -227,10 +227,11 @@ func serveUser(w http.ResponseWriter, r *http.Request) {
 	var wg sync.WaitGroup
 	var u *user.User
 	var subordinates []*user.User
+	var orders []*order.Order
 	cherr := make(chan errwrap.Error, 2)
 	defer close(cherr)
 
-	wg.Add(2)
+	wg.Add(3)
 	go func() {
 		defer wg.Done()
 		respGetUserByID, errr := mgmtuser.GetServiceMgmtUser().GetUserByID(context.Background(), &request.GetUserByIDRequest{
@@ -253,6 +254,17 @@ func serveUser(w http.ResponseWriter, r *http.Request) {
 			subordinates = respGetSubOrdinates.GetSubOrdinates()
 		}
 	}()
+	go func() {
+		defer wg.Done()
+		respGetUserOrders, errr := mgmtorder.GetServiceMgmtOrder().GetUserOrders(context.Background(), &request.GetUserOrdersRequest{
+			UserID: meta.ID(r.PathValue("id")),
+		})
+		if errr != nil {
+			cherr <- errr
+		} else {
+			orders = respGetUserOrders.GetOrders()
+		}
+	}()
 	wg.Wait()
 
 	if len(cherr) > 0 {
@@ -263,25 +275,18 @@ func serveUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: get user accountable orders
-	// REMOVEME: START: when getting user accountable orders
-	accountableOrdersCount := 5
-	accountableOrders := make([]*order.Order, accountableOrdersCount)
-	for i := 0; i < accountableOrdersCount; i++ {
-		accountableOrders[i] = setup.OrderObjWithIDs(fmt.Sprintf("%v", i))
-	}
-	// REMOVEME: END: when getting user accountable orders
-
 	type userExtended struct {
 		*user.User
+		SupervisorID   string
 		SubOrdinates   []*user.User
 		AccountableFor []*order.Order
 	}
 
 	ue := &userExtended{
-		User:           u,
+		User: u,
+		// TODO: get supervisor ID by getting user by email
 		SubOrdinates:   subordinates,
-		AccountableFor: accountableOrders,
+		AccountableFor: orders,
 	}
 
 	w.Header().Set("Content-Type", "text/html")
