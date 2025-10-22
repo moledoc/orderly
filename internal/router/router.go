@@ -146,6 +146,7 @@ func RouteUser(svc mgmtuser.ServiceMgmtUserAPI) *http.ServeMux {
 		http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/user/{%v}", userID), handleDeleteUser)
 
 		// NOTE: handle empty ids
+		http.HandleFunc("GET /v1/mgmt/user/", handleGetUserBy)
 		http.HandleFunc("GET /v1/mgmt/user/subordinates", handleGetUserSubOrdinates)
 		http.HandleFunc("DELETE /v1/mgmt/user/", handleDeleteUser)
 	})
