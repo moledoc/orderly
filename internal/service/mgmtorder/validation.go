@@ -330,3 +330,13 @@ func ValidateDeleteSitRepRequest(req *request.DeleteSitRepsRequest) errwrap.Erro
 
 	return nil
 }
+
+func ValidateUserOrdersRequest(req *request.GetUserOrdersRequest) errwrap.Error {
+
+	err := validation.ValidateID(req.GetUserID())
+	if err != nil {
+		return errwrap.NewError(http.StatusBadRequest, "invalid user_id: %s", err.GetStatusMessage())
+	}
+
+	return nil
+}

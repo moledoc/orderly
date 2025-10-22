@@ -100,3 +100,12 @@ func (r *DeleteSitRepsResponse) GetOrder() *order.Order {
 	}
 	return r.Order
 }
+
+////////////////
+
+func (r *GetUserOrdersResponse) GetOrders() []*order.Order {
+	if r == nil {
+		return nil
+	}
+	return r.Orders
+}

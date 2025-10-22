@@ -131,7 +131,7 @@ func (r *LocalRepositoryOrder) Close(ctx context.Context) errwrap.Error {
 	return nil
 }
 
-func (r *LocalRepositoryOrder) ReadByID(ctx context.Context, ID meta.ID) (*order.Order, errwrap.Error) {
+func (r *LocalRepositoryOrder) ReadByID(ctx context.Context, id meta.ID) (*order.Order, errwrap.Error) {
 	middleware.SpanStart(ctx, "LocalStorageOrder:ReadByID")
 	defer middleware.SpanStop(ctx, "LocalStorageOrder:ReadByID")
 
@@ -141,7 +141,7 @@ func (r *LocalRepositoryOrder) ReadByID(ctx context.Context, ID meta.ID) (*order
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	storedOrder, ok := r.Orders[ID]
+	storedOrder, ok := r.Orders[id]
 	if !ok {
 		return nil, errwrap.NewError(http.StatusNotFound, "not found")
 	}
@@ -151,7 +151,7 @@ func (r *LocalRepositoryOrder) ReadByID(ctx context.Context, ID meta.ID) (*order
 	return resp, nil
 }
 
-func (r *LocalRepositoryOrder) ReadSubOrders(ctx context.Context, ID meta.ID) ([]*order.Order, errwrap.Error) {
+func (r *LocalRepositoryOrder) ReadSubOrders(ctx context.Context, id meta.ID) ([]*order.Order, errwrap.Error) {
 	middleware.SpanStart(ctx, "LocalStorageOrder:ReadSubOrders")
 	defer middleware.SpanStop(ctx, "LocalStorageOrder:ReadSubOrders")
 
@@ -161,7 +161,7 @@ func (r *LocalRepositoryOrder) ReadSubOrders(ctx context.Context, ID meta.ID) ([
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	parentOrder, ok := r.Orders[ID]
+	parentOrder, ok := r.Orders[id]
 	if !ok {
 		return nil, errwrap.NewError(http.StatusNotFound, "not found")
 	}
@@ -215,7 +215,7 @@ func (r *LocalRepositoryOrder) Write(ctx context.Context, order *order.Order) (*
 	return order, nil
 }
 
-func (r *LocalRepositoryOrder) DeleteOrder(ctx context.Context, ID meta.ID) errwrap.Error {
+func (r *LocalRepositoryOrder) DeleteOrder(ctx context.Context, id meta.ID) errwrap.Error {
 	middleware.SpanStart(ctx, "LocalStorageOrder:DeleteOrder")
 	defer middleware.SpanStop(ctx, "LocalStorageOrder:DeleteOrder")
 
@@ -225,7 +225,7 @@ func (r *LocalRepositoryOrder) DeleteOrder(ctx context.Context, ID meta.ID) errw
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	storedOrder, ok := r.Orders[ID]
+	storedOrder, ok := r.Orders[id]
 	if !ok {
 		return nil
 	}
@@ -272,4 +272,24 @@ func (r *LocalRepositoryOrder) DeleteSitReps(ctx context.Context, IDs []meta.ID)
 	}
 
 	return didDelete, nil
+}
+
+func (r *LocalRepositoryOrder) ReadUserOrders(ctx context.Context, userID meta.ID) ([]*order.Order, errwrap.Error) {
+	middleware.SpanStart(ctx, "LocalStorageOrder:ReadUserOrders")
+	defer middleware.SpanStop(ctx, "LocalStorageOrder:ReadUserOrders")
+
+	if r == nil {
+		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
+	}
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	var orders []*order.Order
+	for _, storedOrder := range r.Orders {
+		if userID == r.Tasks[storedOrder.TaskID].GetAccountable().GetID() {
+			orders = append(orders, r.composeOrder(storedOrder))
+		}
+	}
+
+	return orders, nil
 }

@@ -60,3 +60,9 @@ type DeleteSitRepsRequest struct {
 	OrderID   meta.ID   `json:"order_id"`
 	SitRepIDs []meta.ID `json:"sitrep_ids"`
 }
+
+////////////////
+
+type GetUserOrdersRequest struct {
+	UserID meta.ID `json:"user_id"`
+}

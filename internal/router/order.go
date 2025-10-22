@@ -239,3 +239,18 @@ func deleteSitReps(w http.ResponseWriter, r *http.Request) {
 
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
+
+func getUserOrders(w http.ResponseWriter, r *http.Request) {
+	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
+
+	middleware.SpanStart(ctx, "getUserOrders")
+	defer middleware.SpanStop(ctx, "getUserOrders")
+
+	req := &request.GetUserOrdersRequest{
+		UserID: meta.ID(r.PathValue(userID)),
+	}
+	middleware.SpanLog(ctx, "GetUserOrdersRequest", req)
+	resp, err := mgmtordersvc.GetUserOrders(ctx, req)
+	writeResponse(ctx, w, resp, err, http.StatusOK)
+}

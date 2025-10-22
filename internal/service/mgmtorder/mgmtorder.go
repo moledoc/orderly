@@ -490,3 +490,22 @@ func (s *serviceMgmtOrder) DeleteSitReps(ctx context.Context, req *request.Delet
 		Order: patchedOrder,
 	}, nil
 }
+
+func (s *serviceMgmtOrder) GetUserOrders(ctx context.Context, req *request.GetUserOrdersRequest) (*response.GetUserOrdersResponse, errwrap.Error) {
+	ctx = middleware.AddTraceToCtx(ctx)
+	middleware.SpanStart(ctx, "GetUserOrders")
+	defer middleware.SpanStop(ctx, "GetUserOrders")
+
+	// TODO:
+	// if err := ValidateGetUserOrdersRequest(req); err != nil {
+	// 	return nil, middleware.AddTraceToErrFromCtx(err, ctx)
+	// }
+
+	resp, err := s.Repository.ReadSubOrders(ctx, req.GetUserID())
+	if err != nil {
+		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
+	}
+	return &response.GetUserOrdersResponse{
+		Orders: resp,
+	}, nil
+}
