@@ -143,3 +143,12 @@ func (r *DeleteSitRepsRequest) GetSitRepIDs() []meta.ID {
 	}
 	return r.SitRepIDs
 }
+
+////////////////
+
+func (r *GetUserOrdersRequest) GetUserID() meta.ID {
+	if r == nil {
+		return ""
+	}
+	return r.UserID
+}

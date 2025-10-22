@@ -1,4 +1,4 @@
-package tests
+package order
 
 import (
 	"github.com/moledoc/orderly/tests/api"

@@ -1,6 +1,8 @@
 package response
 
-import "github.com/moledoc/orderly/internal/domain/order"
+import (
+	"github.com/moledoc/orderly/internal/domain/order"
+)
 
 type PostOrderResponse struct {
 	Order *order.Order `json:"order"`
@@ -50,4 +52,10 @@ type PatchSitRepsResponse struct {
 
 type DeleteSitRepsResponse struct {
 	Order *order.Order `json:"order"`
+}
+
+////////////////
+
+type GetUserOrdersResponse struct {
+	Orders []*order.Order `json:"orders"`
 }
