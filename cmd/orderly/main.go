@@ -356,9 +356,8 @@ func main() {
 	})
 
 	// http.HandleFunc("GET /", serveLogin) // NOTE: login
-	// http.HandleFunc("GET /", serveLogin) // NOTE: login
 
-	http.Handle("GET /static", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
+	http.Handle("GET /static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))
 	http.HandleFunc("GET /", serveHome)
 
 	http.HandleFunc("GET /orders", serveOrders)
