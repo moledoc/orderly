@@ -496,10 +496,9 @@ func (s *serviceMgmtOrder) GetUserOrders(ctx context.Context, req *request.GetUs
 	middleware.SpanStart(ctx, "GetUserOrders")
 	defer middleware.SpanStop(ctx, "GetUserOrders")
 
-	// TODO:
-	// if err := ValidateGetUserOrdersRequest(req); err != nil {
-	// 	return nil, middleware.AddTraceToErrFromCtx(err, ctx)
-	// }
+	if err := ValidateGetUserOrdersRequest(req); err != nil {
+		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
+	}
 
 	resp, err := s.Repository.ReadUserOrders(ctx, req.GetUserID())
 	if err != nil {

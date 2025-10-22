@@ -681,13 +681,13 @@ func (s *OrderSuite) TestValidation_GetUserOrdersRequest() {
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
+		require.Equal(t, "invalid user_id: invalid id length", err.GetStatusMessage())
 	})
 	tt.Run("empty.request", func(t *testing.T) {
 		resp, err := s.API.GetUserOrders(t, context.Background(), &request.GetUserOrdersRequest{})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
+		require.Equal(t, "invalid user_id: invalid id length", err.GetStatusMessage())
 	})
 }

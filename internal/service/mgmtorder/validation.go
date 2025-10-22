@@ -331,7 +331,7 @@ func ValidateDeleteSitRepRequest(req *request.DeleteSitRepsRequest) errwrap.Erro
 	return nil
 }
 
-func ValidateUserOrdersRequest(req *request.GetUserOrdersRequest) errwrap.Error {
+func ValidateGetUserOrdersRequest(req *request.GetUserOrdersRequest) errwrap.Error {
 
 	err := validation.ValidateID(req.GetUserID())
 	if err != nil {
