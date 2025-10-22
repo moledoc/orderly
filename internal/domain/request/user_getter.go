@@ -23,6 +23,29 @@ func (r *GetUserByIDRequest) GetID() meta.ID {
 
 ////////////////
 
+func (r *GetUserByRequest) GetID() meta.ID {
+	if r == nil {
+		return ""
+	}
+	return r.ID
+}
+
+func (r *GetUserByRequest) GetEmail() user.Email {
+	if r == nil {
+		return ""
+	}
+	return r.Email
+}
+
+func (r *GetUserByRequest) GetSupervisor() user.Email {
+	if r == nil {
+		return ""
+	}
+	return r.Supervisor
+}
+
+////////////////
+
 func (r *GetUserSubOrdinatesRequest) GetID() meta.ID {
 	if r == nil {
 		return ""

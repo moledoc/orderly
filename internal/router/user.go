@@ -9,6 +9,7 @@ import (
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
+	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/internal/middleware"
 )
 
@@ -55,6 +56,29 @@ func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
 	}
 	middleware.SpanLog(ctx, "GetUserByIDRequest", req)
 	resp, err := mgmtusersvc.GetUserByID(ctx, req)
+
+	writeResponse(ctx, w, resp, err, http.StatusOK)
+}
+
+func handleGetUserBy(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
+	defer func() { go middleware.SpanFlushTrace(ctx) }()
+
+	middleware.SpanStart(ctx, "getUserBy")
+	defer middleware.SpanStop(ctx, "getUserBy")
+
+	req := &request.GetUserByRequest{
+		ID:         meta.ID(r.URL.Query().Get("id")),
+		Email:      user.Email(r.URL.Query().Get("email")),
+		Supervisor: user.Email(r.URL.Query().Get("supervisor")),
+	}
+	middleware.SpanLog(ctx, "GetUserByRequest", req)
+	resp, err := mgmtusersvc.GetUserBy(ctx, req)
 
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }

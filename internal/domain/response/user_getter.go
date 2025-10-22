@@ -22,6 +22,15 @@ func (r *GetUserByIDResponse) GetUser() *user.User {
 
 ////////////////
 
+func (r *GetUserByResponse) GetUser() *user.User {
+	if r == nil {
+		return nil
+	}
+	return r.User
+}
+
+////////////////
+
 func (r *GetUsersResponse) GetUsers() []*user.User {
 	if r == nil {
 		return nil

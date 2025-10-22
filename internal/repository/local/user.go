@@ -7,6 +7,7 @@ import (
 
 	"github.com/moledoc/orderly/internal/domain/errwrap"
 	"github.com/moledoc/orderly/internal/domain/meta"
+	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/internal/middleware"
 	"github.com/moledoc/orderly/internal/repository"
@@ -47,7 +48,7 @@ func (r *LocalRepositoryUser) Close(ctx context.Context) errwrap.Error {
 	return nil
 }
 
-func (r *LocalRepositoryUser) ReadByID(ctx context.Context, ID meta.ID) (*user.User, errwrap.Error) {
+func (r *LocalRepositoryUser) ReadByID(ctx context.Context, id meta.ID) (*user.User, errwrap.Error) {
 	middleware.SpanStart(ctx, "LocalRepositoryUser:ReadByID")
 	defer middleware.SpanStop(ctx, "LocalRepositoryUser:ReadByID")
 
@@ -58,14 +59,44 @@ func (r *LocalRepositoryUser) ReadByID(ctx context.Context, ID meta.ID) (*user.U
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	u, ok := r.db[ID]
+	u, ok := r.db[id]
 	if !ok {
 		return nil, errwrap.NewError(http.StatusNotFound, "not found")
 	}
 	return u, nil
 }
 
-func (r *LocalRepositoryUser) ReadSubOrdinates(ctx context.Context, ID meta.ID) ([]*user.User, errwrap.Error) {
+func (r *LocalRepositoryUser) ReadBy(ctx context.Context, req *request.GetUserByRequest) (*user.User, errwrap.Error) {
+	middleware.SpanStart(ctx, "LocalRepositoryUser:ReadBy")
+	defer middleware.SpanStop(ctx, "LocalRepositoryUser:ReadBy")
+
+	if r == nil {
+		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository user uninitialized")
+	}
+
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	id := req.GetID()
+	email := req.GetEmail()
+	supervisor := req.GetSupervisor()
+
+	if len(id) > 0 && len(email) == 0 && len(supervisor) == 0 {
+		return r.ReadByID(ctx, req.GetID())
+	}
+
+	for _, u := range r.db {
+		if (id == "" || id == u.GetID()) &&
+			(email == "" || email == u.GetEmail()) &&
+			(supervisor == "" || supervisor == u.GetSupervisor()) {
+			return u, nil
+		}
+	}
+
+	return nil, errwrap.NewError(http.StatusNotFound, "not found")
+}
+
+func (r *LocalRepositoryUser) ReadSubOrdinates(ctx context.Context, id meta.ID) ([]*user.User, errwrap.Error) {
 	middleware.SpanStart(ctx, "LocalRepositoryUser:ReadSubOrdinates")
 	defer middleware.SpanStop(ctx, "LocalRepositoryUser:ReadSubOrdinates")
 
@@ -75,7 +106,7 @@ func (r *LocalRepositoryUser) ReadSubOrdinates(ctx context.Context, ID meta.ID) 
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	supervisor, ok := r.db[ID]
+	supervisor, ok := r.db[id]
 	if !ok {
 		return nil, errwrap.NewError(http.StatusNotFound, "not found")
 	}
@@ -123,7 +154,7 @@ func (r *LocalRepositoryUser) Write(ctx context.Context, user *user.User) (*user
 	return user, nil
 }
 
-func (r *LocalRepositoryUser) Delete(ctx context.Context, ID meta.ID) errwrap.Error {
+func (r *LocalRepositoryUser) Delete(ctx context.Context, id meta.ID) errwrap.Error {
 	middleware.SpanStart(ctx, "LocalStorageUser:Delete")
 	defer middleware.SpanStop(ctx, "LocalStorageUser:Delete")
 
@@ -133,7 +164,7 @@ func (r *LocalRepositoryUser) Delete(ctx context.Context, ID meta.ID) errwrap.Er
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	delete(r.db, ID)
+	delete(r.db, id)
 
 	return nil
 }

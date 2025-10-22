@@ -59,6 +59,28 @@ func ValidateGetUserByIDRequest(req *request.GetUserByIDRequest) errwrap.Error {
 	return nil
 }
 
+func ValidateGetUserByRequest(req *request.GetUserByRequest) errwrap.Error {
+	if req == nil || len(req.GetEmail()) == 0 && len(req.GetID()) == 0 && len(req.GetSupervisor()) == 0 {
+		return errwrap.NewError(http.StatusBadRequest, "empty request")
+	}
+	err := validation.ValidateID(req.GetID())
+	if !validation.IsIgnoreEmpty(req.GetID(), validation.IgnoreEmpty) && err != nil {
+		return errwrap.NewError(http.StatusBadRequest, "invalid id: %s", err.GetStatusMessage())
+	}
+
+	err = validation.ValidateEmail(req.GetEmail())
+	if !validation.IsIgnoreEmpty(req.GetEmail(), validation.IgnoreEmpty) && err != nil {
+		return errwrap.NewError(http.StatusBadRequest, "invalid email: %s", err.GetStatusMessage())
+	}
+
+	err = validation.ValidateEmail(req.GetSupervisor())
+	if !validation.IsIgnoreEmpty(req.GetSupervisor(), validation.IgnoreEmpty) && err != nil {
+		return errwrap.NewError(http.StatusBadRequest, "invalid supervisor: %s", err.GetStatusMessage())
+	}
+
+	return nil
+}
+
 func ValidateGetUsersRequest(*request.GetUsersRequest) errwrap.Error {
 	return nil
 }

@@ -2,6 +2,7 @@ package mgmtuser
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"github.com/moledoc/orderly/internal/domain/errwrap"
@@ -19,6 +20,13 @@ func (s *serviceMgmtUser) PostUser(ctx context.Context, req *request.PostUserReq
 
 	if err := ValidatePostUserRequest(req); err != nil {
 		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
+	}
+
+	respGetUserBy, _ := s.Repository.ReadBy(ctx, &request.GetUserByRequest{
+		Email: req.GetUser().GetEmail(),
+	})
+	if respGetUserBy != nil {
+		return nil, errwrap.NewError(http.StatusConflict, "user with email '%s' already exists", req.GetUser().GetEmail())
 	}
 
 	u := req.GetUser().Clone()
@@ -55,6 +63,24 @@ func (s *serviceMgmtUser) GetUserByID(ctx context.Context, req *request.GetUserB
 		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
 	}
 	return &response.GetUserByIDResponse{
+		User: resp,
+	}, nil
+}
+
+func (s *serviceMgmtUser) GetUserBy(ctx context.Context, req *request.GetUserByRequest) (*response.GetUserByResponse, errwrap.Error) {
+	ctx = middleware.AddTraceToCtx(ctx)
+	middleware.SpanStart(ctx, "GetUserBy")
+	defer middleware.SpanStop(ctx, "GetUserBy")
+
+	if err := ValidateGetUserByRequest(req); err != nil {
+		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
+	}
+
+	resp, err := s.Repository.ReadBy(ctx, req)
+	if err != nil {
+		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
+	}
+	return &response.GetUserByResponse{
 		User: resp,
 	}, nil
 }
