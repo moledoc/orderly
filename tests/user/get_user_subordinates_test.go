@@ -31,7 +31,7 @@ func (s *UserSuite) TestGetUserSubOrdinates() {
 		for i := 1; i <= count; i++ {
 			userObj := &user.User{
 				Name:       fmt.Sprintf("name-%d", count),
-				Email:      user.Email(fmt.Sprintf("example.%d@example.com", count)),
+				Email:      user.Email(fmt.Sprintf("example.%s.%d.%d@example.com", t.Name(), count, i)),
 				Supervisor: supervisor.GetEmail(),
 			}
 

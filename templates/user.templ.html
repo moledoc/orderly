@@ -118,7 +118,7 @@
             function updateSupervisorLink(responseText) {
                 try {
                     const data = JSON.parse(responseText);
-                    const newID = data.user?.id; // TODO: get supervisor email, GetUserByEmail and take ID from there
+                    const newID = data.user?.id; // TODO: get supervisor email, GetUserBy and take ID from there
                     if (!newID) return;
 
                     const linkContainer = document.getElementById("supervisor-link");

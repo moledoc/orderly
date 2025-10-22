@@ -6,6 +6,7 @@ import (
 	"github.com/moledoc/orderly/internal/domain/errwrap"
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/order"
+	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/user"
 )
 
@@ -25,6 +26,7 @@ type RepositoryOrderAPI interface {
 type RepositoryUserAPI interface {
 	Close(ctx context.Context) errwrap.Error
 	ReadByID(ctx context.Context, id meta.ID) (*user.User, errwrap.Error)
+	ReadBy(ctx context.Context, req *request.GetUserByRequest) (*user.User, errwrap.Error)
 	ReadSubOrdinates(ctx context.Context, id meta.ID) ([]*user.User, errwrap.Error)
 	ReadAll(ctx context.Context) ([]*user.User, errwrap.Error)
 	// TODO: split Write to specific funcs

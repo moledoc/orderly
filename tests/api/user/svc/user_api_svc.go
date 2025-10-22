@@ -36,6 +36,12 @@ func (api *UserAPISvc) GetUserByID(t *testing.T, ctx context.Context, req *reque
 	t.Helper()
 	return api.Svc.GetUserByID(ctx, req)
 }
+
+func (api *UserAPISvc) GetUserBy(t *testing.T, ctx context.Context, req *request.GetUserByRequest) (*response.GetUserByResponse, errwrap.Error) {
+	t.Helper()
+	return api.Svc.GetUserBy(ctx, req)
+}
+
 func (api *UserAPISvc) GetUsers(t *testing.T, ctx context.Context, req *request.GetUsersRequest) (*response.GetUsersResponse, errwrap.Error) {
 	t.Helper()
 	return api.Svc.GetUsers(ctx, req)

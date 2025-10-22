@@ -12,6 +12,7 @@ import (
 type ServiceMgmtUserAPI interface {
 	PostUser(ctx context.Context, req *request.PostUserRequest) (*response.PostUserResponse, errwrap.Error)
 	GetUserByID(ctx context.Context, req *request.GetUserByIDRequest) (*response.GetUserByIDResponse, errwrap.Error)
+	GetUserBy(ctx context.Context, req *request.GetUserByRequest) (*response.GetUserByResponse, errwrap.Error)
 	GetUsers(ctx context.Context, req *request.GetUsersRequest) (*response.GetUsersResponse, errwrap.Error)
 	GetUserSubOrdinates(ctx context.Context, req *request.GetUserSubOrdinatesRequest) (*response.GetUserSubOrdinatesResponse, errwrap.Error)
 	PatchUser(ctx context.Context, req *request.PatchUserRequest) (*response.PatchUserResponse, errwrap.Error)
