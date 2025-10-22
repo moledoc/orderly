@@ -501,7 +501,7 @@ func (s *serviceMgmtOrder) GetUserOrders(ctx context.Context, req *request.GetUs
 	// 	return nil, middleware.AddTraceToErrFromCtx(err, ctx)
 	// }
 
-	resp, err := s.Repository.ReadSubOrders(ctx, req.GetUserID())
+	resp, err := s.Repository.ReadUserOrders(ctx, req.GetUserID())
 	if err != nil {
 		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
 	}
