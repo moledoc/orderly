@@ -14,6 +14,7 @@
 - [] fix testcases
     - task.accountable went from id to user obj
     - task.state went from str to *str
+- [] split Makefiles
 - [] MAYBE: login
 - [] authorization
 - [] integrate with postgres
