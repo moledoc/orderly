@@ -90,8 +90,3 @@ func (api *OrderAPISvc) DeleteSitReps(t *testing.T, ctx context.Context, req *re
 	t.Helper()
 	return api.Svc.DeleteSitReps(ctx, req)
 }
-
-func (api *OrderAPISvc) GetUserOrders(t *testing.T, ctx context.Context, req *request.GetUserOrdersRequest) (*response.GetUserOrdersResponse, errwrap.Error) {
-	t.Helper()
-	return api.Svc.GetUserOrders(ctx, req)
-}

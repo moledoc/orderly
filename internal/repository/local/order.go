@@ -8,6 +8,7 @@ import (
 	"github.com/moledoc/orderly/internal/domain/errwrap"
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/order"
+	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/middleware"
 	"github.com/moledoc/orderly/internal/repository"
 )
@@ -181,9 +182,9 @@ func (r *LocalRepositoryOrder) ReadSubOrders(ctx context.Context, id meta.ID) ([
 	return subOrders, nil
 }
 
-func (r *LocalRepositoryOrder) ReadAll(ctx context.Context) ([]*order.Order, errwrap.Error) {
-	middleware.SpanStart(ctx, "LocalStorageOrder:ReadAll")
-	defer middleware.SpanStop(ctx, "LocalStorageOrder:ReadAll")
+func (r *LocalRepositoryOrder) ReadBy(ctx context.Context, req *request.GetOrdersRequest) ([]*order.Order, errwrap.Error) {
+	middleware.SpanStart(ctx, "LocalStorageOrder:ReadBy")
+	defer middleware.SpanStop(ctx, "LocalStorageOrder:ReadBy")
 
 	if r == nil {
 		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
@@ -192,8 +193,13 @@ func (r *LocalRepositoryOrder) ReadAll(ctx context.Context) ([]*order.Order, err
 	defer r.mu.Unlock()
 
 	var orders []*order.Order
+	parentOrderID := req.GetParentOrderID()
+	accountable := req.GetAccountable()
 	for _, storedOrder := range r.Orders {
-		orders = append(orders, r.composeOrder(storedOrder))
+		if (len(parentOrderID) == 0 || parentOrderID == storedOrder.TaskID) &&
+			(len(accountable) == 0 || accountable == r.Tasks[storedOrder.TaskID].GetAccountable()) {
+			orders = append(orders, r.composeOrder(storedOrder))
+		}
 	}
 
 	return orders, nil
@@ -234,7 +240,7 @@ func (r *LocalRepositoryOrder) DeleteOrder(ctx context.Context, id meta.ID) errw
 	return nil
 }
 
-func (r *LocalRepositoryOrder) DeleteTasks(ctx context.Context, IDs []meta.ID) (bool, errwrap.Error) {
+func (r *LocalRepositoryOrder) DeleteTasks(ctx context.Context, ids []meta.ID) (bool, errwrap.Error) {
 	middleware.SpanStart(ctx, "LocalStorageOrder:DeleteTask")
 	defer middleware.SpanStop(ctx, "LocalStorageOrder:DeleteTask")
 
@@ -245,7 +251,7 @@ func (r *LocalRepositoryOrder) DeleteTasks(ctx context.Context, IDs []meta.ID) (
 	defer r.mu.Unlock()
 
 	didDelete := false
-	for _, id := range IDs {
+	for _, id := range ids {
 		_, ok := r.Tasks[id]
 		didDelete = ok || didDelete
 		delete(r.Tasks, id)
@@ -254,7 +260,7 @@ func (r *LocalRepositoryOrder) DeleteTasks(ctx context.Context, IDs []meta.ID) (
 	return didDelete, nil
 }
 
-func (r *LocalRepositoryOrder) DeleteSitReps(ctx context.Context, IDs []meta.ID) (bool, errwrap.Error) {
+func (r *LocalRepositoryOrder) DeleteSitReps(ctx context.Context, ids []meta.ID) (bool, errwrap.Error) {
 	middleware.SpanStart(ctx, "LocalStorageOrder:DeleteSitRep")
 	defer middleware.SpanStop(ctx, "LocalStorageOrder:DeleteSitRep")
 
@@ -265,31 +271,11 @@ func (r *LocalRepositoryOrder) DeleteSitReps(ctx context.Context, IDs []meta.ID)
 	defer r.mu.Unlock()
 
 	didDelete := false
-	for _, id := range IDs {
+	for _, id := range ids {
 		_, ok := r.SitReps[id]
 		didDelete = ok || didDelete
 		delete(r.SitReps, id)
 	}
 
 	return didDelete, nil
-}
-
-func (r *LocalRepositoryOrder) ReadUserOrders(ctx context.Context, userID meta.ID) ([]*order.Order, errwrap.Error) {
-	middleware.SpanStart(ctx, "LocalStorageOrder:ReadUserOrders")
-	defer middleware.SpanStop(ctx, "LocalStorageOrder:ReadUserOrders")
-
-	if r == nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
-	}
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	var orders []*order.Order
-	for _, storedOrder := range r.Orders {
-		if userID == r.Tasks[storedOrder.TaskID].GetAccountable().GetID() {
-			orders = append(orders, r.composeOrder(storedOrder))
-		}
-	}
-
-	return orders, nil
 }

@@ -9,6 +9,7 @@ import (
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
+	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/internal/middleware"
 )
 
@@ -52,10 +53,14 @@ func getOrders(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
-	middleware.SpanStart(ctx, "getOrderByID")
-	defer middleware.SpanStop(ctx, "getOrderByID")
+	middleware.SpanStart(ctx, "getOrders")
+	defer middleware.SpanStop(ctx, "getOrders")
 
-	req := &request.GetOrdersRequest{}
+	req := &request.GetOrdersRequest{
+		ParentOrderID: meta.ID(r.URL.Query().Get("parent_order_id")),
+		Accountable:   user.Email(r.URL.Query().Get("accountable")),
+	}
+
 	middleware.SpanLog(ctx, "GetOrdersRequest", req)
 	resp, err := mgmtordersvc.GetOrders(ctx, req)
 	writeResponse(ctx, w, resp, err, http.StatusOK)
@@ -237,20 +242,5 @@ func deleteSitReps(w http.ResponseWriter, r *http.Request) {
 		resp, err = mgmtordersvc.DeleteSitReps(ctx, req)
 	}
 
-	writeResponse(ctx, w, resp, err, http.StatusOK)
-}
-
-func getUserOrders(w http.ResponseWriter, r *http.Request) {
-	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
-	defer func() { go middleware.SpanFlushTrace(ctx) }()
-
-	middleware.SpanStart(ctx, "getUserOrders")
-	defer middleware.SpanStop(ctx, "getUserOrders")
-
-	req := &request.GetUserOrdersRequest{
-		UserID: meta.ID(r.PathValue(userID)),
-	}
-	middleware.SpanLog(ctx, "GetUserOrdersRequest", req)
-	resp, err := mgmtordersvc.GetUserOrders(ctx, req)
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }

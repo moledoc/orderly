@@ -77,7 +77,7 @@ func (s *serviceMgmtOrder) GetOrders(ctx context.Context, req *request.GetOrders
 		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
 	}
 
-	resp, err := s.Repository.ReadAll(ctx)
+	resp, err := s.Repository.ReadBy(ctx, req)
 	if err != nil {
 		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
 	}
@@ -488,23 +488,5 @@ func (s *serviceMgmtOrder) DeleteSitReps(ctx context.Context, req *request.Delet
 	}
 	return &response.DeleteSitRepsResponse{
 		Order: patchedOrder,
-	}, nil
-}
-
-func (s *serviceMgmtOrder) GetUserOrders(ctx context.Context, req *request.GetUserOrdersRequest) (*response.GetUserOrdersResponse, errwrap.Error) {
-	ctx = middleware.AddTraceToCtx(ctx)
-	middleware.SpanStart(ctx, "GetUserOrders")
-	defer middleware.SpanStop(ctx, "GetUserOrders")
-
-	if err := ValidateGetUserOrdersRequest(req); err != nil {
-		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
-	}
-
-	resp, err := s.Repository.ReadUserOrders(ctx, req.GetUserID())
-	if err != nil {
-		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
-	}
-	return &response.GetUserOrdersResponse{
-		Orders: resp,
 	}, nil
 }

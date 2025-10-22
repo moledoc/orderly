@@ -256,13 +256,13 @@ func serveUser(w http.ResponseWriter, r *http.Request) {
 	}()
 	go func() {
 		defer wg.Done()
-		respGetUserOrders, errr := mgmtorder.GetServiceMgmtOrder().GetUserOrders(context.Background(), &request.GetUserOrdersRequest{
-			UserID: meta.ID(r.PathValue("id")),
+		respGetOrders, errr := mgmtorder.GetServiceMgmtOrder().GetOrders(context.Background(), &request.GetOrdersRequest{
+			Accountable: user.Email(r.PathValue("accountable")),
 		})
 		if errr != nil {
 			cherr <- errr
 		} else {
-			orders = respGetUserOrders.GetOrders()
+			orders = respGetOrders.GetOrders()
 		}
 	}()
 	wg.Wait()

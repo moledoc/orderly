@@ -15,10 +15,10 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func (s *OrderSuite) TestGetUserOrders() {
+func (s *OrderSuite) TestGetOrdersByAccountable() {
 	tt := s.T()
 
-	createOrdersWithAccountable := func(t *testing.T, count int, accountable *user.User) []*order.Order {
+	createOrdersWithAccountable := func(t *testing.T, count int, accountable user.Email) []*order.Order {
 		if count == 0 {
 			return nil
 		}
@@ -35,14 +35,14 @@ func (s *OrderSuite) TestGetUserOrders() {
 	for _, i := range []int{0, 1, 10} {
 		tt.Run(fmt.Sprintf("count.%d", i), func(t *testing.T) {
 
-			user := setup.MustCreateUserWithCleanup(t, context.Background(), s.UserAPI, setup.UserObj())
-			orders := createOrdersWithAccountable(t, i, user)
+			user := setup.MustCreateUserWithCleanup(t, context.Background(), s.UserAPI, setup.UserObj(fmt.Sprintf("%v-%v", t.Name(), i)))
+			orders := createOrdersWithAccountable(t, i, user.GetEmail())
 
-			user2 := setup.MustCreateUserWithCleanup(t, context.Background(), s.UserAPI, setup.UserObj())
-			_ = createOrdersWithAccountable(t, 5, user2)
+			user2 := setup.MustCreateUserWithCleanup(t, context.Background(), s.UserAPI, setup.UserObj(fmt.Sprintf("%v-%v-2", t.Name(), i)))
+			_ = createOrdersWithAccountable(t, 5, user2.GetEmail())
 
-			resp, err := s.API.GetUserOrders(t, context.Background(), &request.GetUserOrdersRequest{
-				UserID: user.GetID(),
+			resp, err := s.API.GetOrders(t, context.Background(), &request.GetOrdersRequest{
+				Accountable: user.GetEmail(),
 			})
 			require.NoError(t, err)
 
@@ -50,7 +50,7 @@ func (s *OrderSuite) TestGetUserOrders() {
 				compare.SorterOrder(compare.SortOrderByID),
 			}
 
-			expected := &response.GetUserOrdersResponse{
+			expected := &response.GetOrdersResponse{
 				Orders: orders,
 			}
 			compare.RequireEqual(t, expected, resp, opts...)

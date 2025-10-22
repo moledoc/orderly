@@ -3,6 +3,7 @@ package request
 import (
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/order"
+	"github.com/moledoc/orderly/internal/domain/user"
 )
 
 func (r *PostOrderRequest) GetOrder() *order.Order {
@@ -19,6 +20,22 @@ func (r *GetOrderByIDRequest) GetID() meta.ID {
 		return ""
 	}
 	return r.ID
+}
+
+////////////////
+
+func (r *GetOrdersRequest) GetParentOrderID() meta.ID {
+	if r == nil {
+		return ""
+	}
+	return r.ParentOrderID
+}
+
+func (r *GetOrdersRequest) GetAccountable() user.Email {
+	if r == nil {
+		return ""
+	}
+	return r.Accountable
 }
 
 ////////////////
@@ -142,13 +159,4 @@ func (r *DeleteSitRepsRequest) GetSitRepIDs() []meta.ID {
 		return []meta.ID{}
 	}
 	return r.SitRepIDs
-}
-
-////////////////
-
-func (r *GetUserOrdersRequest) GetUserID() meta.ID {
-	if r == nil {
-		return ""
-	}
-	return r.UserID
 }

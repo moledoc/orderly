@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httputil"
+	"net/url"
 	"testing"
 
 	"github.com/moledoc/orderly/internal/domain/errwrap"
@@ -89,7 +90,17 @@ func (api *OrderAPIReq) GetOrderByID(t *testing.T, ctx context.Context, req *req
 func (api *OrderAPIReq) GetOrders(t *testing.T, ctx context.Context, req *request.GetOrdersRequest) (*response.GetOrdersResponse, errwrap.Error) {
 	t.Helper()
 
-	respHttp, err := api.HttpClient.Get(fmt.Sprintf("%s/v1/mgmt/orders", api.BaseURL))
+	baseURL, _ := url.Parse(fmt.Sprintf("%s/v1/mgmt/orders", api.BaseURL))
+	params := url.Values{}
+	if len(req.GetParentOrderID()) > 0 {
+		params.Add("parent_order_id", string(req.GetParentOrderID()))
+	}
+	if len(req.GetAccountable()) > 0 {
+		params.Add("accountable", string(req.GetAccountable()))
+	}
+	baseURL.RawQuery = params.Encode()
+
+	respHttp, err := api.HttpClient.Get(baseURL.String())
 	if err != nil {
 		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
 	}
@@ -401,31 +412,6 @@ func (api *OrderAPIReq) DeleteSitReps(t *testing.T, ctx context.Context, req *re
 
 	if respHttp.StatusCode == http.StatusOK {
 		var resp response.DeleteSitRepsResponse
-		if err := json.NewDecoder(respHttp.Body).Decode(&resp); err != nil {
-			return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
-		}
-		return &resp, nil
-	}
-	var errw errwrap.Err
-	if err := json.NewDecoder(respHttp.Body).Decode(&errw); err != nil {
-		rawResponse, _ := httputil.DumpResponse(respHttp, false)
-		return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s\nRaw response: %v", err, string(rawResponse))
-	}
-
-	return nil, &errw
-}
-
-func (api *OrderAPIReq) GetUserOrders(t *testing.T, ctx context.Context, req *request.GetUserOrdersRequest) (*response.GetUserOrdersResponse, errwrap.Error) {
-	t.Helper()
-
-	respHttp, err := api.HttpClient.Get(fmt.Sprintf("%s/v1/mgmt/user/%v/orders", api.BaseURL, req.GetUserID()))
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
-	}
-	defer respHttp.Body.Close()
-
-	if respHttp.StatusCode == http.StatusOK {
-		var resp response.GetUserOrdersResponse
 		if err := json.NewDecoder(respHttp.Body).Decode(&resp); err != nil {
 			return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
 		}

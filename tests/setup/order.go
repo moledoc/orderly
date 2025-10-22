@@ -2,6 +2,8 @@ package setup
 
 import (
 	"context"
+	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -9,6 +11,7 @@ import (
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/order"
 	"github.com/moledoc/orderly/internal/domain/request"
+	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/pkg/utils"
 	"github.com/moledoc/orderly/tests/api"
 	"github.com/moledoc/orderly/tests/cleanup"
@@ -16,9 +19,10 @@ import (
 )
 
 func TaskObj(extra ...string) *order.Task {
+	ee := strings.Join(append([]string{""}, extra...), ".")
 	return &order.Task{
 		State:       utils.Ptr(order.NotStarted),
-		Accountable: UserObjWithID(append(extra, "accountable")...),
+		Accountable: user.Email(fmt.Sprintf("example%v@example.com", ee)),
 		Objective:   "objective description",
 		Deadline:    time.Now().UTC(),
 	}
@@ -30,9 +34,10 @@ func TaskObjWithID(extra ...string) *order.Task {
 }
 
 func SitrepObj(extra ...string) *order.SitRep {
+	ee := strings.Join(append([]string{""}, extra...), ".")
 	return &order.SitRep{
 		DateTime:  time.Now().UTC(),
-		By:        UserObjWithID(append(extra, "by")...),
+		By:        user.Email(fmt.Sprintf("example%v@example.com", ee)),
 		Situation: "situation description",
 		Actions:   "list of actions taken",
 		TODO:      "list of things to do still",

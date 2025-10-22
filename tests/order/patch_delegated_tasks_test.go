@@ -48,7 +48,7 @@ func (s *OrderSuite) TestPatchDelegatedTasks() {
 				if len(expected.GetDelegatedTasks()) == 0 {
 					return nil
 				}
-				expected.GetDelegatedTasks()[0].GetAccountable().SetEmail("example.accountable.updated@email.com")
+				expected.GetDelegatedTasks()[0].SetAccountable("example.accountable.updated@email.com")
 				return &request.PatchDelegatedTasksRequest{
 					OrderID: expected.GetID(),
 					Tasks: []*order.Task{
@@ -103,7 +103,7 @@ func (s *OrderSuite) TestPatchDelegatedTasks() {
 					return nil
 				}
 				expected.GetDelegatedTasks()[1].SetState(order.HavingIssues)
-				expected.GetDelegatedTasks()[1].GetAccountable().SetEmail("example.accountable.updated@email.com")
+				expected.GetDelegatedTasks()[1].SetAccountable("example.accountable.updated@email.com")
 				expected.GetDelegatedTasks()[1].SetObjective("updated objective")
 				expected.GetDelegatedTasks()[1].SetDeadline(time.Now().UTC())
 				return &request.PatchDelegatedTasksRequest{
@@ -135,6 +135,7 @@ func (s *OrderSuite) TestPatchDelegatedTasks() {
 
 			opts := []cmp.Option{
 				compare.IgnorePaths("Order.Meta.Updated"),
+				compare.ComparerState(),
 				compare.SorterOrder(compare.SortOrderByID),
 				compare.SorterTask(compare.SortTaskByID),
 				compare.SorterSitRep(compare.SortSitRepByID),

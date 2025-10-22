@@ -56,6 +56,6 @@ type DeleteSitRepsResponse struct {
 
 ////////////////
 
-type GetUserOrdersResponse struct {
+type GetOrdersByAccountableResponse struct {
 	Orders []*order.Order `json:"orders"`
 }

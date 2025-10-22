@@ -4,6 +4,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/moledoc/orderly/internal/domain/order"
+	"github.com/moledoc/orderly/pkg/utils"
 )
 
 var (
@@ -35,12 +36,40 @@ var (
 )
 
 var (
+	SortState = func(a *order.State, b *order.State) bool {
+		return utils.Deref(a) < utils.Deref(b)
+	}
+
+	SorterState = func(sorters ...func(a *order.State, b *order.State) bool) cmp.Option {
+		return cmpopts.SortSlices(func(a *order.State, b *order.State) bool {
+			for _, comparer := range sorters {
+				if !comparer(a, b) {
+					return false
+				}
+			}
+			return true
+		})
+	}
+
+	ComparerState = func(comparers ...func(a *order.State, b *order.State) bool) cmp.Option {
+		return cmp.Comparer(func(a *order.State, b *order.State) bool {
+			for _, comparer := range comparers {
+				if !comparer(a, b) {
+					return false
+				}
+			}
+			return true
+		})
+	}
+)
+
+var (
 	SortTaskByID = func(a *order.Task, b *order.Task) bool {
 		return a.GetID() < b.GetID()
 	}
 
-	SortTaskByAccountableID = func(a *order.Task, b *order.Task) bool {
-		return a.GetAccountable().GetID() < b.GetAccountable().GetID()
+	SortTaskByAccountable = func(a *order.Task, b *order.Task) bool {
+		return a.GetAccountable() < b.GetAccountable()
 	}
 
 	SorterTask = func(sorters ...func(a *order.Task, b *order.Task) bool) cmp.Option {

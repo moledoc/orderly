@@ -103,7 +103,7 @@ func (r *DeleteSitRepsResponse) GetOrder() *order.Order {
 
 ////////////////
 
-func (r *GetUserOrdersResponse) GetOrders() []*order.Order {
+func (r *GetOrdersByAccountableResponse) GetOrders() []*order.Order {
 	if r == nil {
 		return nil
 	}

@@ -484,28 +484,28 @@ func (s *OrderPerformanceSuite) TestPerformance_DeleteSitReps() {
 	}
 }
 
-func (s *OrderPerformanceSuite) TestPerformance_GetUserOrders() {
+func (s *OrderPerformanceSuite) TestPerformance_GetOrdersByAccountable() {
 	for _, orderCount := range []int{10, 100, 1000} {
 		s.T().Run(fmt.Sprintf("%v", orderCount), func(t *testing.T) {
-			u := setup.MustCreateUserWithCleanup(t, context.Background(), s.UserAPI, setup.UserObj())
+			u := setup.MustCreateUserWithCleanup(t, context.Background(), s.UserAPI, setup.UserObj(fmt.Sprintf("%v-%v", t.Name(), orderCount)))
 			for i := 0; i < orderCount; i++ {
 				orderObj := setup.OrderObj()
-				orderObj.GetTask().SetAccountable(u)
+				orderObj.GetTask().SetAccountable(u.GetEmail())
 				setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, orderObj)
 			}
 			setup := func() (ctxFunc func() context.Context, req any, err errwrap.Error) {
-				return context.Background, &request.GetUserOrdersRequest{
-					UserID: u.GetID(),
+				return context.Background, &request.GetOrdersRequest{
+					Accountable: u.GetEmail(),
 				}, nil
 			}
 			tst := func(ctx context.Context, req any, errReq errwrap.Error) (response any, errResp errwrap.Error) {
 				if errReq != nil {
 					return nil, errReq
 				}
-				return s.API.GetUserOrders(t, ctx, req.(*request.GetUserOrdersRequest))
+				return s.API.GetOrders(t, ctx, req.(*request.GetOrdersRequest))
 			}
 			checkLen := func(ctx context.Context, resp any, err errwrap.Error) {
-				require.Len(t, resp.(*response.GetUserOrdersResponse).GetOrders(), orderCount)
+				require.Len(t, resp.(*response.GetOrdersResponse).GetOrders(), orderCount)
 			}
 			plan := performance.Plan{
 				T:               t,
