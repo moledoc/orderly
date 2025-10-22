@@ -39,8 +39,8 @@ var (
 		return a.GetID() < b.GetID()
 	}
 
-	SortTaskByAccountable = func(a *order.Task, b *order.Task) bool {
-		return a.GetAccountable() < b.GetAccountable()
+	SortTaskByAccountableID = func(a *order.Task, b *order.Task) bool {
+		return a.GetAccountable().GetID() < b.GetAccountable().GetID()
 	}
 
 	SorterTask = func(sorters ...func(a *order.Task, b *order.Task) bool) cmp.Option {

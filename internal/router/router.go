@@ -32,6 +32,9 @@ func decodeBody(ctx context.Context, r *http.Request, req any) errwrap.Error {
 
 	var err errwrap.Error
 	if errj := json.NewDecoder(r.Body).Decode(req); errj != nil {
+		// bytedata, _ := io.ReadAll(r.Body)
+		// reqBodyString := string(bytedata)
+		// middleware.SpanLog(ctx, "RequestDecodeFailed", reqBodyString)
 		err = errwrap.NewError(http.StatusBadRequest, "invalid payload: %s", errj)
 	}
 	return err
@@ -50,16 +53,18 @@ func writeResponse(ctx context.Context, w http.ResponseWriter, resp any, err err
 		}
 		err.SetTraceID(traceID)
 
-		w.WriteHeader(err.GetStatusCode())
-		w.Write([]byte(err.String()))
+		// w.WriteHeader(err.GetStatusCode())
+		// w.Write([]byte(err.String()))
+		http.Error(w, err.String(), err.GetStatusCode())
 		return
 	}
 
 	bs, jsonerr := json.Marshal(resp)
 	if jsonerr != nil {
 		err := errwrap.NewError(http.StatusInternalServerError, "marshalling resp failed")
-		w.WriteHeader(err.GetStatusCode())
-		w.Write([]byte(err.String()))
+		// w.WriteHeader(err.GetStatusCode())
+		// w.Write([]byte(err.String()))
+		http.Error(w, err.String(), err.GetStatusCode())
 		return
 	}
 

@@ -9,7 +9,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/order"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
-	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/tests/compare"
 	"github.com/moledoc/orderly/tests/setup"
 	"github.com/stretchr/testify/require"
@@ -48,31 +47,13 @@ func (s *OrderSuite) TestPatchSitReps() {
 				if len(expected.GetSitReps()) == 0 {
 					return nil
 				}
-				expected.GetSitReps()[0].SetBy("example.by.updated@email.com")
+				expected.GetSitReps()[0].GetBy().SetEmail("example.by.updated@email.com")
 				return &request.PatchSitRepsRequest{
 					OrderID: expected.GetID(),
 					SitReps: []*order.SitRep{
 						{
 							ID: expected.GetSitReps()[0].GetID(),
 							By: expected.GetSitReps()[0].GetBy(),
-						},
-					},
-				}
-			},
-		},
-		{
-			name: "sitrep.0.ping",
-			f: func() *request.PatchSitRepsRequest {
-				if len(expected.GetSitReps()) == 0 {
-					return nil
-				}
-				expected.GetSitReps()[0].SetPing([]user.Email{"user1@email.com", "user2@email.com"})
-				return &request.PatchSitRepsRequest{
-					OrderID: expected.GetID(),
-					SitReps: []*order.SitRep{
-						{
-							ID:   expected.GetSitReps()[0].GetID(),
-							Ping: expected.GetSitReps()[0].GetPing(),
 						},
 					},
 				}
@@ -120,13 +101,13 @@ func (s *OrderSuite) TestPatchSitReps() {
 				if len(expected.GetSitReps()) == 0 {
 					return nil
 				}
-				expected.GetSitReps()[0].SetTBD("updated tbd")
+				expected.GetSitReps()[0].SetTODO("updated tbd")
 				return &request.PatchSitRepsRequest{
 					OrderID: expected.GetID(),
 					SitReps: []*order.SitRep{
 						{
-							ID:  expected.GetSitReps()[0].GetID(),
-							TBD: expected.GetSitReps()[0].GetTBD(),
+							ID:   expected.GetSitReps()[0].GetID(),
+							TODO: expected.GetSitReps()[0].GetTODO(),
 						},
 					},
 				}
@@ -158,11 +139,10 @@ func (s *OrderSuite) TestPatchSitReps() {
 				}
 
 				expected.GetSitReps()[1].SetDateTime(time.Now().UTC())
-				expected.GetSitReps()[1].SetBy("example.by.updated@email.com")
-				expected.GetSitReps()[1].SetPing([]user.Email{"user1@email.com", "user2@email.com"})
+				expected.GetSitReps()[1].GetBy().SetEmail("example.by.updated@email.com")
 				expected.GetSitReps()[1].SetSituation("updated situation")
 				expected.GetSitReps()[1].SetActions("updated actions")
-				expected.GetSitReps()[1].SetTBD("updated tbd")
+				expected.GetSitReps()[1].SetTODO("updated tbd")
 				expected.GetSitReps()[1].SetIssues("updated issues")
 
 				return &request.PatchSitRepsRequest{
@@ -172,10 +152,9 @@ func (s *OrderSuite) TestPatchSitReps() {
 							ID:        expected.GetSitReps()[1].GetID(),
 							DateTime:  expected.GetSitReps()[1].GetDateTime(),
 							By:        expected.GetSitReps()[1].GetBy(),
-							Ping:      expected.GetSitReps()[1].GetPing(),
 							Situation: expected.GetSitReps()[1].GetSituation(),
 							Actions:   expected.GetSitReps()[1].GetActions(),
-							TBD:       expected.GetSitReps()[1].GetTBD(),
+							TODO:      expected.GetSitReps()[1].GetTODO(),
 							Issues:    expected.GetSitReps()[1].GetIssues(),
 						},
 					},

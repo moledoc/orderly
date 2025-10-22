@@ -9,7 +9,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/order"
 	"github.com/moledoc/orderly/internal/domain/request"
-	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/internal/service/common/validation"
 	"github.com/moledoc/orderly/internal/service/mgmtorder"
 	"github.com/moledoc/orderly/tests/setup"
@@ -44,7 +43,7 @@ func (s *OrderSuite) TestValidation_Task() {
 	})
 	tt.Run("task.accountable", func(t *testing.T) {
 		to := setup.TaskObjWithID()
-		to.SetAccountable("")
+		to.SetAccountable(nil)
 		err := mgmtorder.ValidateTask(to, validation.IgnoreNothing)
 		require.Error(t, err)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
@@ -88,25 +87,17 @@ func (s *OrderSuite) TestValidation_SitReps() {
 	})
 	tt.Run("sitrep.by", func(t *testing.T) {
 		sp := setup.SitrepObjWithID()
-		sp.SetBy("")
+		sp.SetBy(nil)
 		err := mgmtorder.ValidateSitRep(sp, validation.IgnoreNothing)
 		require.Error(t, err)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid sitrep.by: invalid email length", err.GetStatusMessage())
 	})
-	tt.Run("sitrep.ping", func(t *testing.T) {
-		sp := setup.SitrepObjWithID()
-		sp.SetPing(append([]user.Email{""}, setup.SitrepObjWithID().GetPing()...))
-		err := mgmtorder.ValidateSitRep(sp, validation.IgnoreNothing)
-		require.Error(t, err)
-		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid sitrep.ping.0: invalid email length", err.GetStatusMessage())
-	})
 	tt.Run("sitrep.no_content", func(t *testing.T) {
 		sp := setup.SitrepObjWithID()
 		sp.SetSituation("")
 		sp.SetActions("")
-		sp.SetTBD("")
+		sp.SetTODO("")
 		sp.SetIssues("")
 		err := mgmtorder.ValidateSitRep(sp, validation.IgnoreNothing)
 		require.Error(t, err)

@@ -1,0 +1,80 @@
+{{define "new_order"}}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://unpkg.com/htmx.org@1.9.5"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+    <meta charset="UTF-8">
+    <title>new order</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/new_order.css">
+</head>
+
+<body>
+
+    {{ template "header" .}}
+
+    <form class="order-form" hx-post="/v1/mgmt/order" hx-trigger="submit"
+        hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc" 
+        hx-on="htmx:configRequest: event.detail.parameters = serializePostOrderPayload()">
+
+        {{ template "new_task" .}}
+
+        <details open>
+            <summary style="display: flex; justify-content: space-between; align-items: center;">
+                <span>Delegated Tasks</span>
+
+                <button type="button" aria-label="Add task" hx-get="/order/new/task" hx-target="#task-forms"
+                    hx-swap="afterbegin" style="font-size: 1.2rem;">
+                    +
+                </button>
+            </summary>
+
+            <div id="task-forms" style="margin-top: 1rem;"></div>
+        </details>
+
+        <button type="submit" style="margin-top: 1rem;">Add Order</button>
+
+        {{ template "footer" .}}
+
+
+        <script>
+            function serializePostOrderPayload() {
+                return {
+                    order: {
+                        parent_order_id: document.querySelector("[name='post-parent-order-id']")?.value,
+                        task: (() => {
+                            const entry = document.querySelector(".task-entry");
+                            return {
+                                objective: entry?.querySelector("[name='post-objective']")?.value,
+                                accountable: {
+                                    name: "TODO:",
+                                    email: entry?.querySelector("[name='post-accountable']")?.value,
+                                    supervisor: "todo@todo.com",
+                                },
+                                state: entry?.querySelector("[name='task-state']")?.value,
+                                deadline: entry?.querySelector("[name='task-deadline']")?.value+"T00:00:00Z",
+                            };
+                        })(),
+                        delegated_tasks: Array.from(document.querySelectorAll(".task-entry"))
+                            .slice(1)
+                            .map(entry => ({
+                                objective: entry.querySelector("[name='post-objective']")?.value,
+                                accountable: {
+                                    name: "TODO:",
+                                    email: entry.querySelector("[name='post-accountable']")?.value,
+                                    supervisor: "todo@todo.com",
+                                },
+                                state: entry.querySelector("[name='task-state']")?.value,
+                                deadline: entry.querySelector("[name='task-deadline']")?.value+"T00:00:00Z",
+                            }))
+                    }
+                };
+            }
+        </script>
+
+</body>
+
+</html>
+{{end}}

@@ -18,12 +18,12 @@ func (tt *Task) GetState() State {
 	if tt == nil {
 		return NotStarted
 	}
-	return tt.State
+	return *tt.State
 }
 
-func (tt *Task) GetAccountable() user.Email {
+func (tt *Task) GetAccountable() *user.User {
 	if tt == nil {
-		return ""
+		return nil
 	}
 	return tt.Accountable
 }
@@ -58,18 +58,11 @@ func (sr *SitRep) GetDateTime() time.Time {
 	return sr.DateTime
 }
 
-func (sr *SitRep) GetBy() user.Email {
+func (sr *SitRep) GetBy() *user.User {
 	if sr == nil {
-		return ""
+		return nil
 	}
 	return sr.By
-}
-
-func (sr *SitRep) GetPing() []user.Email {
-	if sr == nil {
-		return []user.Email{}
-	}
-	return sr.Ping
 }
 
 func (sr *SitRep) GetSituation() string {
@@ -86,11 +79,11 @@ func (sr *SitRep) GetActions() string {
 	return sr.Actions
 }
 
-func (sr *SitRep) GetTBD() string {
+func (sr *SitRep) GetTODO() string {
 	if sr == nil {
 		return ""
 	}
-	return sr.TBD
+	return sr.TODO
 }
 
 func (sr *SitRep) GetIssues() string {

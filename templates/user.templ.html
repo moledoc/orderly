@@ -1,0 +1,117 @@
+{{define "user"}}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://unpkg.com/htmx.org@1.9.5"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+    <meta charset="UTF-8">
+    <title>user - {{.User.ID}}</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/table.css">
+    <link rel="stylesheet" href="/static/css/searchbar.css">
+</head>
+
+<body>
+    {{ template "header" .}}
+    <div class="container">
+        <details class="card">
+            <summary>Info</summary>
+
+            <b>ID:</b> {{.User.ID}}<br>
+            <b>Email:</b> {{.User.Email}}<br>
+
+            <div>
+                <label for="user-name">Name:</label>
+                <input type="text" class="text-input" id="user-name" name="name" value="{{.User.Name}}" required
+                    hx-patch="/v1/mgmt/user" hx-trigger="change"
+                    hx-headers='{"Content-Type": "application/json"}' hx-vals='js:{
+                        user: {
+                            id: "{{.User.ID}}",
+                            name: document.getElementById("name")?.value,
+                        }  
+                    }'>
+            </div>
+
+            <div>
+                <label for="user-supervisor">Supervisor:</label>
+                <input list="users" class="text-input" id="user-supervisor" name="supervisor"
+                    value="{{.User.Supervisor}}" hx-patch="/v1/mgmt/user/{{.ID}}" hx-trigger="change"
+                    hx-headers='{"Content-Type": "application/json"}' hx-vals='js:{
+                        user: {
+                            id: "{{.User.ID}}",
+                            supervisor: document.getElementById("supervisor")?.value,
+                        }  
+                    }'>
+                <datalist id="users">
+                    {{range UserEmails}}
+                    <option value="{{.}}">{{.}}</option>
+                    {{end}}
+                </datalist>
+            </div>
+        </details>
+
+        <hr style="border: none; height: 2px; background-color: #333; width: 50%; margin: 20px auto;">
+
+        <div>
+            <input class="searchbar" type="text" id="searchInput" placeholder="Search...">
+        </div>
+
+        <details open>
+            <summary>Accountable for</summary>
+            <div class="scroll-container">
+                <table class="styled-table" id="datatable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Objective</th>
+                            <th>State</th>
+                            <th>Deadline</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .AccountableFor}}
+                        <tr>
+                            <td><a href="/order/{{.Task.ID}}">{{.Task.ID}}</a></td>
+                            <td>{{.Task.Objective}}</td>
+                            <td>{{.Task.State}}</td>
+                            <td><input type="date" value="{{formatToDate .Task.Deadline}}" disabled></td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </details>
+
+        <details>
+            <summary>Sub-Ordinates</summary>
+            <div class="scroll-container">
+                <table class="styled-table" id="datatable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{range .SubOrdinates}}
+                        <tr>
+                            <td><a href="/user/{{.ID}}">{{.ID}}</a></td>
+                            <td>{{.Name}}</td>
+                            <td>{{.Email}}</td>
+                        </tr>
+                        {{end}}
+                    </tbody>
+                </table>
+            </div>
+        </details>
+
+        {{ template "footer" .}}
+
+        <script src="/static/scripts/search_table.js"></script>
+
+    </body>
+
+</html>
+{{end}}

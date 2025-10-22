@@ -1,0 +1,73 @@
+{{ define "something_wrong" }}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Error - Something Went Wrong</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        body {
+            margin: 0;
+            font-family: system-ui, sans-serif;
+            background-color: #f8d7da;
+            color: #721c24;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+        }
+
+        .error-container {
+            background: #fff;
+            border: 1px solid #f5c6cb;
+            border-left: 5px solid #dc3545;
+            padding: 2rem 2.5rem;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            max-width: 500px;
+        }
+
+        h1 {
+            margin: 0 0 0.5rem;
+            font-size: 1.8rem;
+        }
+
+        p {
+            margin: 0.5rem 0 1.5rem;
+        }
+
+        a.button {
+            display: inline-block;
+            background-color: #dc3545;
+            color: white;
+            text-decoration: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: 600;
+            transition: background-color 0.2s ease;
+        }
+
+        a.button:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+
+<body>
+
+    {{ template "header" .}}
+
+    <div class="error-container" role="alert">
+        <h1>Something Went Wrong</h1>
+        <p>We're sorry, but an unexpected error occurred.</p>
+        <a href="/" class="button" aria-label="Return to homepage">Go Home</a>
+    </div>
+
+
+    {{ template "footer" .}}
+</body>
+
+</html>
+{{end}}

@@ -1,0 +1,52 @@
+{{define "orders"}}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://unpkg.com/htmx.org@1.9.5"></script>
+    <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
+    <meta charset="UTF-8">
+    <title>orders</title>
+    <link rel="stylesheet" href="/static/css/main.css">
+    <link rel="stylesheet" href="/static/css/table.css">
+    <link rel="stylesheet" href="/static/css/searchbar.css">
+</head>
+
+<body>
+    {{ template "header" .}}
+    <div class="container">
+        <input class="searchbar", type="text" id="searchInput" placeholder="Search...">
+
+        <table class="styled-table" id="datatable">
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Objective</th>
+                    <th>Deadline</th>
+                    <th>Accountable</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {{range .}}
+                <tr>
+                    <td><a href="/order/{{.Task.ID}}">{{.Task.ID}}</a></td>
+                    <td>{{firstLine .Task.Objective}}</td>
+                    <td><input type="date" value="{{formatToDate .Task.Deadline}}" disabled></td>
+                    <td><a href="/user/{{.Task.Accountable.ID}}">{{.Task.Accountable.Email}}</a></td>
+                </tr>
+                {{end}}
+            </tbody>
+
+        </table>
+    </div>
+
+    <script src="/static/scripts/search_table.js"></script>
+    
+    {{ template "footer" .}}
+
+</body>
+
+</html>
+{{end}}

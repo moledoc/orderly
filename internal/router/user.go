@@ -2,6 +2,7 @@ package router
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 
 	"github.com/moledoc/orderly/internal/domain/errwrap"
@@ -12,6 +13,11 @@ import (
 )
 
 func handlePostUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
@@ -28,10 +34,16 @@ func handlePostUser(w http.ResponseWriter, r *http.Request) {
 		resp, err = mgmtusersvc.PostUser(ctx, &req)
 	}
 
+	w.Header().Set("HX-Redirect", fmt.Sprintf("/user/%v", resp.GetUser().GetID()))
 	writeResponse(ctx, w, resp, err, http.StatusCreated)
 }
 
 func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
@@ -61,6 +73,11 @@ func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
@@ -76,6 +93,11 @@ func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
 }
 
 func handlePatchUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPatch {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
@@ -96,6 +118,11 @@ func handlePatchUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func handleDeleteUser(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodDelete {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
 	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 

@@ -10,7 +10,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/order"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
-	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/pkg/utils"
 	"github.com/moledoc/orderly/tests/compare"
 	"github.com/moledoc/orderly/tests/setup"
@@ -46,7 +45,7 @@ func (s *OrderSuite) TestPatchOrder() {
 				patchedTask := utils.RePtr(expected.GetTask())
 
 				patchedTask.SetState(order.Blocked)
-				patchedTask.SetAccountable("changed@email.com")
+				patchedTask.GetAccountable().SetEmail("changed@email.com")
 				patchedTask.SetObjective("patched main objective")
 				patchedTask.SetDeadline(time.Now().UTC())
 
@@ -67,8 +66,8 @@ func (s *OrderSuite) TestPatchOrder() {
 				}
 				patchedDelegatedTask := &order.Task{
 					ID:          expected.GetDelegatedTasks()[0].GetID(),
-					State:       order.InProgress,
-					Accountable: user.Email("new.accountable@email.com"),
+					State:       utils.Ptr(order.InProgress),
+					Accountable: setup.UserObjWithID("new.accountable"),
 					Objective:   "new objective",
 					Deadline:    time.Now().UTC().Add(30 * 24 * time.Hour),
 				}
@@ -95,23 +94,19 @@ func (s *OrderSuite) TestPatchOrder() {
 					ID: expected.GetSitReps()[0].GetID(),
 
 					DateTime: time.Now().UTC(),
-					By:       user.Email("user1@email.com"),
-					Ping: []user.Email{
-						user.Email("user2@email.com"),
-						user.Email("user3@email.com"),
-					},
-					// Situation: "New situation description",
-					// Actions:   "<List of actions>",
-					// TBD:       "<List of things to do>",
-					Issues: "<List of issues>",
+					By:       setup.UserObjWithID("user1"),
+
+					Situation: "New situation description",
+					Actions:   "<List of actions>",
+					TODO:      "<List of things to do>",
+					Issues:    "<List of issues>",
 				}
 
 				expected.GetSitReps()[0].SetDateTime(patchedSitRep.GetDateTime())
 				expected.GetSitReps()[0].SetBy(patchedSitRep.GetBy())
-				expected.GetSitReps()[0].SetPing(patchedSitRep.GetPing())
-				// expected.GetSitReps()[0].SetSituation(patchedSitRep.GetSituation())
-				// expected.GetSitReps()[0].SetActions(patchedSitRep.GetActions())
-				// expected.GetSitReps()[0].SetTBD(patchedSitRep.GetTBD())
+				expected.GetSitReps()[0].SetSituation(patchedSitRep.GetSituation())
+				expected.GetSitReps()[0].SetActions(patchedSitRep.GetActions())
+				expected.GetSitReps()[0].SetTODO(patchedSitRep.GetTODO())
 				expected.GetSitReps()[0].SetIssues(patchedSitRep.GetIssues())
 
 				return &request.PatchOrderRequest{

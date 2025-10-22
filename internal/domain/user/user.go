@@ -8,7 +8,7 @@ type Email string
 
 type User struct {
 	ID         meta.ID    `json:"id,omitempty"`
-	Name       string     `json:"name,omitempty"`
+	Name       string     `json:"name,omitempty"` // TODO: maybe remove
 	Email      Email      `json:"email,omitempty"`
 	Supervisor Email      `json:"supervisor,omitempty"`
 	Meta       *meta.Meta `json:"meta,omitempty"`
