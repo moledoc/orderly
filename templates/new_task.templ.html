@@ -3,27 +3,15 @@
     {{if .Delegated}}
     <hr />
     {{end}}
-    <div>
-        {{if not .Delegated}}
-        <label>Parent Order ID:</label>
-        <input list="orders" class="text-input" name="post-parent-order-id" />
-        <datalist id="orders">
-            <option>d5047ad9adad2ce131f0f1686536be5d</option>
-            {{range .Orders}}
-            <option value="{{.Task.ID}}">{{.Task.Objective}}</option>
-            {{end}}
-        </datalist>
-    </div>
-    {{end}}
 
     <div>
         <label>Objective:</label>
-        <textarea class="text-input" name="post-objective" required></textarea>
+        <textarea class="text-input" name="post-task-objective" required></textarea>
     </div>
 
     <div>
         <label>Accountable:</label>
-        <input list="users" name="post-accountable" autocomplete="order-accountable" />
+        <input list="users" name="post-task-accountable" autocomplete="order-accountable" />
         <datalist id="users">
             {{range UserEmails}}
             <option value="{{.}}">{{.}}</option>
@@ -33,12 +21,12 @@
 
     <div>
         <strong>Deadline:</strong><br>
-        <input type="date" name="task-deadline" required>
+        <input type="date" name="post-task-deadline" required>
     </div>
 
     <div>
         <label>State:</label>
-        <select name="task-state" style="border: none;" required autocomplete="order-state">
+        <select name="post-task-state" style="border: none;" required autocomplete="order-state">
             {{range States}}
             <option value="{{.}}">{{.}}</option>
             {{end}}

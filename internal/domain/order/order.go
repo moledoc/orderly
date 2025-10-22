@@ -71,6 +71,18 @@ const (
 	Completed
 )
 
+var (
+	ListStates func() []*State = func() func() []*State {
+		states := []*State{}
+		for i := NotStarted; i <= Completed; i++ {
+			states = append(states, &i)
+		}
+		return func() []*State {
+			return states
+		}
+	}()
+)
+
 type Task struct {
 	ID          meta.ID    `json:"id,omitempty"`
 	State       *State     `json:"state,omitempty"`

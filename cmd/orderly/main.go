@@ -22,14 +22,6 @@ import (
 	"github.com/moledoc/orderly/tests/setup"
 )
 
-func getStates() []*order.State {
-	states := []*order.State{}
-	for i := order.NotStarted; i <= order.Completed; i++ {
-		states = append(states, &i)
-	}
-	return states
-}
-
 // MAYBE: cache result
 func getUsers() []*user.User {
 	resp, _ := mgmtuser.GetServiceMgmtUser().GetUsers(context.Background(), &request.GetUsersRequest{}) // TODO: handle error
@@ -115,7 +107,7 @@ var (
 	templFuncMap = template.FuncMap{
 		"formatToDate": formatToDate,
 		"firstLine":    firstLine,
-		"States":       getStates,
+		"States":       order.ListStates,
 		"UserEmails":   getUserEmails,  // REMOVEME: move to handleFunc
 		"ParentOrder":  getParentOrder, // REMOVEME: move to handleFunc
 	}

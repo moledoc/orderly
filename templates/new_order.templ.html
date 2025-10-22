@@ -19,6 +19,17 @@
         hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc" 
         hx-on="htmx:configRequest: event.detail.parameters = serializePostOrderPayload()">
 
+        <div>
+            <label>Parent Order ID:</label>
+            <input list="orders" class="text-input" name="post-parent-order-id" />
+            <datalist id="orders">
+                <option>d5047ad9adad2ce131f0f1686536be5d</option>
+                {{range .Orders}}
+                <option value="{{.Task.ID}}">{{.Task.Objective}}</option>
+                {{end}}
+            </datalist>
+        </div>
+
         {{ template "new_task" .}}
 
         <details open>
@@ -47,27 +58,27 @@
                         task: (() => {
                             const entry = document.querySelector(".task-entry");
                             return {
-                                objective: entry?.querySelector("[name='post-objective']")?.value,
+                                objective: entry?.querySelector("[name='post-task-objective']")?.value,
                                 accountable: {
                                     name: "TODO:",
-                                    email: entry?.querySelector("[name='post-accountable']")?.value,
+                                    email: entry?.querySelector("[name='post-task-accountable']")?.value,
                                     supervisor: "todo@todo.com",
                                 },
-                                state: entry?.querySelector("[name='task-state']")?.value,
-                                deadline: entry?.querySelector("[name='task-deadline']")?.value+"T00:00:00Z",
+                                state: entry?.querySelector("[name='post-task-state']")?.value,
+                                deadline: entry?.querySelector("[name='post-task-deadline']")?.value+"T00:00:00Z",
                             };
                         })(),
                         delegated_tasks: Array.from(document.querySelectorAll(".task-entry"))
                             .slice(1)
                             .map(entry => ({
-                                objective: entry.querySelector("[name='post-objective']")?.value,
+                                objective: entry.querySelector("[name='post-task-objective']")?.value,
                                 accountable: {
                                     name: "TODO:",
-                                    email: entry.querySelector("[name='post-accountable']")?.value,
+                                    email: entry.querySelector("[name='post-task-accountable']")?.value,
                                     supervisor: "todo@todo.com",
                                 },
-                                state: entry.querySelector("[name='task-state']")?.value,
-                                deadline: entry.querySelector("[name='task-deadline']")?.value+"T00:00:00Z",
+                                state: entry.querySelector("[name='post-task-state']")?.value,
+                                deadline: entry.querySelector("[name='post-task-deadline']")?.value+"T00:00:00Z",
                             }))
                     }
                 };
