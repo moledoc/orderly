@@ -51,7 +51,7 @@ tests-order-svc:
 tests-order-httptest:
 	go test -v -test.count=1 -test.run=TestOrderHTTPTestSuite ./tests/order/...
 
-tests-order-reql:
+tests-order-req:
 	go test -v -test.count=1 -test.run=TestOrderReqSuite ./tests/order/...
 
 tests-order: 

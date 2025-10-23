@@ -31,15 +31,6 @@ func (r *GetOrdersResponse) GetOrders() []*order.Order {
 
 ////////////////
 
-func (r *GetOrderSubOrdersResponse) GetSubOrders() []*order.Order {
-	if r == nil {
-		return nil
-	}
-	return r.SubOrders
-}
-
-////////////////
-
 func (r *PatchOrderResponse) GetOrder() *order.Order {
 	if r == nil {
 		return nil
@@ -99,13 +90,4 @@ func (r *DeleteSitRepsResponse) GetOrder() *order.Order {
 		return nil
 	}
 	return r.Order
-}
-
-////////////////
-
-func (r *GetUserOrdersResponse) GetOrders() []*order.Order {
-	if r == nil {
-		return nil
-	}
-	return r.Orders
 }

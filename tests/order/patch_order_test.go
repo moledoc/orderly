@@ -45,7 +45,7 @@ func (s *OrderSuite) TestPatchOrder() {
 				patchedTask := utils.RePtr(expected.GetTask())
 
 				patchedTask.SetState(order.Blocked)
-				patchedTask.GetAccountable().SetEmail("changed@email.com")
+				patchedTask.SetAccountable("changed@email.com")
 				patchedTask.SetObjective("patched main objective")
 				patchedTask.SetDeadline(time.Now().UTC())
 
@@ -67,7 +67,7 @@ func (s *OrderSuite) TestPatchOrder() {
 				patchedDelegatedTask := &order.Task{
 					ID:          expected.GetDelegatedTasks()[0].GetID(),
 					State:       utils.Ptr(order.InProgress),
-					Accountable: setup.UserObjWithID("new.accountable"),
+					Accountable: "new.accountable@email.com",
 					Objective:   "new objective",
 					Deadline:    time.Now().UTC().Add(30 * 24 * time.Hour),
 				}
@@ -94,7 +94,7 @@ func (s *OrderSuite) TestPatchOrder() {
 					ID: expected.GetSitReps()[0].GetID(),
 
 					DateTime: time.Now().UTC(),
-					By:       setup.UserObjWithID("user1"),
+					By:       setup.UserObjWithID("user1").GetEmail(),
 
 					Situation: "New situation description",
 					Actions:   "<List of actions>",
@@ -158,6 +158,7 @@ func (s *OrderSuite) TestPatchOrder() {
 
 			opts := []cmp.Option{
 				compare.IgnorePaths("Order.Meta.Updated"),
+				compare.ComparerState(),
 				compare.SorterOrder(compare.SortOrderByID),
 				compare.SorterTask(compare.SortTaskByID),
 				compare.SorterSitRep(compare.SortSitRepByID),

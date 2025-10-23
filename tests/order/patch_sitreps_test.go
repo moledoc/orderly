@@ -47,7 +47,7 @@ func (s *OrderSuite) TestPatchSitReps() {
 				if len(expected.GetSitReps()) == 0 {
 					return nil
 				}
-				expected.GetSitReps()[0].GetBy().SetEmail("example.by.updated@email.com")
+				expected.GetSitReps()[0].SetBy("example.by.updated@email.com")
 				return &request.PatchSitRepsRequest{
 					OrderID: expected.GetID(),
 					SitReps: []*order.SitRep{
@@ -139,7 +139,7 @@ func (s *OrderSuite) TestPatchSitReps() {
 				}
 
 				expected.GetSitReps()[1].SetDateTime(time.Now().UTC())
-				expected.GetSitReps()[1].GetBy().SetEmail("example.by.updated@email.com")
+				expected.GetSitReps()[1].SetBy("example.by.updated@email.com")
 				expected.GetSitReps()[1].SetSituation("updated situation")
 				expected.GetSitReps()[1].SetActions("updated actions")
 				expected.GetSitReps()[1].SetTODO("updated tbd")

@@ -4,6 +4,10 @@
 
 ## TODOs
 
+- [] REFACTOR:
+    - [] user /users? ~~and /orders?~~ instead of user/%v/subornidates ~~and order/%v/delegated_tasks~~, and other analogous endpoints similarly
+    - [x] remove GetOrdersByAccountable mentions
+    - [x] add more GET /v1/mgmt/orders functional and performance cases, because of added functionality
 - [] initial UI
     - use errr-s
     - when creating an order, delegated task id parent ids should point to the new order we create. Need to change some validations etc and how orders are created.

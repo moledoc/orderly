@@ -16,10 +16,6 @@ type GetOrdersResponse struct {
 	Orders []*order.Order `json:"orders"`
 }
 
-type GetOrderSubOrdersResponse struct {
-	SubOrders []*order.Order `json:"sub_orders"`
-}
-
 type PatchOrderResponse struct {
 	Order *order.Order `json:"order"`
 }
@@ -52,10 +48,4 @@ type PatchSitRepsResponse struct {
 
 type DeleteSitRepsResponse struct {
 	Order *order.Order `json:"order"`
-}
-
-////////////////
-
-type GetUserOrdersResponse struct {
-	Orders []*order.Order `json:"orders"`
 }

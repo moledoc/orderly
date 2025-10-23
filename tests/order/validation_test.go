@@ -9,8 +9,10 @@ import (
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/order"
 	"github.com/moledoc/orderly/internal/domain/request"
+	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/internal/service/common/validation"
 	"github.com/moledoc/orderly/internal/service/mgmtorder"
+	"github.com/moledoc/orderly/pkg/utils"
 	"github.com/moledoc/orderly/tests/setup"
 	"github.com/stretchr/testify/require"
 )
@@ -43,7 +45,7 @@ func (s *OrderSuite) TestValidation_Task() {
 	})
 	tt.Run("task.accountable", func(t *testing.T) {
 		to := setup.TaskObjWithID()
-		to.SetAccountable(nil)
+		to.SetAccountable("")
 		err := mgmtorder.ValidateTask(to, validation.IgnoreNothing)
 		require.Error(t, err)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
@@ -87,7 +89,7 @@ func (s *OrderSuite) TestValidation_SitReps() {
 	})
 	tt.Run("sitrep.by", func(t *testing.T) {
 		sp := setup.SitrepObjWithID()
-		sp.SetBy(nil)
+		sp.SetBy("")
 		err := mgmtorder.ValidateSitRep(sp, validation.IgnoreNothing)
 		require.Error(t, err)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
@@ -231,23 +233,24 @@ func (s *OrderSuite) TestValidation_GetOrdersRequest() {
 		require.NoError(t, err)
 		require.Empty(t, resp)
 	})
-}
 
-func (s *OrderSuite) TestValidation_GetOrderSubOrdersRequest() {
-	tt := s.T()
-	tt.Run("nil.request", func(t *testing.T) {
-		resp, err := s.API.GetOrderSubOrders(t, context.Background(), nil)
+	tt.Run("invalid.parent_order_id", func(t *testing.T) {
+		resp, err := s.API.GetOrders(t, context.Background(), &request.GetOrdersRequest{
+			ParentOrderID: meta.ID(utils.RandAlphanum()[:10]),
+		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
+		require.Equal(t, "invalid parent_order_id: invalid id length", err.GetStatusMessage())
 	})
-	tt.Run("empty.request", func(t *testing.T) {
-		resp, err := s.API.GetOrderSubOrders(t, context.Background(), &request.GetOrderSubOrdersRequest{})
+	tt.Run("invalid.accountable", func(t *testing.T) {
+		resp, err := s.API.GetOrders(t, context.Background(), &request.GetOrdersRequest{
+			Accountable: user.Email("not an email"),
+		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
+		require.Equal(t, "invalid accountable: invalid email", err.GetStatusMessage())
 	})
 }
 
@@ -671,23 +674,5 @@ func (s *OrderSuite) TestValidation_DeleteSitRepRequest() {
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
 		require.Equal(t, "invalid sitrep_ids.1: invalid id length", err.GetStatusMessage())
-	})
-}
-
-func (s *OrderSuite) TestValidation_GetUserOrdersRequest() {
-	tt := s.T()
-	tt.Run("nil.request", func(t *testing.T) {
-		resp, err := s.API.GetUserOrders(t, context.Background(), nil)
-		require.Error(t, err)
-		require.Empty(t, resp)
-		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid user_id: invalid id length", err.GetStatusMessage())
-	})
-	tt.Run("empty.request", func(t *testing.T) {
-		resp, err := s.API.GetUserOrders(t, context.Background(), &request.GetUserOrdersRequest{})
-		require.Error(t, err)
-		require.Empty(t, resp)
-		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid user_id: invalid id length", err.GetStatusMessage())
 	})
 }
