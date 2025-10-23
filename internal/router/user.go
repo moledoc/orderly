@@ -35,7 +35,9 @@ func handlePostUser(w http.ResponseWriter, r *http.Request) {
 		resp, err = mgmtusersvc.PostUser(ctx, &req)
 	}
 
-	w.Header().Set("HX-Redirect", fmt.Sprintf("/user/%v", resp.GetUser().GetID()))
+	if err == nil {
+		w.Header().Set("HX-Redirect", fmt.Sprintf("/user/%v", resp.GetUser().GetID()))
+	}
 	writeResponse(ctx, w, resp, err, http.StatusCreated)
 }
 

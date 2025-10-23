@@ -15,7 +15,7 @@
 <body>
     {{ template "header" .}}
     <div class="container">
-        <details class="card">
+        <details class="card" open>
             <summary>Info</summary>
 
             <b>ID:</b> {{.User.ID}}<br>
@@ -48,7 +48,7 @@
                         }  
                     }' hx-on="htmx:afterRequest: updateSupervisorLink(event.detail.xhr.responseText)">
                 <datalist id="users">
-                    {{range UserEmails}}
+                    {{range .Emails}}
                     <option value="{{.}}">{{.}}</option>
                     {{end}}
                 </datalist>
@@ -79,7 +79,7 @@
                             <td><a href="/order/{{.Task.ID}}">{{.Task.ID}}</a></td>
                             <td>{{.Task.Objective}}</td>
                             <td>{{.Task.State}}</td>
-                            <td><input type="date" value="{{formatToDate .Task.Deadline}}" disabled></td>
+                            <td>{{formatToDate .Task.Deadline}}</td>
                         </tr>
                         {{end}}
                     </tbody>
@@ -87,7 +87,7 @@
             </div>
         </details>
 
-        <details>
+        <details open>
             <summary>Sub-Ordinates</summary>
             <div class="scroll-container">
                 <table class="styled-table" id="datatable">
@@ -113,23 +113,25 @@
 
         {{ template "footer" .}}
 
-        <script src="/static/scripts/search_table.js"></script>
+        <script src="/static/scripts/table_utils.js"></script>
         <script>
             function updateSupervisorLink(responseText) {
-                try {
-                    const data = JSON.parse(responseText);
-                    const newID = data.user?.id; // TODO: get supervisor email, GetUserBy and take ID from there
-                    if (!newID) return;
-
-                    const linkContainer = document.getElementById("supervisor-link");
-                    linkContainer.innerHTML = `<a href="/user/${newID}">Supervisor:</a>`;
-                } catch (e) {
-                    console.error("Failed to update supervisor link:", e);
-                }
+                const data = JSON.parse(responseText);
+                const params = new URLSearchParams({
+                    emails: [data.user?.supervisor],
+                });
+                fetch(`/v1/mgmt/users?${params.toString()}`)
+                    .then(response => response.json())
+                    .then(resp => {
+                        if (resp?.users?.length >= 1) {
+                            const linkContainer = document.getElementById("supervisor-link");
+                            linkContainer.innerHTML = `<a href="/user/${resp?.users[0]?.id}">Supervisor:</a>`;
+                        }
+                    })
+                    .catch(err => console.error("Error:", err));
             }
+
         </script>
-
-
 </body>
 
 </html>

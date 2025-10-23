@@ -30,7 +30,9 @@ func postOrder(w http.ResponseWriter, r *http.Request) {
 		resp, err = mgmtordersvc.PostOrder(ctx, &req)
 	}
 
-	w.Header().Set("HX-Redirect", fmt.Sprintf("/order/%v", resp.GetOrder().GetID()))
+	if err == nil {
+		w.Header().Set("HX-Redirect", fmt.Sprintf("/order/%v", resp.GetOrder().GetID()))
+	}
 	writeResponse(ctx, w, resp, err, http.StatusCreated)
 }
 

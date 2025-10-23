@@ -23,7 +23,7 @@ type orderInfo struct {
 
 type LocalRepositoryOrder struct {
 	mu      sync.Mutex
-	Orders  map[meta.ID]orderInfo
+	Orders  map[meta.ID]*orderInfo
 	Tasks   map[meta.ID]*order.Task
 	SitReps map[meta.ID]*order.SitRep
 }
@@ -35,13 +35,13 @@ var (
 func NewLocalRepositoryOrder() *LocalRepositoryOrder {
 	return &LocalRepositoryOrder{
 		mu:      sync.Mutex{},
-		Orders:  make(map[meta.ID]orderInfo),
+		Orders:  make(map[meta.ID]*orderInfo),
 		Tasks:   make(map[meta.ID]*order.Task),
 		SitReps: make(map[meta.ID]*order.SitRep),
 	}
 }
 
-func (r *LocalRepositoryOrder) composeOrder(storedOrder orderInfo) *order.Order {
+func (r *LocalRepositoryOrder) composeOrder(storedOrder *orderInfo) *order.Order {
 	task := r.Tasks[storedOrder.TaskID]
 
 	var delegatedTasks []*order.Task
@@ -80,7 +80,7 @@ func (r *LocalRepositoryOrder) composeOrder(storedOrder orderInfo) *order.Order 
 	return resp
 }
 
-func (r *LocalRepositoryOrder) storeOrder(o *order.Order) orderInfo {
+func (r *LocalRepositoryOrder) storeOrder(o *order.Order) *orderInfo {
 
 	r.Tasks[o.GetTask().GetID()] = o.GetTask()
 
@@ -89,12 +89,17 @@ func (r *LocalRepositoryOrder) storeOrder(o *order.Order) orderInfo {
 	for _, delegated := range o.GetDelegatedTasks() {
 		delegatedTaskIDs = append(delegatedTaskIDs, delegated.GetID())
 		r.Tasks[delegated.GetID()] = delegated
+		r.Orders[delegated.GetID()] = &orderInfo{
+			TaskID:        delegated.GetID(),
+			ParentOrderID: o.GetID(),
+			Meta:          o.GetMeta(), // NOTE: set meta as order.meta, since they are created at the same time
+		}
 	}
 	for _, sitrep := range o.GetSitReps() {
 		sitrepIDs = append(sitrepIDs, sitrep.GetID())
 		r.SitReps[sitrep.GetID()] = sitrep
 	}
-	info := orderInfo{
+	info := &orderInfo{
 		TaskID:           o.GetID(),
 		ParentOrderID:    o.GetParentOrderID(),
 		DelegatedTaskIDs: delegatedTaskIDs,
@@ -102,10 +107,12 @@ func (r *LocalRepositoryOrder) storeOrder(o *order.Order) orderInfo {
 		Meta:             o.GetMeta(),
 	}
 	r.Orders[o.GetID()] = info
+	parent := r.Orders[o.ParentOrderID]
+	parent.DelegatedTaskIDs = append(r.Orders[o.ParentOrderID].DelegatedTaskIDs, o.GetID())
 	return info
 }
 
-func (r *LocalRepositoryOrder) deleteOrder(storedOrder orderInfo) {
+func (r *LocalRepositoryOrder) deleteOrder(storedOrder *orderInfo) {
 	delete(r.Tasks, storedOrder.TaskID)
 	for _, id := range storedOrder.DelegatedTaskIDs {
 		delete(r.Tasks, id)

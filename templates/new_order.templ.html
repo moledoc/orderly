@@ -23,7 +23,6 @@
             <label>Parent Order ID:</label>
             <input list="orders" class="text-input" name="post-parent-order-id" />
             <datalist id="orders">
-                <option>d5047ad9adad2ce131f0f1686536be5d</option>
                 {{range .Orders}}
                 <option value="{{.Task.ID}}">{{.Task.Objective}}</option>
                 {{end}}
@@ -59,11 +58,7 @@
                             const entry = document.querySelector(".task-entry");
                             return {
                                 objective: entry?.querySelector("[name='post-task-objective']")?.value,
-                                accountable: {
-                                    name: "TODO:",
-                                    email: entry?.querySelector("[name='post-task-accountable']")?.value,
-                                    supervisor: "todo@todo.com",
-                                },
+                                accountable: entry?.querySelector("[name='post-task-accountable']")?.value,
                                 state: entry?.querySelector("[name='post-task-state']")?.value,
                                 deadline: entry?.querySelector("[name='post-task-deadline']")?.value+"T00:00:00Z",
                             };
@@ -72,11 +67,7 @@
                             .slice(1)
                             .map(entry => ({
                                 objective: entry.querySelector("[name='post-task-objective']")?.value,
-                                accountable: {
-                                    name: "TODO:",
-                                    email: entry.querySelector("[name='post-task-accountable']")?.value,
-                                    supervisor: "todo@todo.com",
-                                },
+                                accountable: entry.querySelector("[name='post-task-accountable']")?.value,
                                 state: entry.querySelector("[name='post-task-state']")?.value,
                                 deadline: entry.querySelector("[name='post-task-deadline']")?.value+"T00:00:00Z",
                             }))

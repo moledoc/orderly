@@ -15,6 +15,11 @@ import (
 	"github.com/moledoc/orderly/pkg/utils"
 )
 
+func (s *serviceMgmtOrder) GetRootOrder(context.Context) *order.Order {
+	// TODO: utilize ctx
+	return s.RootOrder
+}
+
 func (s *serviceMgmtOrder) PostOrder(ctx context.Context, req *request.PostOrderRequest) (*response.PostOrderResponse, errwrap.Error) {
 	ctx = middleware.AddTraceToCtx(ctx)
 	middleware.SpanStart(ctx, "PostOrder")

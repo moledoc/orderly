@@ -14,6 +14,11 @@ import (
 	"github.com/moledoc/orderly/pkg/utils"
 )
 
+func (s *serviceMgmtUser) GetRootUser(context.Context) *user.User {
+	// TODO: utilize ctx
+	return s.RootUser
+}
+
 func (s *serviceMgmtUser) PostUser(ctx context.Context, req *request.PostUserRequest) (*response.PostUserResponse, errwrap.Error) {
 	ctx = middleware.AddTraceToCtx(ctx)
 	middleware.SpanStart(ctx, "PostUser")

@@ -11,9 +11,9 @@
 
     <div>
         <label>Accountable:</label>
-        <input list="users" name="post-task-accountable" autocomplete="order-accountable" />
+        <input list="users" name="post-task-accountable"/>
         <datalist id="users">
-            {{range UserEmails}}
+            {{range .Emails}}
             <option value="{{.}}">{{.}}</option>
             {{end}}
         </datalist>
@@ -26,7 +26,7 @@
 
     <div>
         <label>State:</label>
-        <select name="post-task-state" style="border: none;" required autocomplete="order-state">
+        <select name="post-task-state" style="border: none;" required>
             {{range States}}
             <option value="{{.}}">{{.}}</option>
             {{end}}

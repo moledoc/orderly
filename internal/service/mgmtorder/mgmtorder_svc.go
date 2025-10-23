@@ -2,14 +2,22 @@ package mgmtorder
 
 import (
 	"context"
+	"time"
 
 	"github.com/moledoc/orderly/internal/domain/errwrap"
+	"github.com/moledoc/orderly/internal/domain/meta"
+	"github.com/moledoc/orderly/internal/domain/order"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
+	"github.com/moledoc/orderly/internal/domain/user"
+	"github.com/moledoc/orderly/internal/middleware"
 	"github.com/moledoc/orderly/internal/repository"
+	"github.com/moledoc/orderly/pkg/utils"
 )
 
 type ServiceMgmtOrderAPI interface {
+	GetRootOrder(context.Context) *order.Order
+	////
 	PostOrder(ctx context.Context, req *request.PostOrderRequest) (*response.PostOrderResponse, errwrap.Error)
 	GetOrderByID(ctx context.Context, req *request.GetOrderByIDRequest) (*response.GetOrderByIDResponse, errwrap.Error)
 	GetOrders(ctx context.Context, req *request.GetOrdersRequest) (*response.GetOrdersResponse, errwrap.Error)
@@ -27,6 +35,7 @@ type ServiceMgmtOrderAPI interface {
 
 type serviceMgmtOrder struct {
 	Repository repository.RepositoryOrderAPI
+	RootOrder  *order.Order
 }
 
 var (
@@ -34,12 +43,43 @@ var (
 	svc ServiceMgmtOrderAPI = nil
 )
 
+func postRootOrder(ctx context.Context, repo repository.RepositoryOrderAPI) (*order.Order, errwrap.Error) {
+	now := time.Now().UTC()
+	id := meta.NewID()
+	order := &order.Order{
+		Task: &order.Task{
+			ID:          id,
+			State:       utils.Ptr(order.InProgress),
+			Accountable: user.Email("root@root.com"),
+			Objective:   "Root Order",
+			Deadline:    time.Now().UTC().Add(100 * 365 * 24 * time.Hour),
+		},
+		ParentOrderID: id,
+		Meta: &meta.Meta{
+			Version: 1,
+			Created: now,
+			Updated: now,
+		},
+	}
+
+	o, err := repo.Write(ctx, order)
+	if err != nil {
+		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
+	}
+	return o, nil
+}
+
 func GetServiceMgmtOrder() ServiceMgmtOrderAPI {
 	return svc
 }
 
 func NewServiceMgmtOrder(repo repository.RepositoryOrderAPI) ServiceMgmtOrderAPI {
+	rootOrder, err := postRootOrder(context.Background(), repo)
+	if err != nil {
+		panic(err)
+	}
 	svc = &serviceMgmtOrder{
+		RootOrder:  rootOrder,
 		Repository: repo,
 	}
 	return svc
