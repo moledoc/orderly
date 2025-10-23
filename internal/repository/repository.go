@@ -13,7 +13,6 @@ import (
 type RepositoryOrderAPI interface {
 	Close(ctx context.Context) errwrap.Error
 	ReadByID(ctx context.Context, id meta.ID) (*order.Order, errwrap.Error)
-	ReadSubOrders(ctx context.Context, id meta.ID) ([]*order.Order, errwrap.Error)
 	ReadBy(ctx context.Context, req *request.GetOrdersRequest) ([]*order.Order, errwrap.Error)
 	// TODO: split Write to specific funcs
 	Write(ctx context.Context, order *order.Order) (*order.Order, errwrap.Error)
@@ -25,9 +24,7 @@ type RepositoryOrderAPI interface {
 type RepositoryUserAPI interface {
 	Close(ctx context.Context) errwrap.Error
 	ReadByID(ctx context.Context, id meta.ID) (*user.User, errwrap.Error)
-	ReadBy(ctx context.Context, req *request.GetUserByRequest) (*user.User, errwrap.Error)
-	ReadSubOrdinates(ctx context.Context, id meta.ID) ([]*user.User, errwrap.Error)
-	ReadAll(ctx context.Context) ([]*user.User, errwrap.Error)
+	ReadBy(ctx context.Context, req *request.GetUsersRequest) ([]*user.User, errwrap.Error)
 	// TODO: split Write to specific funcs
 	Write(ctx context.Context, user *user.User) (*user.User, errwrap.Error)
 	Delete(ctx context.Context, id meta.ID) errwrap.Error

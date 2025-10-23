@@ -60,29 +60,6 @@ func handleGetUserByID(w http.ResponseWriter, r *http.Request) {
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func handleGetUserBy(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
-	defer func() { go middleware.SpanFlushTrace(ctx) }()
-
-	middleware.SpanStart(ctx, "getUserBy")
-	defer middleware.SpanStop(ctx, "getUserBy")
-
-	req := &request.GetUserByRequest{
-		ID:         meta.ID(r.URL.Query().Get("id")),
-		Email:      user.Email(r.URL.Query().Get("email")),
-		Supervisor: user.Email(r.URL.Query().Get("supervisor")),
-	}
-	middleware.SpanLog(ctx, "GetUserByRequest", req)
-	resp, err := mgmtusersvc.GetUserBy(ctx, req)
-
-	writeResponse(ctx, w, resp, err, http.StatusOK)
-}
-
 func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
@@ -90,29 +67,17 @@ func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 	middleware.SpanStart(ctx, "getUsers")
 	defer middleware.SpanStop(ctx, "getUsers")
 
-	req := &request.GetUsersRequest{}
+	queryEmails := r.URL.Query()["emails"]
+	emails := make([]user.Email, len(queryEmails))
+	for i, em := range queryEmails {
+		emails[i] = user.Email(em)
+	}
+	req := &request.GetUsersRequest{
+		Emails:     emails,
+		Supervisor: user.Email(r.URL.Query().Get("supervisor")),
+	}
 	middleware.SpanLog(ctx, "GetUsersRequest", req)
 	resp, err := mgmtusersvc.GetUsers(ctx, req)
-	writeResponse(ctx, w, resp, err, http.StatusOK)
-}
-
-func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
-	defer func() { go middleware.SpanFlushTrace(ctx) }()
-
-	middleware.SpanStart(ctx, "getUserSubOrdinates")
-	defer middleware.SpanStop(ctx, "getUserSubOrdinates")
-
-	req := &request.GetUserSubOrdinatesRequest{
-		ID: meta.ID(r.PathValue(userID)),
-	}
-	middleware.SpanLog(ctx, "GetUserSubOrdinatesRequest", req)
-	resp, err := mgmtusersvc.GetUserSubOrdinates(ctx, req)
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 

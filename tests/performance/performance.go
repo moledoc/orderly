@@ -180,7 +180,10 @@ func (p *Plan) Run() (r *Report, success []DataPoint, failures []DataPoint) { //
 		for _, setups := range iterSetups {
 			s := time.Now()
 			go func(ssetups []input) {
-				dist := int64(time.Second) / int64(len(ssetups))
+				dist := int64(0)
+				if len(ssetups) > 0 {
+					dist = int64(time.Second) / int64(len(ssetups))
+				}
 				for _, setup := range ssetups {
 					ctx := setup.ctxFunc()
 					start := time.Now()
