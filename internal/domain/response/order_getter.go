@@ -91,12 +91,3 @@ func (r *DeleteSitRepsResponse) GetOrder() *order.Order {
 	}
 	return r.Order
 }
-
-////////////////
-
-func (r *GetOrdersByAccountableResponse) GetOrders() []*order.Order {
-	if r == nil {
-		return nil
-	}
-	return r.Orders
-}

@@ -49,9 +49,3 @@ type PatchSitRepsResponse struct {
 type DeleteSitRepsResponse struct {
 	Order *order.Order `json:"order"`
 }
-
-////////////////
-
-type GetOrdersByAccountableResponse struct {
-	Orders []*order.Order `json:"orders"`
-}
