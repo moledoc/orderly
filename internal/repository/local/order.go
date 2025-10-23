@@ -152,36 +152,6 @@ func (r *LocalRepositoryOrder) ReadByID(ctx context.Context, id meta.ID) (*order
 	return resp, nil
 }
 
-func (r *LocalRepositoryOrder) ReadSubOrders(ctx context.Context, id meta.ID) ([]*order.Order, errwrap.Error) {
-	middleware.SpanStart(ctx, "LocalStorageOrder:ReadSubOrders")
-	defer middleware.SpanStop(ctx, "LocalStorageOrder:ReadSubOrders")
-
-	if r == nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
-	}
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	parentOrder, ok := r.Orders[id]
-	if !ok {
-		return nil, errwrap.NewError(http.StatusNotFound, "not found")
-	}
-
-	var storedOrders []orderInfo
-	for _, o := range r.Orders {
-		if o.ParentOrderID == parentOrder.TaskID {
-			storedOrders = append(storedOrders, o)
-		}
-	}
-
-	var subOrders []*order.Order
-	for _, storedOrder := range storedOrders {
-		subOrders = append(subOrders, r.composeOrder(storedOrder))
-	}
-
-	return subOrders, nil
-}
-
 func (r *LocalRepositoryOrder) ReadBy(ctx context.Context, req *request.GetOrdersRequest) ([]*order.Order, errwrap.Error) {
 	middleware.SpanStart(ctx, "LocalStorageOrder:ReadBy")
 	defer middleware.SpanStop(ctx, "LocalStorageOrder:ReadBy")

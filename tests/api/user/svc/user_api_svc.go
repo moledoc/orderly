@@ -37,19 +37,11 @@ func (api *UserAPISvc) GetUserByID(t *testing.T, ctx context.Context, req *reque
 	return api.Svc.GetUserByID(ctx, req)
 }
 
-func (api *UserAPISvc) GetUserBy(t *testing.T, ctx context.Context, req *request.GetUserByRequest) (*response.GetUserByResponse, errwrap.Error) {
-	t.Helper()
-	return api.Svc.GetUserBy(ctx, req)
-}
-
 func (api *UserAPISvc) GetUsers(t *testing.T, ctx context.Context, req *request.GetUsersRequest) (*response.GetUsersResponse, errwrap.Error) {
 	t.Helper()
 	return api.Svc.GetUsers(ctx, req)
 }
-func (api *UserAPISvc) GetUserSubOrdinates(t *testing.T, ctx context.Context, req *request.GetUserSubOrdinatesRequest) (*response.GetUserSubOrdinatesResponse, errwrap.Error) {
-	t.Helper()
-	return api.Svc.GetUserSubOrdinates(ctx, req)
-}
+
 func (api *UserAPISvc) PatchUser(t *testing.T, ctx context.Context, req *request.PatchUserRequest) (*response.PatchUserResponse, errwrap.Error) {
 	t.Helper()
 	return api.Svc.PatchUser(ctx, req)

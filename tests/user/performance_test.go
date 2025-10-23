@@ -3,7 +3,6 @@ package tests
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"testing"
 	"time"
 
@@ -80,49 +79,6 @@ func (s *UserPerformanceSuite) TestPerformance_GetUserByID() {
 	fmt.Printf("%+v\n", report)
 }
 
-func (s *UserPerformanceSuite) TestPerformance_GetUserBy() {
-	for _, userCount := range []int{10, 100, 1000} {
-		s.T().Run(fmt.Sprintf("%v", userCount), func(t *testing.T) {
-
-			var users []*user.User
-			for i := 0; i < userCount; i++ {
-				u := setup.MustCreateUserWithCleanup(t, context.Background(), s.API, setup.UserObj(fmt.Sprintf("%v-%v", userCount, i)))
-				users = append(users, u)
-			}
-
-			setup := func() (ctxFunc func() context.Context, req any, err errwrap.Error) {
-				ith := rand.Intn(userCount)
-				return context.Background, &request.GetUserByRequest{
-					Email: users[ith].GetEmail(),
-				}, nil
-			}
-			tst := func(ctx context.Context, req any, errReq errwrap.Error) (response any, errResp errwrap.Error) {
-				if errReq != nil {
-					return nil, errReq
-				}
-				return s.API.GetUserBy(t, ctx, req.(*request.GetUserByRequest))
-			}
-			plan := performance.Plan{
-				T:               t,
-				RPS:             10,
-				DurationSec:     10,
-				RampDurationSec: 10,
-				Setup:           setup,
-				Test:            tst,
-				NFR: performance.NFRs{
-					P50: 50 * time.Millisecond,
-					P90: 90 * time.Millisecond,
-					P95: 95 * time.Millisecond,
-					P99: 99 * time.Millisecond,
-				},
-				Notes: []string{"test", "test", "test"},
-			}
-			report, _, _ := plan.Run()
-			fmt.Printf("%+v\n", report)
-		})
-	}
-}
-
 func (s *UserPerformanceSuite) TestPerformance_GetUsers() {
 	for _, userCount := range []int{10, 100, 1000} {
 		s.T().Run(fmt.Sprintf("%v", userCount), func(t *testing.T) {
@@ -163,28 +119,70 @@ func (s *UserPerformanceSuite) TestPerformance_GetUsers() {
 	}
 }
 
-func (s *UserPerformanceSuite) TestPerformance_GetUserSubOrdinates() {
-	for _, userCount := range []int{10, 100, 1000} {
+func (s *UserPerformanceSuite) TestPerformance_GetUsers_ByEmails() {
+	for _, userCount := range []int{0, 10, 100, 1000} {
 		s.T().Run(fmt.Sprintf("%v", userCount), func(t *testing.T) {
-			u := setup.MustCreateUserWithCleanup(t, context.Background(), s.API, setup.UserObj(fmt.Sprintf("%v-%v", userCount, "-1")))
 			for i := 0; i < userCount; i++ {
-				userObj := setup.UserObj(fmt.Sprintf("%v-%v", userCount, i))
-				userObj.SetSupervisor(u.GetEmail())
-				setup.MustCreateUserWithCleanup(t, context.Background(), s.API, userObj)
+				setup.MustCreateUserWithCleanup(t, context.Background(), s.API, setup.UserObj(fmt.Sprintf("%v-%v", userCount, i)))
 			}
 			setup := func() (ctxFunc func() context.Context, req any, err errwrap.Error) {
-				return context.Background, &request.GetUserSubOrdinatesRequest{
-					ID: u.GetID(),
+				return context.Background, &request.GetUsersRequest{
+					Emails: []user.Email{setup.UserObj(fmt.Sprintf("%v-%v", userCount, 0)).GetEmail()},
 				}, nil
 			}
 			tst := func(ctx context.Context, req any, errReq errwrap.Error) (response any, errResp errwrap.Error) {
 				if errReq != nil {
 					return nil, errReq
 				}
-				return s.API.GetUserSubOrdinates(t, ctx, req.(*request.GetUserSubOrdinatesRequest))
+				return s.API.GetUsers(t, ctx, req.(*request.GetUsersRequest))
 			}
 			checkLen := func(ctx context.Context, resp any, err errwrap.Error) {
-				require.Len(t, resp.(*response.GetUserSubOrdinatesResponse).GetSubOrdinates(), userCount)
+				require.Len(t, resp.(*response.GetUsersResponse).GetUsers(), min(userCount, 1))
+			}
+			plan := performance.Plan{
+				T:               t,
+				RPS:             uint(userCount),
+				DurationSec:     10,
+				RampDurationSec: 10,
+				Setup:           setup,
+				Test:            tst,
+				Assert:          checkLen,
+				NFR: performance.NFRs{
+					P50: 50 * time.Millisecond,
+					P90: 90 * time.Millisecond,
+					P95: 95 * time.Millisecond,
+					P99: 99 * time.Millisecond,
+				},
+				Notes: []string{"test", "test", "test"},
+			}
+			report, _, _ := plan.Run()
+			fmt.Printf("%s: %+v\n", t.Name(), report)
+		})
+	}
+}
+
+func (s *UserPerformanceSuite) TestPerformance_GetUsers_BySupervisor() {
+	for _, userCount := range []int{0, 10, 100, 1000} {
+		s.T().Run(fmt.Sprintf("%v", userCount), func(t *testing.T) {
+			supervisor := setup.MustCreateUserWithCleanup(t, context.Background(), s.API, setup.UserObj("supervisor"))
+			for i := 0; i < userCount; i++ {
+				obj := setup.UserObj(fmt.Sprintf("%v-%v", userCount, i))
+				obj.SetSupervisor(supervisor.GetEmail())
+				setup.MustCreateUserWithCleanup(t, context.Background(), s.API, obj)
+			}
+			setup := func() (ctxFunc func() context.Context, req any, err errwrap.Error) {
+				return context.Background, &request.GetUsersRequest{
+					Supervisor: supervisor.GetEmail(),
+				}, nil
+			}
+			tst := func(ctx context.Context, req any, errReq errwrap.Error) (response any, errResp errwrap.Error) {
+				if errReq != nil {
+					return nil, errReq
+				}
+				return s.API.GetUsers(t, ctx, req.(*request.GetUsersRequest))
+			}
+			checkLen := func(ctx context.Context, resp any, err errwrap.Error) {
+				require.Len(t, resp.(*response.GetUsersResponse).GetUsers(), userCount)
 			}
 			plan := performance.Plan{
 				T:               t,

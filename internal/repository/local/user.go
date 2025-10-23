@@ -3,6 +3,7 @@ package local
 import (
 	"context"
 	"net/http"
+	"slices"
 	"sync"
 
 	"github.com/moledoc/orderly/internal/domain/errwrap"
@@ -66,7 +67,7 @@ func (r *LocalRepositoryUser) ReadByID(ctx context.Context, id meta.ID) (*user.U
 	return u, nil
 }
 
-func (r *LocalRepositoryUser) ReadBy(ctx context.Context, req *request.GetUserByRequest) (*user.User, errwrap.Error) {
+func (r *LocalRepositoryUser) ReadBy(ctx context.Context, req *request.GetUsersRequest) ([]*user.User, errwrap.Error) {
 	middleware.SpanStart(ctx, "LocalRepositoryUser:ReadBy")
 	defer middleware.SpanStop(ctx, "LocalRepositoryUser:ReadBy")
 
@@ -74,67 +75,19 @@ func (r *LocalRepositoryUser) ReadBy(ctx context.Context, req *request.GetUserBy
 		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository user uninitialized")
 	}
 
-	id := req.GetID()
-	email := req.GetEmail()
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	var users []*user.User
+	emails := req.GetEmails()
 	supervisor := req.GetSupervisor()
-
-	if len(id) > 0 && len(email) == 0 && len(supervisor) == 0 {
-		return r.ReadByID(ctx, req.GetID())
-	}
-
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
 	for _, u := range r.db {
-		if (id == "" || id == u.GetID()) &&
-			(email == "" || email == u.GetEmail()) &&
-			(supervisor == "" || supervisor == u.GetSupervisor()) {
-			return u, nil
+		if (len(emails) == 0 || slices.Contains(emails, u.GetEmail())) &&
+			(len(supervisor) == 0 || supervisor == u.GetSupervisor()) {
+			users = append(users, u)
 		}
 	}
 
-	return nil, errwrap.NewError(http.StatusNotFound, "not found")
-}
-
-func (r *LocalRepositoryUser) ReadSubOrdinates(ctx context.Context, id meta.ID) ([]*user.User, errwrap.Error) {
-	middleware.SpanStart(ctx, "LocalRepositoryUser:ReadSubOrdinates")
-	defer middleware.SpanStop(ctx, "LocalRepositoryUser:ReadSubOrdinates")
-
-	if r == nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository user uninitialized")
-	}
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	supervisor, ok := r.db[id]
-	if !ok {
-		return nil, errwrap.NewError(http.StatusNotFound, "not found")
-	}
-	var subOrdinates []*user.User
-	for _, u := range r.db {
-		if u.Supervisor == supervisor.Email {
-			subOrdinates = append(subOrdinates, u)
-		}
-	}
-	return subOrdinates, nil
-}
-
-func (r *LocalRepositoryUser) ReadAll(ctx context.Context) ([]*user.User, errwrap.Error) {
-	middleware.SpanStart(ctx, "LocalRepositoryUser:ReadAll")
-	defer middleware.SpanStop(ctx, "LocalRepositoryUser:ReadAll")
-
-	if r == nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository user uninitialized")
-	}
-	r.mu.Lock()
-	defer r.mu.Unlock()
-
-	users := make([]*user.User, len(r.db))
-	i := 0
-	for _, u := range r.db {
-		users[i] = u
-		i += 1
-	}
 	return users, nil
 }
 

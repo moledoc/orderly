@@ -89,53 +89,22 @@ func (api *UserAPIReq) GetUserByID(t *testing.T, ctx context.Context, req *reque
 	return nil, &errw
 }
 
-func (api *UserAPIReq) GetUserBy(t *testing.T, ctx context.Context, req *request.GetUserByRequest) (*response.GetUserByResponse, errwrap.Error) {
+func (api *UserAPIReq) GetUsers(t *testing.T, ctx context.Context, req *request.GetUsersRequest) (*response.GetUsersResponse, errwrap.Error) {
 	t.Helper()
 
-	baseURL, _ := url.Parse(fmt.Sprintf("%s/v1/mgmt/user", api.BaseURL))
+	baseURL, _ := url.Parse(fmt.Sprintf("%s/v1/mgmt/users", api.BaseURL))
 	params := url.Values{}
-	if len(req.GetID()) > 0 {
-		params.Add("id", string(req.GetID()))
-	}
-	if len(req.GetEmail()) > 0 {
-		params.Add("email", string(req.GetEmail()))
+	if len(req.GetEmails()) > 0 {
+		for _, em := range req.GetEmails() {
+			params.Add("emails", string(em))
+		}
 	}
 	if len(req.GetSupervisor()) > 0 {
 		params.Add("supervisor", string(req.GetSupervisor()))
 	}
 	baseURL.RawQuery = params.Encode()
 
-	reqHttp, err := http.NewRequest(http.MethodGet, baseURL.String(), nil)
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "new request failed: %s", err)
-	}
-
-	respHttp, err := api.HttpClient.Do(reqHttp)
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
-	}
-	defer respHttp.Body.Close()
-
-	if respHttp.StatusCode == http.StatusOK {
-		var resp response.GetUserByResponse
-		if err := json.NewDecoder(respHttp.Body).Decode(&resp); err != nil {
-			return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
-		}
-		return &resp, nil
-	}
-	var errw errwrap.Err
-	if err := json.NewDecoder(respHttp.Body).Decode(&errw); err != nil {
-		rawResponse, _ := httputil.DumpResponse(respHttp, false)
-		return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s\nRaw response: %v", err, string(rawResponse))
-	}
-
-	return nil, &errw
-}
-
-func (api *UserAPIReq) GetUsers(t *testing.T, ctx context.Context, req *request.GetUsersRequest) (*response.GetUsersResponse, errwrap.Error) {
-	t.Helper()
-
-	respHttp, err := api.HttpClient.Get(fmt.Sprintf("%s/v1/mgmt/users", api.BaseURL))
+	respHttp, err := api.HttpClient.Get(baseURL.String())
 	if err != nil {
 		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
 	}
@@ -143,31 +112,6 @@ func (api *UserAPIReq) GetUsers(t *testing.T, ctx context.Context, req *request.
 
 	if respHttp.StatusCode == http.StatusOK {
 		var resp response.GetUsersResponse
-		if err := json.NewDecoder(respHttp.Body).Decode(&resp); err != nil {
-			return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
-		}
-		return &resp, nil
-	}
-	var errw errwrap.Err
-	if err := json.NewDecoder(respHttp.Body).Decode(&errw); err != nil {
-		rawResponse, _ := httputil.DumpResponse(respHttp, false)
-		return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s\nRaw response: %v", err, string(rawResponse))
-	}
-
-	return nil, &errw
-}
-
-func (api *UserAPIReq) GetUserSubOrdinates(t *testing.T, ctx context.Context, req *request.GetUserSubOrdinatesRequest) (*response.GetUserSubOrdinatesResponse, errwrap.Error) {
-	t.Helper()
-
-	respHttp, err := api.HttpClient.Get(fmt.Sprintf("%s/v1/mgmt/user/%v/subordinates", api.BaseURL, req.GetID()))
-	if err != nil {
-		return nil, errwrap.NewError(http.StatusInternalServerError, "sending request failed: %s", err)
-	}
-	defer respHttp.Body.Close()
-
-	if respHttp.StatusCode == http.StatusOK {
-		var resp response.GetUserSubOrdinatesResponse
 		if err := json.NewDecoder(respHttp.Body).Decode(&resp); err != nil {
 			return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
 		}

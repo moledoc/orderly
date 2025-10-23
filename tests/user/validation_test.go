@@ -101,18 +101,6 @@ func (s *UserSuite) TestValidation_GetUserByIDRequest() {
 	})
 }
 
-func (s *UserSuite) TestValidation_GetUserByRequest() {
-	tt := s.T()
-
-	tt.Run("empty.request", func(t *testing.T) {
-		resp, err := s.API.GetUserBy(t, context.Background(), &request.GetUserByRequest{})
-		require.Error(t, err)
-		require.Empty(t, resp)
-		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "empty request", err.GetStatusMessage())
-	})
-}
-
 func (s *UserSuite) TestValidation_GetUsersRequest() {
 	tt := s.T()
 
@@ -121,17 +109,26 @@ func (s *UserSuite) TestValidation_GetUsersRequest() {
 		require.NoError(t, err)
 		require.Empty(t, resp.GetUsers())
 	})
-}
-
-func (s *UserSuite) TestValidation_GetUserSubOrdinatesRequest() {
-	tt := s.T()
-
-	tt.Run("empty.request", func(t *testing.T) {
-		resp, err := s.API.GetUserSubOrdinates(t, context.Background(), &request.GetUserSubOrdinatesRequest{})
+	tt.Run("invalid.email", func(t *testing.T) {
+		resp, err := s.API.GetUsers(t, context.Background(), &request.GetUsersRequest{
+			Emails: []user.Email{
+				"valid@email.com",
+				"invalid.email",
+			},
+		})
 		require.Error(t, err)
 		require.Empty(t, resp)
 		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "empty request", err.GetStatusMessage())
+		require.Equal(t, "invalid email", err.GetStatusMessage())
+	})
+	tt.Run("invalid.supervisor", func(t *testing.T) {
+		resp, err := s.API.GetUsers(t, context.Background(), &request.GetUsersRequest{
+			Supervisor: "invalid.email",
+		})
+		require.Error(t, err)
+		require.Empty(t, resp)
+		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
+		require.Equal(t, "invalid email", err.GetStatusMessage())
 	})
 }
 
