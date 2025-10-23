@@ -127,34 +127,6 @@ func (api *OrderAPIHTTPTest) GetOrders(t *testing.T, ctx context.Context, req *r
 	return nil, &errw
 }
 
-func (api *OrderAPIHTTPTest) GetOrderSubOrders(t *testing.T, ctx context.Context, req *request.GetOrderSubOrdersRequest) (*response.GetOrderSubOrdersResponse, errwrap.Error) {
-	t.Helper()
-
-	path := fmt.Sprintf("/v1/mgmt/order/%v/suborders", req.GetID())
-	path = strings.ReplaceAll(path, "//", "/")
-	reqHttp := httptest.NewRequest(http.MethodGet, path, nil)
-
-	rr := httptest.NewRecorder()
-	api.Mux.ServeHTTP(rr, reqHttp)
-	respHttp := rr.Result()
-	defer respHttp.Body.Close()
-
-	if respHttp.StatusCode == http.StatusOK {
-		var resp response.GetOrderSubOrdersResponse
-		if err := json.NewDecoder(respHttp.Body).Decode(&resp); err != nil {
-			return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s", err)
-		}
-		return &resp, nil
-	}
-	var errw errwrap.Err
-	if err := json.NewDecoder(respHttp.Body).Decode(&errw); err != nil {
-		rawResponse, _ := httputil.DumpResponse(respHttp, false)
-		return nil, errwrap.NewError(http.StatusInternalServerError, "unmarshaling response failed: %s\nRaw response: %v", err, string(rawResponse))
-	}
-
-	return nil, &errw
-}
-
 func (api *OrderAPIHTTPTest) PatchOrder(t *testing.T, ctx context.Context, req *request.PatchOrderRequest) (*response.PatchOrderResponse, errwrap.Error) {
 	t.Helper()
 	reqBytes, err := json.Marshal(req)

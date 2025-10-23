@@ -19,10 +19,6 @@ type GetOrdersRequest struct {
 	Accountable   user.Email `json:"accountable,omitempty"`
 }
 
-type GetOrderSubOrdersRequest struct {
-	ID meta.ID `json:"id,omitempty"`
-}
-
 type PatchOrderRequest struct {
 	Order *order.Order `json:"order,omitempty"`
 }

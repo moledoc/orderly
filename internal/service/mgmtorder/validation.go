@@ -168,15 +168,6 @@ func ValidateGetOrdersRequest(req *request.GetOrdersRequest) errwrap.Error {
 	return nil
 }
 
-func ValidateGetOrderSubOrdersRequest(req *request.GetOrderSubOrdersRequest) errwrap.Error {
-
-	err := validation.ValidateID(req.GetID())
-	if err != nil {
-		return errwrap.NewError(http.StatusBadRequest, "invalid order_id: %s", err.GetStatusMessage())
-	}
-	return nil
-}
-
 func ValidatePatchOrderRequest(req *request.PatchOrderRequest) errwrap.Error {
 	if req == nil || req.Order == nil {
 		return errwrap.NewError(http.StatusBadRequest, "empty request")

@@ -254,24 +254,6 @@ func (s *OrderSuite) TestValidation_GetOrdersRequest() {
 	})
 }
 
-func (s *OrderSuite) TestValidation_GetOrderSubOrdersRequest() {
-	tt := s.T()
-	tt.Run("nil.request", func(t *testing.T) {
-		resp, err := s.API.GetOrderSubOrders(t, context.Background(), nil)
-		require.Error(t, err)
-		require.Empty(t, resp)
-		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
-	})
-	tt.Run("empty.request", func(t *testing.T) {
-		resp, err := s.API.GetOrderSubOrders(t, context.Background(), &request.GetOrderSubOrdersRequest{})
-		require.Error(t, err)
-		require.Empty(t, resp)
-		require.Equal(t, http.StatusBadRequest, err.GetStatusCode(), err)
-		require.Equal(t, "invalid order_id: invalid id length", err.GetStatusMessage())
-	})
-}
-
 func (s *OrderSuite) TestValidation_PatchOrderRequest() {
 	tt := s.T()
 	tt.Run("nil.request", func(t *testing.T) {

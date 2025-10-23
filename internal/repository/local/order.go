@@ -196,7 +196,7 @@ func (r *LocalRepositoryOrder) ReadBy(ctx context.Context, req *request.GetOrder
 	parentOrderID := req.GetParentOrderID()
 	accountable := req.GetAccountable()
 	for _, storedOrder := range r.Orders {
-		if (len(parentOrderID) == 0 || parentOrderID == storedOrder.TaskID) &&
+		if (len(parentOrderID) == 0 || parentOrderID == storedOrder.ParentOrderID) &&
 			(len(accountable) == 0 || accountable == r.Tasks[storedOrder.TaskID].GetAccountable()) {
 			orders = append(orders, r.composeOrder(storedOrder))
 		}

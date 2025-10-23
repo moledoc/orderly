@@ -42,11 +42,6 @@ func (api *OrderAPISvc) GetOrders(t *testing.T, ctx context.Context, req *reques
 	return api.Svc.GetOrders(ctx, req)
 }
 
-func (api *OrderAPISvc) GetOrderSubOrders(t *testing.T, ctx context.Context, req *request.GetOrderSubOrdersRequest) (*response.GetOrderSubOrdersResponse, errwrap.Error) {
-	t.Helper()
-	return api.Svc.GetOrderSubOrders(ctx, req)
-}
-
 func (api *OrderAPISvc) PatchOrder(t *testing.T, ctx context.Context, req *request.PatchOrderRequest) (*response.PatchOrderResponse, errwrap.Error) {
 	t.Helper()
 	return api.Svc.PatchOrder(ctx, req)

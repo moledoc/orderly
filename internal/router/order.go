@@ -66,21 +66,6 @@ func getOrders(w http.ResponseWriter, r *http.Request) {
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 
-func getOrderSubOrders(w http.ResponseWriter, r *http.Request) {
-	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
-	defer func() { go middleware.SpanFlushTrace(ctx) }()
-
-	middleware.SpanStart(ctx, "getOrderSubOrders")
-	defer middleware.SpanStop(ctx, "getOrderSubOrders")
-
-	req := &request.GetOrderSubOrdersRequest{
-		ID: meta.ID(r.PathValue(orderID)),
-	}
-	middleware.SpanLog(ctx, "GetOrderSubOrdersRequest", req)
-	resp, err := mgmtordersvc.GetOrderSubOrders(ctx, req)
-	writeResponse(ctx, w, resp, err, http.StatusOK)
-}
-
 func patchOrder(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()

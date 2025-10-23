@@ -40,15 +40,6 @@ func (r *GetOrdersRequest) GetAccountable() user.Email {
 
 ////////////////
 
-func (r *GetOrderSubOrdersRequest) GetID() meta.ID {
-	if r == nil {
-		return ""
-	}
-	return r.ID
-}
-
-////////////////
-
 func (r *PatchOrderRequest) GetOrder() *order.Order {
 	if r == nil {
 		return nil

@@ -86,24 +86,6 @@ func (s *serviceMgmtOrder) GetOrders(ctx context.Context, req *request.GetOrders
 	}, nil
 }
 
-func (s *serviceMgmtOrder) GetOrderSubOrders(ctx context.Context, req *request.GetOrderSubOrdersRequest) (*response.GetOrderSubOrdersResponse, errwrap.Error) {
-	ctx = middleware.AddTraceToCtx(ctx)
-	middleware.SpanStart(ctx, "GetOrderSubOrders")
-	defer middleware.SpanStop(ctx, "GetOrderSubOrders")
-
-	if err := ValidateGetOrderSubOrdersRequest(req); err != nil {
-		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
-	}
-
-	resp, err := s.Repository.ReadSubOrders(ctx, req.GetID())
-	if err != nil {
-		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
-	}
-	return &response.GetOrderSubOrdersResponse{
-		SubOrders: resp,
-	}, nil
-}
-
 func (s *serviceMgmtOrder) PatchOrder(ctx context.Context, req *request.PatchOrderRequest) (*response.PatchOrderResponse, errwrap.Error) {
 	ctx = middleware.AddTraceToCtx(ctx)
 	middleware.SpanStart(ctx, "PatchOrder")
