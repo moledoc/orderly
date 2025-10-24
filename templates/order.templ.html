@@ -6,7 +6,7 @@
     <script src="https://unpkg.com/htmx.org@1.9.5"></script>
     <script src="https://unpkg.com/htmx.org/dist/ext/json-enc.js"></script>
     <meta charset="UTF-8">
-    <title>order - {{.Order.Task.ID}}</title>
+    <title>order - {{.Order.ID}}</title>
     <link rel="stylesheet" href="/static/css/main.css">
     <link rel="stylesheet" href="/static/css/table.css">
     <link rel="stylesheet" href="/static/css/searchbar.css">
@@ -15,22 +15,22 @@
 <body>
     {{ template "header" .}}
     <div class="container">
-        <h1>{{.Order.Task.ID}}: {{firstLine .Order.Task.Objective}}</h1>
+        <h1>{{.Order.ID}}: {{firstLine .Order.Objective}}</h1>
 
         <div>
             <a href="/order/{{.Order.ParentOrderID}}">Parent Order:</a>
             <input list="orders" class="text-input" id="parent-order-id" name="order-task"
-                value="{{.Order.ParentOrderID}}: {{firstLine .ParentOrder.Task.Objective}}" />
+                value="{{.Order.ParentOrderID}}: {{firstLine .ParentOrder.Objective}}" />
             <datalist id="orders">
                 {{range .Orders}}
-                <option value="{{.Task.ID}}: {{.Task.Objective}}">{{.Task.ID}}: {{.Task.Objective}}</option>
+                <option value="{{.ID}}: {{.Objective}}">{{.ID}}: {{.Objective}}</option>
                 {{end}}
             </datalist>
         </div>
 
         <div>
             <label for="task-objective">Objective:</label>
-            <textarea class="text-input" id="task-objective" name="order-task" required>{{.Order.Task.Objective}}</textarea>
+            <textarea class="text-input" id="task-objective" name="order-task" required>{{.Order.Objective}}</textarea>
         </div>
 
         <div>
@@ -46,20 +46,20 @@
 
         <div>
             <strong>Deadline:</strong>
-            <input type="date" id="task-deadline" name="order-task" value="{{formatToDate .Order.Task.Deadline}}" required>
+            <input type="date" id="task-deadline" name="order-task" value="{{formatToDate .Order.Deadline}}" required>
         </div>
 
         <div>
             <strong>State:</strong>
             <select id="task-state" name="order-task" style="border: none;" required>
                 {{range States}}
-                <option value="{{.}}" {{if eq . $.Order.Task.State}}selected{{end}}>{{.}}</option>
+                <option value="{{.}}" {{if eq . $.Order.State}}selected{{end}}>{{.}}</option>
                 {{end}}
             </select>
         </div>
 
         <details open>
-            <summary>Delegated Tasks</summary>
+            <summary>Delegated Orders</summary>
             <input class="searchbar" type="text" id="searchInput" placeholder="Search...">
 
             <div class="scroll-container">
@@ -73,7 +73,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{range .Order.DelegatedTasks}}
+                        {{range .Order.DelegatedOrders}}
                         <tr>
                             <td><a href="/order/{{.ID}}">{{.ID}}</a></td>
                             <td>{{.Objective}}</td>

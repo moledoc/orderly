@@ -40,7 +40,7 @@ func (r *PatchOrderResponse) GetOrder() *order.Order {
 
 ////////////////
 
-func (r *PutDelegatedTasksResponse) GetOrder() *order.Order {
+func (r *PutDelegatedOrdersResponse) GetOrder() *order.Order {
 	if r == nil {
 		return nil
 	}
@@ -49,7 +49,7 @@ func (r *PutDelegatedTasksResponse) GetOrder() *order.Order {
 
 ////////////////
 
-func (r *PatchDelegatedTasksResponse) GetOrder() *order.Order {
+func (r *PatchDelegatedOrdersResponse) GetOrder() *order.Order {
 	if r == nil {
 		return nil
 	}
@@ -58,7 +58,7 @@ func (r *PatchDelegatedTasksResponse) GetOrder() *order.Order {
 
 ////////////////
 
-func (r *DeleteDelegatedTasksResponse) GetOrder() *order.Order {
+func (r *DeleteDelegatedOrdersResponse) GetOrder() *order.Order {
 	if r == nil {
 		return nil
 	}

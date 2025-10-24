@@ -18,17 +18,17 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TaskObj(extra ...string) *order.Task {
+func OrderObj(extra ...string) *order.Order {
 	ee := strings.Join(append([]string{""}, extra...), ".")
-	return &order.Task{
+	return &order.Order{
 		State:       utils.Ptr(order.NotStarted),
 		Accountable: user.Email(fmt.Sprintf("example%v@example.com", ee)),
 		Objective:   "objective description",
 		Deadline:    time.Now().UTC(),
 	}
 }
-func TaskObjWithID(extra ...string) *order.Task {
-	tt := TaskObj(extra...)
+func OrderObjWithID(extra ...string) *order.Order {
+	tt := OrderObj(extra...)
 	tt.SetID(meta.NewID())
 	return tt
 }
@@ -53,11 +53,11 @@ func SitrepObjWithID(extra ...string) *order.SitRep {
 
 func OrderObj(extra ...string) *order.Order {
 	return &order.Order{
-		Task: TaskObj(extra...),
-		DelegatedTasks: []*order.Task{
-			TaskObj(),
-			TaskObj(),
-			TaskObj(),
+		Order: OrderObj(extra...),
+		DelegatedOrders: []*order.Order{
+			OrderObj(),
+			OrderObj(),
+			OrderObj(),
 		},
 		ParentOrderID: meta.NewID(),
 		SitReps: []*order.SitRep{
@@ -75,11 +75,11 @@ func OrderObj(extra ...string) *order.Order {
 
 func OrderObjWithIDs(extra ...string) *order.Order {
 	return &order.Order{
-		Task: TaskObjWithID(extra...),
-		DelegatedTasks: []*order.Task{
-			TaskObjWithID(),
-			TaskObjWithID(),
-			TaskObjWithID(),
+		Order: OrderObjWithID(extra...),
+		DelegatedOrders: []*order.Order{
+			OrderObjWithID(),
+			OrderObjWithID(),
+			OrderObjWithID(),
 		},
 		ParentOrderID: meta.NewID(),
 		SitReps: []*order.SitRep{
@@ -96,8 +96,8 @@ func OrderObjWithIDs(extra ...string) *order.Order {
 }
 
 func ZeroOrderIDs(o *order.Order) {
-	o.GetTask().SetID("")
-	for _, delegated := range o.GetDelegatedTasks() {
+	o.GetOrder().SetID("")
+	for _, delegated := range o.GetDelegatedOrders() {
 		delegated.SetID("")
 	}
 	for _, sitrep := range o.GetSitReps() {

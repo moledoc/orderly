@@ -93,7 +93,7 @@ var (
 		"./templates/new_order.templ.html",
 		"./templates/new_task.templ.html",
 	))
-	templNewTask = template.Must(template.New("new_task").Funcs(templFuncMap).ParseFiles(
+	templNewDelegatedOrder = template.Must(template.New("new_task").Funcs(templFuncMap).ParseFiles(
 		"./templates/new_task.templ.html",
 	))
 	templHome = template.Must(template.New("home").Funcs(templFuncMap).ParseFiles(
@@ -122,7 +122,7 @@ func serveOrders(w http.ResponseWriter, r *http.Request) {
 	var emails []user.Email
 	emailsMap := make(map[user.Email]struct{})
 	for _, o := range resp.GetOrders() {
-		emailsMap[o.GetTask().GetAccountable()] = struct{}{}
+		emailsMap[o.GetAccountable()] = struct{}{}
 	}
 	for email, _ := range emailsMap {
 		emails = append(emails, email)
@@ -148,7 +148,7 @@ func serveOrders(w http.ResponseWriter, r *http.Request) {
 	eos := make([]*extendedOrder, len(resp.GetOrders()))
 	for i, o := range resp.GetOrders() {
 		accountable := &user.User{}
-		a := accountablesMap[o.GetTask().GetAccountable()]
+		a := accountablesMap[o.GetAccountable()]
 		if a != nil {
 			accountable = a
 		}
@@ -194,14 +194,14 @@ func serveOrder(w http.ResponseWriter, r *http.Request) {
 	go func() {
 		defer wg.Done()
 		respOrderAccountable, errr := mgmtuser.GetServiceMgmtUser().GetUsers(context.Background(), &request.GetUsersRequest{
-			Emails: []user.Email{respGetOrderByID.GetOrder().GetTask().GetAccountable()},
+			Emails: []user.Email{respGetOrderByID.GetOrder().GetAccountable()},
 		})
 		if errr != nil {
 			cherr <- errr
 
 		} else {
 			if len(respOrderAccountable.GetUsers()) > 1 {
-				log.Printf("[WARNING]: multiple users with same email: %s", respGetOrderByID.GetOrder().GetTask().GetAccountable())
+				log.Printf("[WARNING]: multiple users with same email: %s", respGetOrderByID.GetOrder().GetAccountable())
 			}
 			if len(respOrderAccountable.GetUsers()) > 0 {
 				accountable = respOrderAccountable.GetUsers()[0]
@@ -426,7 +426,7 @@ func serveNewUser(w http.ResponseWriter, _ *http.Request) {
 	}
 }
 
-func serveNewTask(w http.ResponseWriter, r *http.Request) {
+func serveNewDelegatedOrder(w http.ResponseWriter, r *http.Request) {
 	var wg sync.WaitGroup
 	var emails []user.Email
 	var orders []*order.Order
@@ -479,7 +479,7 @@ func serveNewTask(w http.ResponseWriter, r *http.Request) {
 		Emails:    emails,
 		Delegated: true,
 	}
-	err := templNewTask.Execute(w, eo)
+	err := templNewDelegatedOrder.Execute(w, eo)
 	if err != nil {
 		log.Printf("[ERROR]: executing new_task html tmpl failed: %s\n", err)
 	}
@@ -561,7 +561,7 @@ func main() {
 	http.HandleFunc("GET /orders", serveOrders)
 	http.HandleFunc("GET /order/{id}", serveOrder)
 	http.HandleFunc("GET /order/new", serveNewOrder)
-	http.HandleFunc("GET /order/new/task", serveNewTask)
+	http.HandleFunc("GET /order/new/task", serveNewDelegatedOrder)
 
 	http.HandleFunc("GET /users", serveUsers)
 	http.HandleFunc("GET /user/{id}", serveUser)

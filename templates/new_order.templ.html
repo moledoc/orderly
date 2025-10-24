@@ -24,7 +24,7 @@
             <input list="orders" class="text-input" name="post-parent-order-id" />
             <datalist id="orders">
                 {{range .Orders}}
-                <option value="{{.Task.ID}}">{{.Task.Objective}}</option>
+                <option value="{{.ID}}">{{.Objective}}</option>
                 {{end}}
             </datalist>
         </div>
@@ -33,7 +33,7 @@
 
         <details open>
             <summary style="display: flex; justify-content: space-between; align-items: center;">
-                <span>Delegated Tasks</span>
+                <span>Delegated Orders</span>
 
                 <button type="button" aria-label="Add task" hx-get="/order/new/task" hx-target="#task-forms"
                     hx-swap="afterbegin" style="font-size: 1.2rem;">
@@ -51,19 +51,15 @@
 
         <script>
             function serializePostOrderPayload() {
+                let oTaskEntry = document.querySelector(".task-entry");
                 return {
                     order: {
                         parent_order_id: document.querySelector("[name='post-parent-order-id']")?.value,
-                        task: (() => {
-                            const entry = document.querySelector(".task-entry");
-                            return {
-                                objective: entry?.querySelector("[name='post-task-objective']")?.value,
-                                accountable: entry?.querySelector("[name='post-task-accountable']")?.value,
-                                state: entry?.querySelector("[name='post-task-state']")?.value,
-                                deadline: entry?.querySelector("[name='post-task-deadline']")?.value+"T00:00:00Z",
-                            };
-                        })(),
-                        delegated_tasks: Array.from(document.querySelectorAll(".task-entry"))
+                        objective: oTaskEntry?.querySelector("[name='post-task-objective']")?.value,
+                        accountable: oTaskEntry?.querySelector("[name='post-task-accountable']")?.value,
+                        state: oTaskEntry?.querySelector("[name='post-task-state']")?.value,
+                        deadline: oTaskEntry?.querySelector("[name='post-task-deadline']")?.value+"T00:00:00Z",
+                        delegated_orders: Array.from(document.querySelectorAll(".task-entry"))
                             .slice(1)
                             .map(entry => ({
                                 objective: entry.querySelector("[name='post-task-objective']")?.value,

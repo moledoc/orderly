@@ -10,36 +10,6 @@ import (
 	"github.com/moledoc/orderly/internal/service/common/validation"
 )
 
-func ValidateTask(task *order.Task, ignore validation.IgnoreField) errwrap.Error {
-	if task == nil {
-		return nil
-	}
-
-	err := validation.ValidateID(task.GetID())
-	if !validation.IsFieldIgnored(validation.IgnoreID, ignore) && err != nil {
-		return errwrap.NewError(http.StatusBadRequest, "invalid task.id: %s", err.GetStatusMessage())
-	}
-
-	if !validation.IsIgnoreEmpty(task.GetState(), ignore) && task.GetState() < order.NotStarted || order.Completed < task.GetState() {
-		return errwrap.NewError(http.StatusBadRequest, "invalid task.state")
-	}
-
-	err = validation.ValidateEmail(task.GetAccountable())
-	if !validation.IsIgnoreEmpty(task.GetAccountable(), ignore) && err != nil {
-		return err
-	}
-
-	if !validation.IsIgnoreEmpty(task.GetObjective(), ignore) && len(task.GetObjective()) == 0 {
-		return errwrap.NewError(http.StatusBadRequest, "invalid task.objective")
-	}
-
-	if !validation.IsIgnoreEmpty(task.GetDeadline(), ignore) && task.GetDeadline().Equal(time.Time{}) {
-		return errwrap.NewError(http.StatusBadRequest, "invalid task.deadline")
-	}
-
-	return nil
-}
-
 func ValidateSitRep(sitrep *order.SitRep, ignore validation.IgnoreField) errwrap.Error {
 
 	if sitrep == nil {
@@ -75,33 +45,46 @@ func ValidateSitRep(sitrep *order.SitRep, ignore validation.IgnoreField) errwrap
 	return nil
 }
 
-func ValidateOrder(order *order.Order, ignore validation.IgnoreField) errwrap.Error {
-	if order == nil {
+func ValidateOrder(o *order.Order, ignore validation.IgnoreField) errwrap.Error {
+	if o == nil {
 		return nil
 	}
 
-	if !validation.IsIgnoreEmpty(order.GetTask(), ignore) && order.GetTask() == nil {
-		return errwrap.NewError(http.StatusBadRequest, "invalid order.task")
+	err := validation.ValidateID(o.GetID())
+	if !validation.IsFieldIgnored(validation.IgnoreID, ignore) && err != nil {
+		return errwrap.NewError(http.StatusBadRequest, "invalid order.id: %s", err.GetStatusMessage())
 	}
 
-	err := ValidateTask(order.GetTask(), ignore)
-	if err != nil {
-		return errwrap.NewError(http.StatusBadRequest, "invalid order.task: %s", err.GetStatusMessage())
+	if !validation.IsIgnoreEmpty(o.GetState(), ignore) && o.GetState() < order.NotStarted || order.Completed < o.GetState() {
+		return errwrap.NewError(http.StatusBadRequest, "invalid order.state")
 	}
 
-	err = validation.ValidateID(order.GetParentOrderID())
-	if !validation.IsIgnoreEmpty(order.GetParentOrderID(), ignore) && err != nil {
+	err = validation.ValidateEmail(o.GetAccountable())
+	if !validation.IsIgnoreEmpty(o.GetAccountable(), ignore) && err != nil {
+		return errwrap.NewError(http.StatusBadRequest, "invalid order.accountable: %s", err.GetStatusMessage())
+	}
+
+	if !validation.IsIgnoreEmpty(o.GetObjective(), ignore) && len(o.GetObjective()) == 0 {
+		return errwrap.NewError(http.StatusBadRequest, "invalid order.objective")
+	}
+
+	if !validation.IsIgnoreEmpty(o.GetDeadline(), ignore) && o.GetDeadline().Equal(time.Time{}) {
+		return errwrap.NewError(http.StatusBadRequest, "invalid order.deadline")
+	}
+
+	err = validation.ValidateID(o.GetParentOrderID())
+	if !validation.IsFieldIgnored(validation.IgnoreID, ignore) && err != nil {
 		return errwrap.NewError(http.StatusBadRequest, "invalid order.parent_order_id: %s", err.GetStatusMessage())
 	}
 
-	for i, delegatedTask := range order.GetDelegatedTasks() {
-		err := ValidateTask(delegatedTask, ignore)
+	for i, delegatedOrder := range o.GetDelegatedOrders() {
+		err := ValidateOrder(delegatedOrder, ignore)
 		if err != nil {
-			return errwrap.NewError(http.StatusBadRequest, "invalid order.delegated_tasks.%v: %s", i, err.GetStatusMessage())
+			return errwrap.NewError(http.StatusBadRequest, "invalid order.delegated_orders.%v: %s", i, err.GetStatusMessage())
 		}
 	}
 
-	for i, sitrep := range order.GetSitReps() {
+	for i, sitrep := range o.GetSitReps() {
 		err := ValidateSitRep(sitrep, ignore)
 		if err != nil {
 			return errwrap.NewError(http.StatusBadRequest, "invalid order.sitreps.%v: %s", i, err.GetStatusMessage())
@@ -117,17 +100,13 @@ func ValidatePostOrderRequest(req *request.PostOrderRequest) errwrap.Error {
 		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
 
-	if req.GetOrder().Task == nil {
-		return errwrap.NewError(http.StatusBadRequest, "empty task")
-	}
-
 	if len(req.GetOrder().GetID()) > 0 {
-		return errwrap.NewError(http.StatusBadRequest, "order.task.id disallowed")
+		return errwrap.NewError(http.StatusBadRequest, "order.id disallowed")
 	}
 
-	for i, delegatedTask := range req.GetOrder().GetDelegatedTasks() {
-		if len(delegatedTask.GetID()) > 0 {
-			return errwrap.NewError(http.StatusBadRequest, "order.delegated_tasks.%v.id disallowed", i)
+	for i, delegatedOrder := range req.GetOrder().GetDelegatedOrders() {
+		if len(delegatedOrder.GetID()) > 0 {
+			return errwrap.NewError(http.StatusBadRequest, "order.delegated_orders.%v.id disallowed", i)
 		}
 	}
 
@@ -192,23 +171,23 @@ func ValidateDeleteOrderRequest(req *request.DeleteOrderRequest) errwrap.Error {
 
 ////////
 
-func ValidatePutDelegatedTaskRequest(req *request.PutDelegatedTasksRequest) errwrap.Error {
+func ValidatePutDelegatedOrderRequest(req *request.PutDelegatedOrdersRequest) errwrap.Error {
 
 	err := validation.ValidateID(req.GetOrderID())
 	if err != nil {
 		return errwrap.NewError(http.StatusBadRequest, "invalid order_id: %s", err.GetStatusMessage())
 	}
 
-	if len(req.GetTasks()) == 0 {
+	if len(req.GetOrders()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "empty tasks")
 	}
 
-	for i, tsk := range req.GetTasks() {
+	for i, tsk := range req.GetOrders() {
 		if len(tsk.GetID()) > 0 {
 			return errwrap.NewError(http.StatusBadRequest, "tasks.%v.id disallowed", i)
 		}
 
-		err := ValidateTask(tsk, validation.IgnoreID)
+		err := ValidateOrder(tsk, validation.IgnoreID)
 		if err != nil {
 			return err
 		}
@@ -216,24 +195,24 @@ func ValidatePutDelegatedTaskRequest(req *request.PutDelegatedTasksRequest) errw
 	return nil
 }
 
-func ValidatePatchDelegatedTaskRequest(req *request.PatchDelegatedTasksRequest) errwrap.Error {
+func ValidatePatchDelegatedOrderRequest(req *request.PatchDelegatedOrdersRequest) errwrap.Error {
 
 	err := validation.ValidateID(req.GetOrderID())
 	if err != nil {
 		return errwrap.NewError(http.StatusBadRequest, "invalid order_id: %s", err.GetStatusMessage())
 	}
 
-	if len(req.GetTasks()) == 0 {
+	if len(req.GetOrders()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "empty tasks")
 	}
 
-	for i, tsk := range req.GetTasks() {
+	for i, tsk := range req.GetOrders() {
 		err := validation.ValidateID(tsk.GetID())
 		if err != nil {
 			return errwrap.NewError(http.StatusBadRequest, "invalid tasks.%v.id: %s", i, err.GetStatusMessage())
 		}
 
-		err = ValidateTask(tsk, validation.IgnoreEmpty)
+		err = ValidateOrder(tsk, validation.IgnoreEmpty)
 		if err != nil {
 			return err
 		}
@@ -241,18 +220,18 @@ func ValidatePatchDelegatedTaskRequest(req *request.PatchDelegatedTasksRequest) 
 	return nil
 }
 
-func ValidateDeleteDelegatedTaskRequest(req *request.DeleteDelegatedTasksRequest) errwrap.Error {
+func ValidateDeleteDelegatedOrderRequest(req *request.DeleteDelegatedOrdersRequest) errwrap.Error {
 
 	err := validation.ValidateID(req.GetOrderID())
 	if err != nil {
 		return errwrap.NewError(http.StatusBadRequest, "invalid order_id: %s", err.GetStatusMessage())
 	}
 
-	if len(req.GetDelegatedTaskIDs()) == 0 {
+	if len(req.GetDelegatedOrderIDs()) == 0 {
 		return errwrap.NewError(http.StatusBadRequest, "empty delegated_task_ids")
 	}
 
-	for i, id := range req.GetDelegatedTaskIDs() {
+	for i, id := range req.GetDelegatedOrderIDs() {
 		err = validation.ValidateID(id)
 		if err != nil {
 			return errwrap.NewError(http.StatusBadRequest, "invalid delegated_task_ids.%v: %s", i, err.GetStatusMessage())

@@ -22,6 +22,8 @@ func (s State) String() string {
 		return "Having Issues"
 	case Blocked:
 		return "Blocked"
+	case Cancelled:
+		return "Cancelled"
 	case Completed:
 		return "Completed"
 	default:
@@ -50,6 +52,8 @@ func (s *State) UnmarshalJSON(data []byte) error {
 		*s = HavingIssues
 	case "Blocked":
 		*s = Blocked
+	case "Cancelled":
+		*s = Cancelled
 	case "Completed":
 		*s = Completed
 	default:
@@ -68,6 +72,7 @@ const (
 	InProgress
 	HavingIssues
 	Blocked
+	Cancelled
 	Completed
 )
 
@@ -83,14 +88,6 @@ var (
 	}()
 )
 
-type Task struct {
-	ID          meta.ID    `json:"id,omitempty"`
-	State       *State     `json:"state,omitempty"`
-	Accountable user.Email `json:"accountable,omitempty"`
-	Objective   string     `json:"objective,omitempty"`
-	Deadline    time.Time  `json:"deadline,omitempty"`
-}
-
 type SitRep struct {
 	ID meta.ID `json:"id,omitempty"`
 
@@ -104,14 +101,6 @@ type SitRep struct {
 }
 
 type Order struct {
-	Task           *Task      `json:"task,omitempty"`
-	DelegatedTasks []*Task    `json:"delegated_tasks,omitempty"`
-	ParentOrderID  meta.ID    `json:"parent_order_id,omitempty"`
-	SitReps        []*SitRep  `json:"sitreps,omitempty"`
-	Meta           *meta.Meta `json:"meta,omitempty"`
-}
-
-type Order2 struct {
 	ID            meta.ID    `json:"id,omitempty"`
 	Accountable   user.Email `json:"accountable,omitempty"`
 	ParentOrderID meta.ID    `json:"parent_order_id,omitempty"`
@@ -119,9 +108,10 @@ type Order2 struct {
 	Deadline      time.Time  `json:"deadline,omitempty"`
 	State         *State     `json:"state,omitempty"`
 
-	DelegatedOrders []*Order2  `json:"delegated_orders,omitempty"`
-	SitReps         []*SitRep  `json:"sitreps,omitempty"`
-	Meta            *meta.Meta `json:"meta,omitempty"`
+	DelegatedOrders []*Order  `json:"delegated_orders,omitempty"`
+	SitReps         []*SitRep `json:"sitreps,omitempty"`
+
+	Meta *meta.Meta `json:"meta,omitempty"`
 }
 
 func Empty() *Order {
@@ -133,26 +123,24 @@ func (o *Order) Clone() *Order {
 		return nil
 	}
 	var clone Order = Order{
-		Task: &Task{
-			ID:          o.GetTask().GetID(),
-			State:       utils.Ptr(o.GetTask().GetState()),
-			Accountable: o.GetTask().GetAccountable(),
-			Objective:   o.GetTask().GetObjective(),
-			Deadline:    o.GetTask().GetDeadline(),
-		},
-		ParentOrderID:  o.GetParentOrderID(),
-		DelegatedTasks: make([]*Task, len(o.GetDelegatedTasks())),
-		SitReps:        make([]*SitRep, len(o.GetSitReps())),
-		Meta:           o.GetMeta().Clone(),
+		ID:              o.GetID(),
+		State:           utils.Ptr(o.GetState()),
+		Accountable:     o.GetAccountable(),
+		ParentOrderID:   o.GetParentOrderID(),
+		Objective:       o.GetObjective(),
+		Deadline:        o.GetDeadline(),
+		DelegatedOrders: make([]*Order, len(o.GetDelegatedOrders())),
+		SitReps:         make([]*SitRep, len(o.GetSitReps())),
+		Meta:            o.GetMeta().Clone(),
 	}
 
-	for i, delegatedTask := range o.GetDelegatedTasks() {
-		clone.DelegatedTasks[i] = &Task{
-			ID:          delegatedTask.GetID(),
-			State:       utils.Ptr(delegatedTask.GetState()),
-			Accountable: delegatedTask.GetAccountable(),
-			Objective:   delegatedTask.GetObjective(),
-			Deadline:    delegatedTask.GetDeadline(),
+	for i, delegatedOrder := range o.GetDelegatedOrders() {
+		clone.DelegatedOrders[i] = &Order{
+			ID:          delegatedOrder.GetID(),
+			State:       utils.Ptr(delegatedOrder.GetState()),
+			Accountable: delegatedOrder.GetAccountable(),
+			Objective:   delegatedOrder.GetObjective(),
+			Deadline:    delegatedOrder.GetDeadline(),
 		}
 	}
 

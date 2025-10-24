@@ -17,7 +17,7 @@ type RepositoryOrderAPI interface {
 	// TODO: split Write to specific funcs
 	Write(ctx context.Context, order *order.Order) (*order.Order, errwrap.Error)
 	DeleteOrder(ctx context.Context, id meta.ID) errwrap.Error
-	DeleteTasks(ctx context.Context, ids []meta.ID) (bool, errwrap.Error)
+	DeleteOrders(ctx context.Context, ids []meta.ID) (bool, errwrap.Error)
 	DeleteSitReps(ctx context.Context, ids []meta.ID) (bool, errwrap.Error)
 }
 

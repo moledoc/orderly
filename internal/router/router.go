@@ -15,11 +15,11 @@ import (
 )
 
 var (
-	orderID         = "order_id"
-	delegatedTaskID = "delegated_task_id"
-	sitrepID        = "sitrep_id"
-	userID          = "user_id"
-	userEmail       = "user_email"
+	orderID          = "order_id"
+	delegatedOrderID = "delegated_task_id"
+	sitrepID         = "sitrep_id"
+	userID           = "user_id"
+	userEmail        = "user_email"
 )
 
 var (
@@ -98,9 +98,9 @@ func RouteOrder(svc mgmtorder.ServiceMgmtOrderAPI) *http.ServeMux {
 		http.HandleFunc("PATCH /v1/mgmt/order", patchOrder)
 		http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/order/{%v}", orderID), deleteOrder)
 
-		http.HandleFunc(fmt.Sprintf("PUT /v1/mgmt/order/{%v}/delegated_task", orderID), putDelegatedTasks)
-		http.HandleFunc(fmt.Sprintf("PATCH /v1/mgmt/order/{%v}/delegated_task", orderID), patchDelegatedTasks)
-		http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/order/{%v}/delegated_task", orderID), deleteDelegatedTasks)
+		http.HandleFunc(fmt.Sprintf("PUT /v1/mgmt/order/{%v}/delegated_task", orderID), putDelegatedOrders)
+		http.HandleFunc(fmt.Sprintf("PATCH /v1/mgmt/order/{%v}/delegated_task", orderID), patchDelegatedOrders)
+		http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/order/{%v}/delegated_task", orderID), deleteDelegatedOrders)
 
 		http.HandleFunc(fmt.Sprintf("PUT /v1/mgmt/order/{%v}/sitrep", orderID), putSitReps)
 		http.HandleFunc(fmt.Sprintf("PATCH /v1/mgmt/order/{%v}/sitrep", orderID), patchSitReps)
@@ -110,9 +110,9 @@ func RouteOrder(svc mgmtorder.ServiceMgmtOrderAPI) *http.ServeMux {
 		http.HandleFunc("GET /v1/mgmt/order/", getOrderByID)
 		http.HandleFunc("DELETE /v1/mgmt/order/", deleteOrder)
 
-		http.HandleFunc("PUT /v1/mgmt/order/delegated_task", putDelegatedTasks)
-		http.HandleFunc("PATCH /v1/mgmt/order/delegated_task", patchDelegatedTasks)
-		http.HandleFunc("DELETE /v1/mgmt/order/delegated_task", deleteDelegatedTasks)
+		http.HandleFunc("PUT /v1/mgmt/order/delegated_task", putDelegatedOrders)
+		http.HandleFunc("PATCH /v1/mgmt/order/delegated_task", patchDelegatedOrders)
+		http.HandleFunc("DELETE /v1/mgmt/order/delegated_task", deleteDelegatedOrders)
 
 		http.HandleFunc("PUT /v1/mgmt/order/sitrep", putSitReps)
 		http.HandleFunc("PATCH /v1/mgmt/order/sitrep", patchSitReps)

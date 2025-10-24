@@ -9,6 +9,7 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
+	"github.com/moledoc/orderly/internal/service/mgmtuser"
 	"github.com/moledoc/orderly/tests/cleanup"
 	"github.com/moledoc/orderly/tests/compare"
 	"github.com/moledoc/orderly/tests/setup"
@@ -55,4 +56,14 @@ func (s *UserSuite) TestPostUser_Failed() {
 		require.Equal(t, http.StatusConflict, err.GetStatusCode())
 		require.Equal(t, fmt.Sprintf("user with email '%v' already exists", userObj.GetEmail()), err.GetStatusMessage())
 	})
+}
+
+func (s *UserSuite) TestXxx() {
+	rootUser := mgmtuser.GetServiceMgmtUser().GetRootUser(context.Background())
+	for i := 0; i < 10; i++ {
+		obj := setup.UserObj(fmt.Sprintf("%v", i))
+		obj.SetSupervisor(rootUser.GetEmail())
+		setup.MustCreateUserWithCleanup(s.T(), context.Background(), s.API, obj)
+	}
+	fmt.Printf("\n")
 }

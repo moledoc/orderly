@@ -13,7 +13,7 @@ import (
 func Order(t *testing.T, api api.Order, o *order.Order) {
 	t.Helper()
 	t.Cleanup(func() {
-		id := meta.ID(o.GetTask().GetID())
+		id := meta.ID(o.GetOrder().GetID())
 		if len(id) == 0 {
 			return
 		}

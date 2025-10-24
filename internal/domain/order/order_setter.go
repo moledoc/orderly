@@ -7,43 +7,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/user"
 )
 
-func (tt *Task) SetID(id meta.ID) {
-	if tt == nil {
-		return
-	}
-	tt.ID = id
-}
-
-func (tt *Task) SetState(state State) {
-	if tt == nil {
-		return
-	}
-	tt.State = &state
-}
-
-func (tt *Task) SetAccountable(accountable user.Email) {
-	if tt == nil {
-		return
-	}
-	tt.Accountable = accountable
-}
-
-func (tt *Task) SetObjective(objective string) {
-	if tt == nil {
-		return
-	}
-	tt.Objective = objective
-}
-
-func (tt *Task) SetDeadline(deadline time.Time) {
-	if tt == nil {
-		return
-	}
-	tt.Deadline = deadline
-}
-
-////////////
-
 func (sr *SitRep) SetID(id meta.ID) {
 	if sr == nil {
 		return
@@ -99,28 +62,49 @@ func (o *Order) SetID(id meta.ID) {
 	if o == nil {
 		return
 	}
-	o.GetTask().SetID(id)
+	o.ID = id
 }
 
-func (o *Order) SetTask(task *Task) {
+func (o *Order) SetAccountable(email user.Email) {
 	if o == nil {
 		return
 	}
-	o.Task = task
+	o.Accountable = email
 }
 
-func (o *Order) SetDelegatedTasks(delegatedTask []*Task) {
+func (o *Order) SetParentOrderID(id meta.ID) {
 	if o == nil {
 		return
 	}
-	o.DelegatedTasks = delegatedTask
+	o.ParentOrderID = id
 }
 
-func (o *Order) SetParentOrderID(parentorderid meta.ID) {
+func (o *Order) SetObjective(objective string) {
 	if o == nil {
 		return
 	}
-	o.ParentOrderID = parentorderid
+	o.Objective = objective
+}
+
+func (o *Order) SetState(state State) {
+	if o == nil || o.State == nil {
+		return
+	}
+	*(o.State) = state
+}
+
+func (o *Order) SetDeadline(time time.Time) {
+	if o == nil {
+		return
+	}
+	o.Deadline = time
+}
+
+func (o *Order) SetDelegatedOrders(orders []*Order) {
+	if o == nil {
+		return
+	}
+	o.DelegatedOrders = orders
 }
 
 func (o *Order) SetSitReps(sitreps []*SitRep) {

@@ -24,9 +24,9 @@ type ServiceMgmtOrderAPI interface {
 	PatchOrder(ctx context.Context, req *request.PatchOrderRequest) (*response.PatchOrderResponse, errwrap.Error)
 	DeleteOrder(ctx context.Context, req *request.DeleteOrderRequest) (*response.DeleteOrderResponse, errwrap.Error)
 	////
-	PutDelegatedTasks(ctx context.Context, req *request.PutDelegatedTasksRequest) (*response.PutDelegatedTasksResponse, errwrap.Error)
-	PatchDelegatedTasks(ctx context.Context, req *request.PatchDelegatedTasksRequest) (*response.PatchDelegatedTasksResponse, errwrap.Error)
-	DeleteDelegatedTasks(ctx context.Context, req *request.DeleteDelegatedTasksRequest) (*response.DeleteDelegatedTasksResponse, errwrap.Error)
+	PutDelegatedOrders(ctx context.Context, req *request.PutDelegatedOrdersRequest) (*response.PutDelegatedOrdersResponse, errwrap.Error)
+	PatchDelegatedOrders(ctx context.Context, req *request.PatchDelegatedOrdersRequest) (*response.PatchDelegatedOrdersResponse, errwrap.Error)
+	DeleteDelegatedOrders(ctx context.Context, req *request.DeleteDelegatedOrdersRequest) (*response.DeleteDelegatedOrdersResponse, errwrap.Error)
 	////
 	PutSitReps(ctx context.Context, req *request.PutSitRepsRequest) (*response.PutSitRepsResponse, errwrap.Error)
 	PatchSitReps(ctx context.Context, req *request.PatchSitRepsRequest) (*response.PatchSitRepsResponse, errwrap.Error)
@@ -47,14 +47,12 @@ func postRootOrder(ctx context.Context, repo repository.RepositoryOrderAPI) (*or
 	now := time.Now().UTC()
 	id := meta.NewID()
 	order := &order.Order{
-		Task: &order.Task{
-			ID:          id,
-			State:       utils.Ptr(order.InProgress),
-			Accountable: user.Email("root@root.com"),
-			Objective:   "Root Order",
-			Deadline:    time.Now().UTC().Add(100 * 365 * 24 * time.Hour),
-		},
+		ID:            id,
 		ParentOrderID: id,
+		Accountable:   user.Email("root@root.com"),
+		Objective:     "Root Order",
+		State:         utils.Ptr(order.InProgress),
+		Deadline:      time.Now().UTC().Add(100 * 365 * 24 * time.Hour),
 		Meta: &meta.Meta{
 			Version: 1,
 			Created: now,

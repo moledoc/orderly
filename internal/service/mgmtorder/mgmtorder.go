@@ -32,8 +32,9 @@ func (s *serviceMgmtOrder) PostOrder(ctx context.Context, req *request.PostOrder
 	o := req.GetOrder().Clone()
 	o.SetID(meta.NewID())
 
-	for _, delegated := range o.GetDelegatedTasks() {
+	for _, delegated := range o.GetDelegatedOrders() {
 		delegated.SetID(meta.NewID())
+		delegated.SetParentOrderID(o.GetID())
 	}
 	for _, sitrep := range o.GetSitReps() {
 		sitrep.SetID(meta.NewID())
@@ -109,13 +110,13 @@ func (s *serviceMgmtOrder) PatchOrder(ctx context.Context, req *request.PatchOrd
 	hasChanges := false
 	patchedOrder := order.Clone()
 
-	hasChanges = patchTask(req.GetOrder().GetTask(), patchedOrder.GetTask()) || hasChanges
+	hasChanges = patchOrder(req.GetOrder(), patchedOrder) || hasChanges
 
 	// TODO: optimize
-	for _, reqDelegatedTask := range req.GetOrder().GetDelegatedTasks() {
-		for _, patchedDelegatedTask := range patchedOrder.GetDelegatedTasks() {
-			if reqDelegatedTask.GetID() == patchedDelegatedTask.GetID() {
-				hasChanges = patchTask(reqDelegatedTask, patchedDelegatedTask) || hasChanges
+	for _, reqDelegatedOrder := range req.GetOrder().GetDelegatedOrders() {
+		for _, patchedDelegatedOrder := range patchedOrder.GetDelegatedOrders() {
+			if reqDelegatedOrder.GetID() == patchedDelegatedOrder.GetID() {
+				hasChanges = patchOrder(reqDelegatedOrder, patchedDelegatedOrder) || hasChanges
 				break
 			}
 		}
@@ -181,12 +182,12 @@ func (s *serviceMgmtOrder) DeleteOrder(ctx context.Context, req *request.DeleteO
 	return &response.DeleteOrderResponse{}, nil
 }
 
-func (s *serviceMgmtOrder) PutDelegatedTasks(ctx context.Context, req *request.PutDelegatedTasksRequest) (*response.PutDelegatedTasksResponse, errwrap.Error) {
+func (s *serviceMgmtOrder) PutDelegatedOrders(ctx context.Context, req *request.PutDelegatedOrdersRequest) (*response.PutDelegatedOrdersResponse, errwrap.Error) {
 	ctx = middleware.AddTraceToCtx(ctx)
-	middleware.SpanStart(ctx, "PutDelegatedTasks")
-	defer middleware.SpanStop(ctx, "PutDelegatedTasks")
+	middleware.SpanStart(ctx, "PutDelegatedOrders")
+	defer middleware.SpanStop(ctx, "PutDelegatedOrders")
 
-	if err := ValidatePutDelegatedTaskRequest(req); err != nil {
+	if err := ValidatePutDelegatedOrderRequest(req); err != nil {
 		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
 	}
 
@@ -197,53 +198,53 @@ func (s *serviceMgmtOrder) PutDelegatedTasks(ctx context.Context, req *request.P
 
 	patchedOrder := order.Clone()
 
-	tasks := req.GetTasks()
+	tasks := req.GetOrders()
 	now := time.Now().UTC()
 	for _, task := range tasks {
 		task.SetID(meta.ID(utils.RandAlphanum()))
 		patchedOrder.GetMeta().SetCreated(now)
 		patchedOrder.GetMeta().SetUpdated(now)
 		patchedOrder.GetMeta().VersionIncr()
-		patchedOrder.SetDelegatedTasks(append(patchedOrder.GetDelegatedTasks(), task))
+		patchedOrder.SetDelegatedOrders(append(patchedOrder.GetDelegatedOrders(), task))
 	}
 
 	resp, err := s.Repository.Write(ctx, patchedOrder)
 	if err != nil {
 		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
 	}
-	return &response.PutDelegatedTasksResponse{
+	return &response.PutDelegatedOrdersResponse{
 		Order: resp,
 	}, nil
 }
 
-func patchTask(reqTask *order.Task, patchedTask *order.Task) bool {
+func patchOrder(reqOrder *order.Order, patchedOrder *order.Order) bool {
 	hasChanges := false
 
-	if !utils.IsZeroValue(reqTask.GetState()) && reqTask.GetState() != patchedTask.GetState() {
-		patchedTask.SetState(reqTask.GetState())
+	if !utils.IsZeroValue(reqOrder.GetState()) && reqOrder.GetState() != patchedOrder.GetState() {
+		patchedOrder.SetState(reqOrder.GetState())
 		hasChanges = true
 	}
-	if !utils.IsZeroValue(reqTask.GetAccountable()) && reqTask.GetAccountable() != patchedTask.GetAccountable() {
-		patchedTask.SetAccountable(reqTask.GetAccountable())
+	if !utils.IsZeroValue(reqOrder.GetAccountable()) && reqOrder.GetAccountable() != patchedOrder.GetAccountable() {
+		patchedOrder.SetAccountable(reqOrder.GetAccountable())
 		hasChanges = true
 	}
-	if !utils.IsZeroValue(reqTask.GetObjective()) && reqTask.GetObjective() != patchedTask.GetObjective() {
-		patchedTask.SetObjective(reqTask.GetObjective())
+	if !utils.IsZeroValue(reqOrder.GetObjective()) && reqOrder.GetObjective() != patchedOrder.GetObjective() {
+		patchedOrder.SetObjective(reqOrder.GetObjective())
 		hasChanges = true
 	}
-	if !utils.IsZeroValue(reqTask.GetDeadline()) && reqTask.GetDeadline() != patchedTask.GetDeadline() {
-		patchedTask.SetDeadline(reqTask.GetDeadline())
+	if !utils.IsZeroValue(reqOrder.GetDeadline()) && reqOrder.GetDeadline() != patchedOrder.GetDeadline() {
+		patchedOrder.SetDeadline(reqOrder.GetDeadline())
 		hasChanges = true
 	}
 	return hasChanges
 }
 
-func (s *serviceMgmtOrder) PatchDelegatedTasks(ctx context.Context, req *request.PatchDelegatedTasksRequest) (*response.PatchDelegatedTasksResponse, errwrap.Error) {
+func (s *serviceMgmtOrder) PatchDelegatedOrders(ctx context.Context, req *request.PatchDelegatedOrdersRequest) (*response.PatchDelegatedOrdersResponse, errwrap.Error) {
 	ctx = middleware.AddTraceToCtx(ctx)
-	middleware.SpanStart(ctx, "PatchDelegatedTasks")
-	defer middleware.SpanStop(ctx, "PatchDelegatedTasks")
+	middleware.SpanStart(ctx, "PatchDelegatedOrders")
+	defer middleware.SpanStop(ctx, "PatchDelegatedOrders")
 
-	if err := ValidatePatchDelegatedTaskRequest(req); err != nil {
+	if err := ValidatePatchDelegatedOrderRequest(req); err != nil {
 		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
 	}
 
@@ -254,23 +255,23 @@ func (s *serviceMgmtOrder) PatchDelegatedTasks(ctx context.Context, req *request
 
 	patchedOrder := ordr.Clone()
 
-	patchedOrderDelegatedTasks := make(map[meta.ID]*order.Task)
-	for _, delegated := range patchedOrder.GetDelegatedTasks() {
-		patchedOrderDelegatedTasks[delegated.GetID()] = delegated
+	patchedOrderDelegatedOrders := make(map[meta.ID]*order.Order)
+	for _, delegated := range patchedOrder.GetDelegatedOrders() {
+		patchedOrderDelegatedOrders[delegated.GetID()] = delegated
 	}
 
 	now := time.Now().UTC()
 	hasChanges := false
-	for _, delegated := range req.GetTasks() {
-		patchedDelegatedTask, ok := patchedOrderDelegatedTasks[delegated.GetID()]
+	for _, delegated := range req.GetOrders() {
+		patchedDelegatedOrder, ok := patchedOrderDelegatedOrders[delegated.GetID()]
 		if !ok {
 			continue
 		}
-		hasChanges = patchTask(delegated, patchedDelegatedTask) || hasChanges
+		hasChanges = patchOrder(delegated, patchedDelegatedOrder) || hasChanges
 
 	}
 	if !hasChanges { // NOTE: no changes, return existing order
-		return &response.PatchDelegatedTasksResponse{
+		return &response.PatchDelegatedOrdersResponse{
 			Order: ordr,
 		}, nil
 	}
@@ -282,17 +283,17 @@ func (s *serviceMgmtOrder) PatchDelegatedTasks(ctx context.Context, req *request
 	if err != nil {
 		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
 	}
-	return &response.PatchDelegatedTasksResponse{
+	return &response.PatchDelegatedOrdersResponse{
 		Order: resp,
 	}, nil
 }
 
-func (s *serviceMgmtOrder) DeleteDelegatedTasks(ctx context.Context, req *request.DeleteDelegatedTasksRequest) (*response.DeleteDelegatedTasksResponse, errwrap.Error) {
+func (s *serviceMgmtOrder) DeleteDelegatedOrders(ctx context.Context, req *request.DeleteDelegatedOrdersRequest) (*response.DeleteDelegatedOrdersResponse, errwrap.Error) {
 	ctx = middleware.AddTraceToCtx(ctx)
-	middleware.SpanStart(ctx, "DeleteDelegatedTasks")
-	defer middleware.SpanStop(ctx, "DeleteDelegatedTasks")
+	middleware.SpanStart(ctx, "DeleteDelegatedOrders")
+	defer middleware.SpanStop(ctx, "DeleteDelegatedOrders")
 
-	if err := ValidateDeleteDelegatedTaskRequest(req); err != nil {
+	if err := ValidateDeleteDelegatedOrderRequest(req); err != nil {
 		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
 	}
 
@@ -303,11 +304,11 @@ func (s *serviceMgmtOrder) DeleteDelegatedTasks(ctx context.Context, req *reques
 
 	patchedOrder := o.Clone()
 
-	patchedOrder.DelegatedTasks = slices.DeleteFunc(patchedOrder.DelegatedTasks, func(a *order.Task) bool {
-		return slices.Contains(req.GetDelegatedTaskIDs(), a.GetID())
+	patchedOrder.DelegatedOrders = slices.DeleteFunc(patchedOrder.DelegatedOrders, func(a *order.Order) bool {
+		return slices.Contains(req.GetDelegatedOrderIDs(), a.GetID())
 	})
 
-	didDelete, err := s.Repository.DeleteTasks(ctx, req.GetDelegatedTaskIDs()) // NOTE: delete tasks in db.tasks
+	didDelete, err := s.Repository.DeleteOrders(ctx, req.GetDelegatedOrderIDs()) // NOTE: delete tasks in db.tasks
 	if err != nil {
 		// TODO: log warning
 	}
@@ -321,7 +322,7 @@ func (s *serviceMgmtOrder) DeleteDelegatedTasks(ctx context.Context, req *reques
 	if err != nil {
 		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
 	}
-	return &response.DeleteDelegatedTasksResponse{
+	return &response.DeleteDelegatedOrdersResponse{
 		Order: patchedOrder,
 	}, nil
 }

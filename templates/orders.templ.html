@@ -31,10 +31,10 @@
             <tbody>
                 {{range .}}
                 <tr>
-                    <td><a href="/order/{{.Order.Task.ID}}">{{.Order.Task.ID}}</a></td>
-                    <td>{{firstLine .Order.Task.Objective}}</td>
+                    <td><a href="/order/{{.Order.ID}}">{{.Order.ID}}</a></td>
+                    <td>{{firstLine .Order.Objective}}</td>
                     <td><a href="/user/{{.AccountableUser.ID}}">{{.AccountableUser.Email}}</a></td>
-                    <td>{{formatToDate .Order.Task.Deadline}}</td>
+                    <td>{{formatToDate .Order.Deadline}}</td>
                 </tr>
                 {{end}}
             </tbody>

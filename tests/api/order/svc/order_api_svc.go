@@ -54,19 +54,19 @@ func (api *OrderAPISvc) DeleteOrder(t *testing.T, ctx context.Context, req *requ
 
 ////
 
-func (api *OrderAPISvc) PutDelegatedTasks(t *testing.T, ctx context.Context, req *request.PutDelegatedTasksRequest) (*response.PutDelegatedTasksResponse, errwrap.Error) {
+func (api *OrderAPISvc) PutDelegatedOrders(t *testing.T, ctx context.Context, req *request.PutDelegatedOrdersRequest) (*response.PutDelegatedOrdersResponse, errwrap.Error) {
 	t.Helper()
-	return api.Svc.PutDelegatedTasks(ctx, req)
+	return api.Svc.PutDelegatedOrders(ctx, req)
 }
 
-func (api *OrderAPISvc) PatchDelegatedTasks(t *testing.T, ctx context.Context, req *request.PatchDelegatedTasksRequest) (*response.PatchDelegatedTasksResponse, errwrap.Error) {
+func (api *OrderAPISvc) PatchDelegatedOrders(t *testing.T, ctx context.Context, req *request.PatchDelegatedOrdersRequest) (*response.PatchDelegatedOrdersResponse, errwrap.Error) {
 	t.Helper()
-	return api.Svc.PatchDelegatedTasks(ctx, req)
+	return api.Svc.PatchDelegatedOrders(ctx, req)
 }
 
-func (api *OrderAPISvc) DeleteDelegatedTasks(t *testing.T, ctx context.Context, req *request.DeleteDelegatedTasksRequest) (*response.DeleteDelegatedTasksResponse, errwrap.Error) {
+func (api *OrderAPISvc) DeleteDelegatedOrders(t *testing.T, ctx context.Context, req *request.DeleteDelegatedOrdersRequest) (*response.DeleteDelegatedOrdersResponse, errwrap.Error) {
 	t.Helper()
-	return api.Svc.DeleteDelegatedTasks(ctx, req)
+	return api.Svc.DeleteDelegatedOrders(ctx, req)
 }
 
 ////

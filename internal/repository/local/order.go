@@ -13,19 +13,9 @@ import (
 	"github.com/moledoc/orderly/internal/repository"
 )
 
-type orderInfo struct {
-	TaskID           meta.ID
-	ParentOrderID    meta.ID
-	DelegatedTaskIDs []meta.ID
-	SitRepIDs        []meta.ID
-	Meta             *meta.Meta
-}
-
 type LocalRepositoryOrder struct {
-	mu      sync.Mutex
-	Orders  map[meta.ID]*orderInfo
-	Tasks   map[meta.ID]*order.Task
-	SitReps map[meta.ID]*order.SitRep
+	mu             sync.Mutex
+	OrderHierarchy *order.Order
 }
 
 var (
@@ -34,95 +24,87 @@ var (
 
 func NewLocalRepositoryOrder() *LocalRepositoryOrder {
 	return &LocalRepositoryOrder{
-		mu:      sync.Mutex{},
-		Orders:  make(map[meta.ID]*orderInfo),
-		Tasks:   make(map[meta.ID]*order.Task),
-		SitReps: make(map[meta.ID]*order.SitRep),
+		mu:             sync.Mutex{},
+		OrderHierarchy: nil,
 	}
 }
 
-func (r *LocalRepositoryOrder) composeOrder(storedOrder *orderInfo) *order.Order {
-	task := r.Tasks[storedOrder.TaskID]
+// func (r *LocalRepositoryOrder) composeOrder(storedOrder *orderInfo) *order.Order {
 
-	var delegatedTasks []*order.Task
-	for _, delegatedID := range storedOrder.DelegatedTaskIDs {
-		d, ok := r.Tasks[delegatedID]
-		if !ok {
-			// TODO: log warning
-			continue
-		}
-		delegatedTasks = append(delegatedTasks, d)
-	}
+// 	var delegatedOrders []*order.Order
+// 	for _, delegatedID := range storedOrder.DelegatedOrderIDs {
+// 		d, ok := r.Orders[delegatedID]
+// 		if !ok {
+// 			// TODO: log warning
+// 			continue
+// 		}
+// 		delegatedOrders = append(delegatedOrders, d)
+// 	}
 
-	var sitreps []*order.SitRep
-	for _, sitrepID := range storedOrder.SitRepIDs {
-		sr, ok := r.SitReps[sitrepID]
-		if !ok {
-			// TODO: log warning
-			continue
-		}
-		sitreps = append(sitreps, sr)
-	}
+// 	var sitreps []*order.SitRep
+// 	for _, sitrepID := range storedOrder.SitRepIDs {
+// 		sr, ok := r.SitReps[sitrepID]
+// 		if !ok {
+// 			// TODO: log warning
+// 			continue
+// 		}
+// 		sitreps = append(sitreps, sr)
+// 	}
 
-	if len(delegatedTasks) == 0 {
-		delegatedTasks = nil
-	}
-	if len(sitreps) == 0 {
-		sitreps = nil
-	}
-	resp := &order.Order{
-		Task:           task,
-		ParentOrderID:  storedOrder.ParentOrderID,
-		DelegatedTasks: delegatedTasks,
-		SitReps:        sitreps,
-		Meta:           storedOrder.Meta,
-	}
-	return resp
-}
+// 	if len(delegatedOrders) == 0 {
+// 		delegatedOrders = nil
+// 	}
+// 	if len(sitreps) == 0 {
+// 		sitreps = nil
+// 	}
+// 	resp := &order.Order{
+// 		ParentOrderID:   storedOrder.ParentOrderID,
+// 		DelegatedOrders: delegatedOrders,
+// 		SitReps:         sitreps,
+// 		Meta:            storedOrder.Meta,
+// 	}
+// 	return resp
+// }
 
-func (r *LocalRepositoryOrder) storeOrder(o *order.Order) *orderInfo {
+// func (r *LocalRepositoryOrder) storeOrder(o *order.Order) *orderInfo {
 
-	r.Tasks[o.GetTask().GetID()] = o.GetTask()
+// 	var delegatedOrderIDs []meta.ID
+// 	var sitrepIDs []meta.ID
+// 	for _, delegated := range o.GetDelegatedOrders() {
+// 		delegatedOrderIDs = append(delegatedOrderIDs, delegated.GetID())
+// 		r.Orders[delegated.GetID()] = &orderInfo{
+// 			ID:            delegated.GetID(),
+// 			ParentOrderID: o.GetID(),
+// 			Meta:          o.GetMeta(), // NOTE: set meta as order.meta, since they are created at the same time
+// 		}
+// 	}
+// 	for _, sitrep := range o.GetSitReps() {
+// 		sitrepIDs = append(sitrepIDs, sitrep.GetID())
+// 		r.SitReps[sitrep.GetID()] = sitrep
+// 	}
+// 	info := &orderInfo{
+// 		ID:                o.GetID(),
+// 		ParentOrderID:     o.GetParentOrderID(),
+// 		DelegatedOrderIDs: delegatedOrderIDs,
+// 		SitRepIDs:         sitrepIDs,
+// 		Meta:              o.GetMeta(),
+// 	}
+// 	r.Orders[o.GetID()] = info
+// 	parent := r.Orders[o.ParentOrderID]
+// 	parent.DelegatedOrderIDs = append(r.Orders[o.ParentOrderID].DelegatedOrderIDs, o.GetID())
+// 	return info
+// }
 
-	var delegatedTaskIDs []meta.ID
-	var sitrepIDs []meta.ID
-	for _, delegated := range o.GetDelegatedTasks() {
-		delegatedTaskIDs = append(delegatedTaskIDs, delegated.GetID())
-		r.Tasks[delegated.GetID()] = delegated
-		r.Orders[delegated.GetID()] = &orderInfo{
-			TaskID:        delegated.GetID(),
-			ParentOrderID: o.GetID(),
-			Meta:          o.GetMeta(), // NOTE: set meta as order.meta, since they are created at the same time
-		}
-	}
-	for _, sitrep := range o.GetSitReps() {
-		sitrepIDs = append(sitrepIDs, sitrep.GetID())
-		r.SitReps[sitrep.GetID()] = sitrep
-	}
-	info := &orderInfo{
-		TaskID:           o.GetID(),
-		ParentOrderID:    o.GetParentOrderID(),
-		DelegatedTaskIDs: delegatedTaskIDs,
-		SitRepIDs:        sitrepIDs,
-		Meta:             o.GetMeta(),
-	}
-	r.Orders[o.GetID()] = info
-	parent := r.Orders[o.ParentOrderID]
-	parent.DelegatedTaskIDs = append(r.Orders[o.ParentOrderID].DelegatedTaskIDs, o.GetID())
-	return info
-}
-
-func (r *LocalRepositoryOrder) deleteOrder(storedOrder *orderInfo) {
-	delete(r.Tasks, storedOrder.TaskID)
-	for _, id := range storedOrder.DelegatedTaskIDs {
-		delete(r.Tasks, id)
-	}
-	for _, id := range storedOrder.SitRepIDs {
-		delete(r.SitReps, id)
-	}
-	delete(r.Orders, storedOrder.TaskID)
-	return
-}
+// func (r *LocalRepositoryOrder) deleteOrder(storedOrder *orderInfo) {
+// 	for _, id := range storedOrder.DelegatedOrderIDs {
+// 		delete(r.Orders, id)
+// 	}
+// 	for _, id := range storedOrder.SitRepIDs {
+// 		delete(r.SitReps, id)
+// 	}
+// 	delete(r.Orders, storedOrder.ID)
+// 	return
+// }
 
 func (r *LocalRepositoryOrder) Close(ctx context.Context) errwrap.Error {
 	middleware.SpanStart(ctx, "LocalStorageOrder:Close")
@@ -149,14 +131,27 @@ func (r *LocalRepositoryOrder) ReadByID(ctx context.Context, id meta.ID) (*order
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	storedOrder, ok := r.Orders[id]
-	if !ok {
-		return nil, errwrap.NewError(http.StatusNotFound, "not found")
+	if r.OrderHierarchy.GetID() == id {
+		return r.OrderHierarchy, nil
 	}
 
-	resp := r.composeOrder(storedOrder)
+	var curDepth []*order.Order
+	var nextDepth []*order.Order
 
-	return resp, nil
+	curDepth = append(curDepth, r.OrderHierarchy.GetDelegatedOrders()...)
+
+	for len(curDepth) != 0 {
+		for _, do := range curDepth {
+			if do.GetID() == id {
+				return do, nil
+			}
+			nextDepth = append(nextDepth, do.GetDelegatedOrders()...)
+		}
+		curDepth = nextDepth
+		nextDepth = []*order.Order{}
+	}
+
+	return nil, errwrap.NewError(http.StatusNotFound, "not found")
 }
 
 func (r *LocalRepositoryOrder) ReadBy(ctx context.Context, req *request.GetOrdersRequest) ([]*order.Order, errwrap.Error) {
@@ -169,14 +164,25 @@ func (r *LocalRepositoryOrder) ReadBy(ctx context.Context, req *request.GetOrder
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	var orders []*order.Order
 	parentOrderID := req.GetParentOrderID()
 	accountable := req.GetAccountable()
-	for _, storedOrder := range r.Orders {
-		if (len(parentOrderID) == 0 || parentOrderID == storedOrder.ParentOrderID) &&
-			(len(accountable) == 0 || accountable == r.Tasks[storedOrder.TaskID].GetAccountable()) {
-			orders = append(orders, r.composeOrder(storedOrder))
+
+	var orders []*order.Order
+	var curDepth []*order.Order
+	var nextDepth []*order.Order
+
+	curDepth = append(curDepth, r.OrderHierarchy.GetDelegatedOrders()...)
+
+	for len(curDepth) != 0 {
+		for _, do := range curDepth {
+			if (len(parentOrderID) == 0 || parentOrderID == do.GetParentOrderID()) &&
+				(len(accountable) == 0 || accountable == do.GetAccountable()) {
+				orders = append(orders, do)
+			}
+			nextDepth = append(nextDepth, do.GetDelegatedOrders()...)
 		}
+		curDepth = nextDepth
+		nextDepth = []*order.Order{}
 	}
 
 	return orders, nil
@@ -192,8 +198,25 @@ func (r *LocalRepositoryOrder) Write(ctx context.Context, order *order.Order) (*
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	info := r.storeOrder(order)
-	order = r.composeOrder(info)
+	if r.OrderHierarchy == nil {
+		r.OrderHierarchy = order
+		return order, nil
+	}
+	parent, err := r.ReadByID(ctx, order.GetParentOrderID())
+	if err != nil {
+		return nil, err
+	}
+	found := false
+	for i, do := range parent.GetDelegatedOrders() {
+		if do.GetID() == order.GetID() {
+			found = true
+			parent.GetDelegatedOrders()[i] = order
+			break
+		}
+	}
+	if !found {
+		parent.SetDelegatedOrders(append(parent.GetDelegatedOrders(), order))
+	}
 
 	return order, nil
 }
@@ -207,19 +230,53 @@ func (r *LocalRepositoryOrder) DeleteOrder(ctx context.Context, id meta.ID) errw
 	}
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	type opp struct {
+		Parent *order.Order
+		Order  *order.Order
+	}
+	var curDepth []*opp
+	var nextDepth []*opp
 
-	storedOrder, ok := r.Orders[id]
-	if !ok {
+	for _, do := range r.OrderHierarchy.GetDelegatedOrders() {
+		curDepth = append(curDepth, &opp{Order: do, Parent: do})
+	}
+
+	var op *opp
+	for len(curDepth) != 0 && op == nil {
+		for _, do := range curDepth {
+			if do.Order.GetID() == id {
+				op = do
+				break
+			}
+			for _, doi := range do.Order.GetDelegatedOrders() {
+				nextDepth = append(nextDepth, &opp{Parent: do.Order, Order: doi})
+			}
+		}
+		curDepth = nextDepth
+		nextDepth = []*opp{}
+	}
+
+	if op == nil { // NOTE: not found
 		return nil
 	}
-	r.deleteOrder(storedOrder)
+
+	if len(op.Order.GetDelegatedOrders()) > 0 {
+		return errwrap.NewError(http.StatusPreconditionFailed, "order %q has delegated orders", id)
+	}
+
+	for i, o := range op.Parent.GetDelegatedOrders() {
+		if o.GetID() == op.Order.GetID() {
+			pdel := op.Parent.GetDelegatedOrders()
+			op.Parent.SetDelegatedOrders(append(pdel[:i], pdel[i+1:]...))
+		}
+	}
 
 	return nil
 }
 
-func (r *LocalRepositoryOrder) DeleteTasks(ctx context.Context, ids []meta.ID) (bool, errwrap.Error) {
-	middleware.SpanStart(ctx, "LocalStorageOrder:DeleteTask")
-	defer middleware.SpanStop(ctx, "LocalStorageOrder:DeleteTask")
+func (r *LocalRepositoryOrder) DeleteOrders(ctx context.Context, ids []meta.ID) (bool, errwrap.Error) {
+	middleware.SpanStart(ctx, "LocalStorageOrder:DeleteOrder")
+	defer middleware.SpanStop(ctx, "LocalStorageOrder:DeleteOrder")
 
 	if r == nil {
 		return false, errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
@@ -228,11 +285,11 @@ func (r *LocalRepositoryOrder) DeleteTasks(ctx context.Context, ids []meta.ID) (
 	defer r.mu.Unlock()
 
 	didDelete := false
-	for _, id := range ids {
-		_, ok := r.Tasks[id]
-		didDelete = ok || didDelete
-		delete(r.Tasks, id)
-	}
+	// for _, id := range ids {
+	// 	_, ok := r.Orders[id]
+	// 	didDelete = ok || didDelete
+	// 	delete(r.Orders, id)
+	// }
 
 	return didDelete, nil
 }
@@ -248,11 +305,11 @@ func (r *LocalRepositoryOrder) DeleteSitReps(ctx context.Context, ids []meta.ID)
 	defer r.mu.Unlock()
 
 	didDelete := false
-	for _, id := range ids {
-		_, ok := r.SitReps[id]
-		didDelete = ok || didDelete
-		delete(r.SitReps, id)
-	}
+	// for _, id := range ids {
+	// 	_, ok := r.SitReps[id]
+	// 	didDelete = ok || didDelete
+	// 	delete(r.SitReps, id)
+	// }
 
 	return didDelete, nil
 }

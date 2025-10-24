@@ -76,10 +76,10 @@
                     <tbody>
                         {{range .AccountableFor}}
                         <tr>
-                            <td><a href="/order/{{.Task.ID}}">{{.Task.ID}}</a></td>
-                            <td>{{.Task.Objective}}</td>
-                            <td>{{.Task.State}}</td>
-                            <td>{{formatToDate .Task.Deadline}}</td>
+                            <td><a href="/order/{{.ID}}">{{.ID}}</a></td>
+                            <td>{{.Objective}}</td>
+                            <td>{{.State}}</td>
+                            <td>{{formatToDate .Deadline}}</td>
                         </tr>
                         {{end}}
                     </tbody>

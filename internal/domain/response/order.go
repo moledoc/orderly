@@ -24,15 +24,15 @@ type DeleteOrderResponse struct{}
 
 ////////////////
 
-type PutDelegatedTasksResponse struct {
+type PutDelegatedOrdersResponse struct {
 	Order *order.Order `json:"order"`
 }
 
-type PatchDelegatedTasksResponse struct {
+type PatchDelegatedOrdersResponse struct {
 	Order *order.Order `json:"order"`
 }
 
-type DeleteDelegatedTasksResponse struct {
+type DeleteDelegatedOrdersResponse struct {
 	Order *order.Order `json:"order"`
 }
 

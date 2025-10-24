@@ -58,50 +58,50 @@ func (r *DeleteOrderRequest) GetID() meta.ID {
 
 ////////////////
 
-func (r *PutDelegatedTasksRequest) GetOrderID() meta.ID {
+func (r *PutDelegatedOrdersRequest) GetOrderID() meta.ID {
 	if r == nil {
 		return ""
 	}
 	return r.OrderID
 }
 
-func (r *PutDelegatedTasksRequest) GetTasks() []*order.Task {
+func (r *PutDelegatedOrdersRequest) GetOrders() []*order.Order {
 	if r == nil {
 		return nil
 	}
-	return r.Tasks
+	return r.Orders
 }
 
 ////////////////
 
-func (r *PatchDelegatedTasksRequest) GetOrderID() meta.ID {
+func (r *PatchDelegatedOrdersRequest) GetOrderID() meta.ID {
 	if r == nil {
 		return ""
 	}
 	return r.OrderID
 }
 
-func (r *PatchDelegatedTasksRequest) GetTasks() []*order.Task {
+func (r *PatchDelegatedOrdersRequest) GetOrders() []*order.Order {
 	if r == nil {
 		return nil
 	}
-	return r.Tasks
+	return r.Orders
 }
 
 ////////////////
 
-func (r *DeleteDelegatedTasksRequest) GetOrderID() meta.ID {
+func (r *DeleteDelegatedOrdersRequest) GetOrderID() meta.ID {
 	if r == nil {
 		return ""
 	}
 	return r.OrderID
 }
 
-func (r *DeleteDelegatedTasksRequest) GetDelegatedTaskIDs() []meta.ID {
+func (r *DeleteDelegatedOrdersRequest) GetDelegatedOrderIDs() []meta.ID {
 	if r == nil {
 		return []meta.ID{}
 	}
-	return r.DelegatedTaskIDs
+	return r.DelegatedOrderIDs
 }
 
 ////////////////
