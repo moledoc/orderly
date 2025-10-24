@@ -14,10 +14,6 @@ type GetUsersResponse struct {
 	Users []*user.User `json:"users"`
 }
 
-type GetUserSubOrdinatesResponse struct {
-	SubOrdinates []*user.User `json:"sub_ordinates"`
-}
-
 type PatchUserResponse struct {
 	User *user.User `json:"user"`
 }

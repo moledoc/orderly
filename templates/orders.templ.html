@@ -23,18 +23,18 @@
                 <tr>
                     <th>ID</th>
                     <th>Objective</th>
-                    <th>Deadline</th>
                     <th>Accountable</th>
+                    <th>Deadline</th>
                 </tr>
             </thead>
 
             <tbody>
                 {{range .}}
                 <tr>
-                    <td><a href="/order/{{.Task.ID}}">{{.Task.ID}}</a></td>
-                    <td>{{firstLine .Task.Objective}}</td>
-                    <td><input type="date" value="{{formatToDate .Task.Deadline}}" disabled></td>
-                    <td><a href="/user/{{.Task.Accountable.ID}}">{{.Task.Accountable.Email}}</a></td>
+                    <td><a href="/order/{{.Order.Task.ID}}">{{.Order.Task.ID}}</a></td>
+                    <td>{{firstLine .Order.Task.Objective}}</td>
+                    <td><a href="/user/{{.AccountableUser.ID}}">{{.AccountableUser.Email}}</a></td>
+                    <td>{{formatToDate .Order.Task.Deadline}}</td>
                 </tr>
                 {{end}}
             </tbody>
@@ -42,7 +42,7 @@
         </table>
     </div>
 
-    <script src="/static/scripts/search_table.js"></script>
+    <script src="/static/scripts/table_utils.js"></script>
     
     {{ template "footer" .}}
 

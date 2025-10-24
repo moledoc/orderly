@@ -119,7 +119,52 @@ func (s *OrderPerformanceSuite) TestPerformance_GetOrders() {
 	}
 }
 
-func (s *OrderPerformanceSuite) TestPerformance_GetOrderSubOrders() {
+func (s *OrderPerformanceSuite) TestPerformance_GetOrders_ByAccountable() {
+	for _, orderCount := range []int{10, 100, 1000} {
+		s.T().Run(fmt.Sprintf("%v", orderCount), func(t *testing.T) {
+
+			for i := 1; i <= orderCount; i++ {
+				setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, setup.OrderObj())
+				setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, setup.OrderObj("should-not-get-these-orders"))
+			}
+
+			setup := func() (ctxFunc func() context.Context, req any, err errwrap.Error) {
+				return context.Background, &request.GetOrdersRequest{
+					Accountable: setup.OrderObj().GetTask().GetAccountable(),
+				}, nil
+			}
+			tst := func(ctx context.Context, req any, errReq errwrap.Error) (response any, errResp errwrap.Error) {
+				if errReq != nil {
+					return nil, errReq
+				}
+				return s.API.GetOrders(t, ctx, req.(*request.GetOrdersRequest))
+			}
+			checkLen := func(ctx context.Context, resp any, err errwrap.Error) {
+				require.Len(t, resp.(*response.GetOrdersResponse).GetOrders(), orderCount)
+			}
+			plan := performance.Plan{
+				T:               t,
+				RPS:             10,
+				DurationSec:     10,
+				RampDurationSec: 10,
+				Setup:           setup,
+				Test:            tst,
+				Assert:          checkLen,
+				NFR: performance.NFRs{
+					P50: 50 * time.Millisecond,
+					P90: 90 * time.Millisecond,
+					P95: 95 * time.Millisecond,
+					P99: 99 * time.Millisecond,
+				},
+				Notes: []string{"test", "test", "test"},
+			}
+			report, _, _ := plan.Run()
+			fmt.Printf("%s: %+v\n", t.Name(), report)
+		})
+	}
+}
+
+func (s *OrderPerformanceSuite) TestPerformance_GetOrders_ByParentOrderID() {
 	for _, orderCount := range []int{10, 100, 1000} {
 		s.T().Run(fmt.Sprintf("%v", orderCount), func(t *testing.T) {
 			o := setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, setup.OrderObj())
@@ -129,18 +174,18 @@ func (s *OrderPerformanceSuite) TestPerformance_GetOrderSubOrders() {
 				setup.MustCreateOrderWithCleanup(t, context.Background(), s.API, orderObj)
 			}
 			setup := func() (ctxFunc func() context.Context, req any, err errwrap.Error) {
-				return context.Background, &request.GetOrderSubOrdersRequest{
-					ID: o.GetID(),
+				return context.Background, &request.GetOrdersRequest{
+					ParentOrderID: o.GetID(),
 				}, nil
 			}
 			tst := func(ctx context.Context, req any, errReq errwrap.Error) (response any, errResp errwrap.Error) {
 				if errReq != nil {
 					return nil, errReq
 				}
-				return s.API.GetOrderSubOrders(t, ctx, req.(*request.GetOrderSubOrdersRequest))
+				return s.API.GetOrders(t, ctx, req.(*request.GetOrdersRequest))
 			}
 			checkLen := func(ctx context.Context, resp any, err errwrap.Error) {
-				require.Len(t, resp.(*response.GetOrderSubOrdersResponse).GetSubOrders(), orderCount)
+				require.Len(t, resp.(*response.GetOrdersResponse).GetOrders(), orderCount)
 			}
 			plan := performance.Plan{
 				T:               t,

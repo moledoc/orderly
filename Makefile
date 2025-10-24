@@ -36,10 +36,10 @@ clean:
 tests-user-svc: 
 	go test -v -test.count=1 -test.run=TestUserSvcSuite ./tests/user/...
 
-tests-user-http: 
+tests-user-httptest: 
 	go test -v -test.count=1 -test.run=TestUserHTTPTestSuite ./tests/user/...
 
-tests-user-http-manual: 
+tests-user-req: 
 	go test -v -test.count=1 -test.run=TestUserReqSuite ./tests/user/...
 
 tests-user:
@@ -48,10 +48,10 @@ tests-user:
 tests-order-svc:
 	go test -v -test.count=1 -test.run=TestOrderSvcSuite ./tests/order/...
 
-tests-order-http:
+tests-order-httptest:
 	go test -v -test.count=1 -test.run=TestOrderHTTPTestSuite ./tests/order/...
 
-tests-order-http-manual:
+tests-order-req:
 	go test -v -test.count=1 -test.run=TestOrderReqSuite ./tests/order/...
 
 tests-order: 
@@ -66,10 +66,10 @@ tests-all:
 perf-test-user-svc: 
 	go test -v -test.count=1 -test.timeout=30m -test.run=TestUserSvcPerformanceSuite ./tests/user/...
 
-perf-test-user-http: 
+perf-test-user-httptest: 
 	go test -v -test.count=1 -test.timeout=30m -test.run=TestUserHTTPTestPerformanceSuite ./tests/user/...
 
-perf-test-user-http-manual: 
+perf-test-user-req: 
 	go test -v -test.count=1 -test.timeout=30m -test.run=TestUserReqPerformanceSuite ./tests/user/...
 
 perf-test-user:
@@ -78,10 +78,10 @@ perf-test-user:
 perf-test-order-svc:
 	go test -v -test.count=1 -test.timeout=30m -test.run=TestOrderSvcPerformanceSuite ./tests/order/...
 
-perf-test-order-http:
+perf-test-order-httptest:
 	go test -v -test.count=1 -test.timeout=30m -test.run=TestOrderHTTPTestPerformanceSuite ./tests/order/...
 
-perf-test-order-http-manual:
+perf-test-order-req:
 	go test -v -test.count=1 -test.timeout=30m -test.run=TestOrderReqPerformanceSuite ./tests/order/...
 
 perf-test-order: 

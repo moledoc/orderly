@@ -15,15 +15,15 @@ func (tt *Task) GetID() meta.ID {
 }
 
 func (tt *Task) GetState() State {
-	if tt == nil {
+	if tt == nil || tt.State == nil {
 		return NotStarted
 	}
-	return *tt.State
+	return *(tt.State)
 }
 
-func (tt *Task) GetAccountable() *user.User {
+func (tt *Task) GetAccountable() user.Email {
 	if tt == nil {
-		return nil
+		return ""
 	}
 	return tt.Accountable
 }
@@ -58,9 +58,9 @@ func (sr *SitRep) GetDateTime() time.Time {
 	return sr.DateTime
 }
 
-func (sr *SitRep) GetBy() *user.User {
+func (sr *SitRep) GetBy() user.Email {
 	if sr == nil {
-		return nil
+		return ""
 	}
 	return sr.By
 }

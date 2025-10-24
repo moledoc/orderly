@@ -59,3 +59,16 @@ thead th {
   z-index: 1;
   background-color: #f4f4f4;
 }
+
+th {
+  cursor: pointer;
+  user-select: none;
+}
+
+th.asc::after {
+  content: " ▲";
+}
+
+th:not(.asc)::after {
+  content: " ▼";
+}

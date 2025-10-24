@@ -1,6 +1,8 @@
 package response
 
-import "github.com/moledoc/orderly/internal/domain/order"
+import (
+	"github.com/moledoc/orderly/internal/domain/order"
+)
 
 type PostOrderResponse struct {
 	Order *order.Order `json:"order"`
@@ -12,10 +14,6 @@ type GetOrderByIDResponse struct {
 
 type GetOrdersResponse struct {
 	Orders []*order.Order `json:"orders"`
-}
-
-type GetOrderSubOrdersResponse struct {
-	SubOrders []*order.Order `json:"sub_orders"`
 }
 
 type PatchOrderResponse struct {

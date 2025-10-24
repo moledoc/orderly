@@ -15,6 +15,11 @@ import (
 	"github.com/moledoc/orderly/pkg/utils"
 )
 
+func (s *serviceMgmtOrder) GetRootOrder(context.Context) *order.Order {
+	// TODO: utilize ctx
+	return s.RootOrder
+}
+
 func (s *serviceMgmtOrder) PostOrder(ctx context.Context, req *request.PostOrderRequest) (*response.PostOrderResponse, errwrap.Error) {
 	ctx = middleware.AddTraceToCtx(ctx)
 	middleware.SpanStart(ctx, "PostOrder")
@@ -77,30 +82,12 @@ func (s *serviceMgmtOrder) GetOrders(ctx context.Context, req *request.GetOrders
 		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
 	}
 
-	resp, err := s.Repository.ReadAll(ctx)
+	resp, err := s.Repository.ReadBy(ctx, req)
 	if err != nil {
 		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
 	}
 	return &response.GetOrdersResponse{
 		Orders: resp,
-	}, nil
-}
-
-func (s *serviceMgmtOrder) GetOrderSubOrders(ctx context.Context, req *request.GetOrderSubOrdersRequest) (*response.GetOrderSubOrdersResponse, errwrap.Error) {
-	ctx = middleware.AddTraceToCtx(ctx)
-	middleware.SpanStart(ctx, "GetOrderSubOrders")
-	defer middleware.SpanStop(ctx, "GetOrderSubOrders")
-
-	if err := ValidateGetOrderSubOrdersRequest(req); err != nil {
-		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
-	}
-
-	resp, err := s.Repository.ReadSubOrders(ctx, req.GetID())
-	if err != nil {
-		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
-	}
-	return &response.GetOrderSubOrdersResponse{
-		SubOrders: resp,
 	}, nil
 }
 

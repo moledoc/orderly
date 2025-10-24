@@ -2,15 +2,22 @@ package mgmtuser
 
 import (
 	"context"
+	"net/http"
 	"time"
 
 	"github.com/moledoc/orderly/internal/domain/errwrap"
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
+	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/internal/middleware"
 	"github.com/moledoc/orderly/pkg/utils"
 )
+
+func (s *serviceMgmtUser) GetRootUser(context.Context) *user.User {
+	// TODO: utilize ctx
+	return s.RootUser
+}
 
 func (s *serviceMgmtUser) PostUser(ctx context.Context, req *request.PostUserRequest) (*response.PostUserResponse, errwrap.Error) {
 	ctx = middleware.AddTraceToCtx(ctx)
@@ -19,6 +26,13 @@ func (s *serviceMgmtUser) PostUser(ctx context.Context, req *request.PostUserReq
 
 	if err := ValidatePostUserRequest(req); err != nil {
 		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
+	}
+
+	respGetUsers, _ := s.Repository.ReadBy(ctx, &request.GetUsersRequest{
+		Emails: []user.Email{req.GetUser().GetEmail()},
+	})
+	if len(respGetUsers) > 0 {
+		return nil, errwrap.NewError(http.StatusConflict, "user with email '%s' already exists", req.GetUser().GetEmail())
 	}
 
 	u := req.GetUser().Clone()
@@ -68,30 +82,12 @@ func (s *serviceMgmtUser) GetUsers(ctx context.Context, req *request.GetUsersReq
 		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
 	}
 
-	resp, err := s.Repository.ReadAll(ctx)
+	resp, err := s.Repository.ReadBy(ctx, req)
 	if err != nil {
 		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
 	}
 	return &response.GetUsersResponse{
 		Users: resp,
-	}, nil
-}
-
-func (s *serviceMgmtUser) GetUserSubOrdinates(ctx context.Context, req *request.GetUserSubOrdinatesRequest) (*response.GetUserSubOrdinatesResponse, errwrap.Error) {
-	ctx = middleware.AddTraceToCtx(ctx)
-	middleware.SpanStart(ctx, "GetUserSubOrdinates")
-	defer middleware.SpanStop(ctx, "GetUserSubOrdinates")
-
-	if err := ValidateGetUserSubOrdinatesRequest(req); err != nil {
-		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
-	}
-
-	resp, err := s.Repository.ReadSubOrdinates(ctx, req.GetID())
-	if err != nil {
-		return nil, middleware.AddTraceToErrFromCtx(err, ctx)
-	}
-	return &response.GetUserSubOrdinatesResponse{
-		SubOrdinates: resp,
 	}, nil
 }
 

@@ -44,7 +44,7 @@ func (s *OrderSuite) TestPutDelegatedTasks() {
 				compare.IgnoreID,
 				compare.IgnoreMeta,
 				compare.SorterOrder(compare.SortOrderByID),
-				compare.SorterTask(compare.SortTaskByAccountableID),
+				compare.SorterTask(compare.SortTaskByAccountable),
 				compare.SorterSitRep(compare.SortSitRepByID),
 			}
 

@@ -19,69 +19,12 @@ import (
 	"github.com/moledoc/orderly/internal/router"
 	"github.com/moledoc/orderly/internal/service/mgmtorder"
 	"github.com/moledoc/orderly/internal/service/mgmtuser"
-	"github.com/moledoc/orderly/tests/setup"
 )
-
-func getStates() []*order.State {
-	states := []*order.State{}
-	for i := order.NotStarted; i <= order.Completed; i++ {
-		states = append(states, &i)
-	}
-	return states
-}
 
 // MAYBE: cache result
 func getUsers() []*user.User {
 	resp, _ := mgmtuser.GetServiceMgmtUser().GetUsers(context.Background(), &request.GetUsersRequest{}) // TODO: handle error
 	return resp.GetUsers()
-}
-
-func getUserEmails() []string {
-	us := getUsers()
-
-	emails := make([]string, len(us))
-	for i, u := range us {
-		emails[i] = string(u.GetEmail())
-	}
-	return emails
-}
-
-func getOrders() ([]*order.Order, errwrap.Error) {
-	resp, err := mgmtorder.GetServiceMgmtOrder().GetOrders(context.Background(), &request.GetOrdersRequest{})
-	if err != nil {
-		return nil, err
-	}
-	return resp.GetOrders(), nil
-}
-
-func getParentOrder(orderID meta.ID) *order.Order {
-	// TODO: get parent order by id
-	if orderID == "" {
-		return nil
-	}
-	o := setup.OrderObjWithIDs("parent")
-	o.Task.Objective += "\nnewlined parent order objective"
-	return o
-}
-
-func getSubOrdinates(userID meta.ID) []*user.User {
-	// TODO: get user sub-ordinates
-	userCount := 50
-	us := make([]*user.User, userCount)
-	for i := 0; i < userCount; i++ {
-		us[i] = setup.UserObjWithID(fmt.Sprintf("%v", i))
-	}
-	return us
-}
-
-func getAccountableForOrders(userID meta.ID) []*order.Order {
-	// TODO: get user accountable for orders
-	orderCount := 100
-	os := make([]*order.Order, orderCount)
-	for i := 0; i < orderCount; i++ {
-		os[i] = setup.OrderObjWithIDs(fmt.Sprintf("%v", i))
-	}
-	return os
 }
 
 func formatToDate(t time.Time) string {
@@ -115,9 +58,7 @@ var (
 	templFuncMap = template.FuncMap{
 		"formatToDate": formatToDate,
 		"firstLine":    firstLine,
-		"States":       getStates,
-		"UserEmails":   getUserEmails,  // REMOVEME: move to handleFunc
-		"ParentOrder":  getParentOrder, // REMOVEME: move to handleFunc
+		"States":       order.ListStates,
 	}
 
 	templOrders = template.Must(template.New("orders").Funcs(templFuncMap).ParseFiles(
@@ -169,14 +110,56 @@ var (
 )
 
 func serveOrders(w http.ResponseWriter, r *http.Request) {
-	os, errr := getOrders()
+	resp, errr := mgmtorder.GetServiceMgmtOrder().GetOrders(context.Background(), &request.GetOrdersRequest{})
 	if errr != nil {
 		somethingWentWrong(w, errr)
 		return
 	}
+	type extendedOrder struct {
+		Order           *order.Order
+		AccountableUser *user.User
+	}
+	var emails []user.Email
+	emailsMap := make(map[user.Email]struct{})
+	for _, o := range resp.GetOrders() {
+		emailsMap[o.GetTask().GetAccountable()] = struct{}{}
+	}
+	for email, _ := range emailsMap {
+		emails = append(emails, email)
+	}
+
+	respOrdersAccountables, errr := mgmtuser.GetServiceMgmtUser().GetUsers(context.Background(), &request.GetUsersRequest{
+		Emails: emails,
+	})
+	if errr != nil {
+		somethingWentWrong(w, errr)
+		return
+	}
+	accountablesMap := make(map[user.Email]*user.User)
+	for _, u := range respOrdersAccountables.GetUsers() {
+		_, ok := accountablesMap[u.GetEmail()]
+		if ok {
+			log.Printf("[WARNING]: multiple users with email %q, using first seen", u.GetEmail())
+			continue
+		}
+		accountablesMap[u.GetEmail()] = u
+	}
+
+	eos := make([]*extendedOrder, len(resp.GetOrders()))
+	for i, o := range resp.GetOrders() {
+		accountable := &user.User{}
+		a := accountablesMap[o.GetTask().GetAccountable()]
+		if a != nil {
+			accountable = a
+		}
+		eos[i] = &extendedOrder{
+			Order:           o,
+			AccountableUser: accountable,
+		}
+	}
 
 	w.Header().Set("Content-Type", "text/html")
-	err := templOrders.Execute(w, os)
+	err := templOrders.Execute(w, eos)
 	if err != nil {
 		log.Printf("[ERROR]: executing orders html tmpl failed: %s\n", err)
 	}
@@ -199,20 +182,84 @@ func serveOrder(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	type extendedOrder struct {
-		Order  *order.Order
-		Orders []*order.Order
-	}
+	var wg sync.WaitGroup
+	var accountable *user.User
+	var orders []*order.Order
+	var parentOrder *order.Order
+	var emails []user.Email
+	cherr := make(chan errwrap.Error, 5)
+	defer close(cherr)
 
-	os, errr := getOrders()
-	if errr != nil {
-		somethingWentWrong(w, errr)
-		return
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		respOrderAccountable, errr := mgmtuser.GetServiceMgmtUser().GetUsers(context.Background(), &request.GetUsersRequest{
+			Emails: []user.Email{respGetOrderByID.GetOrder().GetTask().GetAccountable()},
+		})
+		if errr != nil {
+			cherr <- errr
+
+		} else {
+			if len(respOrderAccountable.GetUsers()) > 1 {
+				log.Printf("[WARNING]: multiple users with same email: %s", respGetOrderByID.GetOrder().GetTask().GetAccountable())
+			}
+			if len(respOrderAccountable.GetUsers()) > 0 {
+				accountable = respOrderAccountable.GetUsers()[0]
+			}
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		respGetOrders, errr := mgmtorder.GetServiceMgmtOrder().GetOrders(context.Background(), &request.GetOrdersRequest{})
+		if errr != nil {
+			cherr <- errr
+		} else {
+			orders = respGetOrders.GetOrders()
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		respGetParentOrder, errr := mgmtorder.GetServiceMgmtOrder().GetOrderByID(context.Background(), &request.GetOrderByIDRequest{
+			ID: respGetOrderByID.GetOrder().GetParentOrderID(),
+		})
+		if errr != nil {
+			cherr <- errr
+		} else {
+			parentOrder = respGetParentOrder.GetOrder()
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		respGetEmails, errr := mgmtuser.GetServiceMgmtUser().GetUsers(context.Background(), &request.GetUsersRequest{
+			Supervisor: mgmtuser.GetServiceMgmtUser().GetRootUser(context.Background()).GetEmail(),
+		})
+		if errr != nil {
+			cherr <- errr
+		} else {
+			for _, u := range respGetEmails.GetUsers() {
+				emails = append(emails, u.GetEmail())
+			}
+		}
+	}()
+	wg.Wait()
+
+	type extendedOrder struct {
+		Order           *order.Order
+		AccountableUser *user.User
+		Orders          []*order.Order
+		ParentOrder     *order.Order
+		Emails          []user.Email
 	}
 
 	eo := &extendedOrder{
-		Order:  respGetOrderByID.GetOrder(),
-		Orders: os,
+		Order:           respGetOrderByID.GetOrder(),
+		Orders:          orders,
+		AccountableUser: accountable,
+		ParentOrder:     parentOrder,
+		Emails:          emails,
 	}
 
 	w.Header().Set("Content-Type", "text/html")
@@ -232,33 +279,75 @@ func serveUsers(w http.ResponseWriter, r *http.Request) {
 
 func serveUser(w http.ResponseWriter, r *http.Request) {
 
+	respGetUserByID, errr := mgmtuser.GetServiceMgmtUser().GetUserByID(context.Background(), &request.GetUserByIDRequest{
+		ID: meta.ID(r.PathValue("id")),
+	})
+	if errr != nil {
+		err := templSomethingWrong.Execute(w, nil)
+		if err != nil {
+			log.Printf("[ERROR]: executing SomethingWrong html tmpl failed: %s\n", err)
+		}
+		return
+	}
+
 	var wg sync.WaitGroup
-	var u *user.User
+	var supervisor *user.User
 	var subordinates []*user.User
-	cherr := make(chan errwrap.Error, 2)
+	var emails []user.Email
+	var orders []*order.Order
+	cherr := make(chan errwrap.Error, 5)
 	defer close(cherr)
 
-	wg.Add(2)
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		respGetUserByID, errr := mgmtuser.GetServiceMgmtUser().GetUserByID(context.Background(), &request.GetUserByIDRequest{
-			ID: meta.ID(r.PathValue("id")),
+		respGetSubOrdinates, errr := mgmtuser.GetServiceMgmtUser().GetUsers(context.Background(), &request.GetUsersRequest{
+			Supervisor: user.Email(respGetUserByID.GetUser().GetEmail()),
 		})
 		if errr != nil {
 			cherr <- errr
 		} else {
-			u = respGetUserByID.GetUser()
+			subordinates = respGetSubOrdinates.GetUsers()
 		}
 	}()
+	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		respGetSubOrdinates, errr := mgmtuser.GetServiceMgmtUser().GetUserSubOrdinates(context.Background(), &request.GetUserSubOrdinatesRequest{
-			ID: meta.ID(r.PathValue("id")),
+		respGetSupervisor, errr := mgmtuser.GetServiceMgmtUser().GetUsers(context.Background(), &request.GetUsersRequest{
+			Emails: []user.Email{respGetUserByID.GetUser().GetSupervisor()},
+		})
+		if errr != nil {
+			cherr <- errr
+
+		} else if len(respGetSupervisor.GetUsers()) != 1 {
+			cherr <- errwrap.NewError(http.StatusConflict, "incorrect nr of users with email '%s': expected 1, got %d", respGetUserByID.GetUser().GetSupervisor(), len(respGetSupervisor.GetUsers()))
+		} else {
+			supervisor = respGetSupervisor.GetUsers()[0]
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		respGetEmails, errr := mgmtuser.GetServiceMgmtUser().GetUsers(context.Background(), &request.GetUsersRequest{})
+		if errr != nil {
+			cherr <- errr
+
+		} else {
+			for _, u := range respGetEmails.GetUsers() {
+				emails = append(emails, u.GetEmail())
+			}
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		respGetOrders, errr := mgmtorder.GetServiceMgmtOrder().GetOrders(context.Background(), &request.GetOrdersRequest{
+			Accountable: user.Email(respGetUserByID.GetUser().GetEmail()),
 		})
 		if errr != nil {
 			cherr <- errr
 		} else {
-			subordinates = respGetSubOrdinates.GetSubOrdinates()
+			orders = respGetOrders.GetOrders()
 		}
 	}()
 	wg.Wait()
@@ -271,25 +360,20 @@ func serveUser(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// TODO: get user accountable orders
-	// REMOVEME: START: when getting user accountable orders
-	accountableOrdersCount := 5
-	accountableOrders := make([]*order.Order, accountableOrdersCount)
-	for i := 0; i < accountableOrdersCount; i++ {
-		accountableOrders[i] = setup.OrderObjWithIDs(fmt.Sprintf("%v", i))
-	}
-	// REMOVEME: END: when getting user accountable orders
-
 	type userExtended struct {
-		*user.User
+		User           *user.User
+		SupervisorID   meta.ID
 		SubOrdinates   []*user.User
 		AccountableFor []*order.Order
+		Emails         []user.Email
 	}
 
 	ue := &userExtended{
-		User:           u,
+		User:           respGetUserByID.GetUser(),
+		SupervisorID:   supervisor.GetID(),
 		SubOrdinates:   subordinates,
-		AccountableFor: accountableOrders,
+		AccountableFor: orders,
+		Emails:         emails,
 	}
 
 	w.Header().Set("Content-Type", "text/html")
@@ -300,25 +384,99 @@ func serveUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveNewUser(w http.ResponseWriter, _ *http.Request) {
-	err := templNewUser.Execute(w, nil)
+	var wg sync.WaitGroup
+	var emails []user.Email
+	cherr := make(chan errwrap.Error, 5)
+	defer close(cherr)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		respGetEmails, errr := mgmtuser.GetServiceMgmtUser().GetUsers(context.Background(), &request.GetUsersRequest{})
+		if errr != nil {
+			cherr <- errr
+
+		} else {
+			for _, u := range respGetEmails.GetUsers() {
+				emails = append(emails, u.GetEmail())
+			}
+		}
+	}()
+	wg.Wait()
+
+	if len(cherr) > 0 {
+		err := templSomethingWrong.Execute(w, nil)
+		if err != nil {
+			log.Printf("[ERROR]: executing SomethingWrong html tmpl failed: %s\n", err)
+		}
+		return
+	}
+
+	type extendedUser struct {
+		Emails []user.Email
+	}
+
+	eu := &extendedUser{
+		Emails: emails,
+	}
+
+	err := templNewUser.Execute(w, eu)
 	if err != nil {
 		log.Printf("[ERROR]: executing new_user html tmpl failed: %s\n", err)
 	}
 }
 
 func serveNewTask(w http.ResponseWriter, r *http.Request) {
-	os, errr := getOrders()
-	if errr != nil {
-		somethingWentWrong(w, errr)
+	var wg sync.WaitGroup
+	var emails []user.Email
+	var orders []*order.Order
+	cherr := make(chan errwrap.Error, 5)
+	defer close(cherr)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		respGetOrders, errr := mgmtorder.GetServiceMgmtOrder().GetOrders(context.Background(), &request.GetOrdersRequest{})
+		if errr != nil {
+			cherr <- errr
+
+		} else {
+			orders = respGetOrders.GetOrders()
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		respGetEmails, errr := mgmtuser.GetServiceMgmtUser().GetUsers(context.Background(), &request.GetUsersRequest{
+			Supervisor: mgmtuser.GetServiceMgmtUser().GetRootUser(context.Background()).GetEmail(),
+		})
+		if errr != nil {
+			cherr <- errr
+
+		} else {
+			for _, u := range respGetEmails.GetUsers() {
+				emails = append(emails, u.GetEmail())
+			}
+		}
+	}()
+	wg.Wait()
+
+	if len(cherr) > 0 {
+		err := templSomethingWrong.Execute(w, nil)
+		if err != nil {
+			log.Printf("[ERROR]: executing SomethingWrong html tmpl failed: %s\n", err)
+		}
 		return
 	}
 
 	type extendedOrder struct {
 		Orders    []*order.Order
+		Emails    []user.Email
 		Delegated bool
 	}
 	eo := &extendedOrder{
-		Orders:    os,
+		Orders:    orders,
+		Emails:    emails,
 		Delegated: true,
 	}
 	err := templNewTask.Execute(w, eo)
@@ -328,18 +486,58 @@ func serveNewTask(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveNewOrder(w http.ResponseWriter, _ *http.Request) {
-	os, errr := getOrders()
-	if errr != nil {
-		somethingWentWrong(w, errr)
+	var wg sync.WaitGroup
+	var users []*user.User
+	var emails []user.Email
+	var orders []*order.Order
+	cherr := make(chan errwrap.Error, 5)
+	defer close(cherr)
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		respGetOrders, errr := mgmtorder.GetServiceMgmtOrder().GetOrders(context.Background(), &request.GetOrdersRequest{})
+		if errr != nil {
+			cherr <- errr
+		} else {
+			orders = respGetOrders.GetOrders()
+		}
+	}()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		respGetUsers, errr := mgmtuser.GetServiceMgmtUser().GetUsers(context.Background(), &request.GetUsersRequest{
+			Supervisor: mgmtuser.GetServiceMgmtUser().GetRootUser(context.Background()).GetEmail(),
+		})
+		if errr != nil {
+			cherr <- errr
+		} else {
+			users = respGetUsers.GetUsers()
+			for _, u := range users {
+				emails = append(emails, u.GetEmail())
+			}
+		}
+	}()
+	wg.Wait()
+
+	if len(cherr) > 0 {
+		err := templSomethingWrong.Execute(w, nil)
+		if err != nil {
+			log.Printf("[ERROR]: executing SomethingWrong html tmpl failed: %s\n", err)
+		}
 		return
 	}
-
 	type extendedOrder struct {
 		Orders    []*order.Order
+		Users     []*user.User
+		Emails    []user.Email
 		Delegated bool
 	}
 	eo := &extendedOrder{
-		Orders: os,
+		Orders:    orders,
+		Users:     users,
+		Emails:    emails,
+		Delegated: false,
 	}
 
 	err := templNewOrder.Execute(w, eo)

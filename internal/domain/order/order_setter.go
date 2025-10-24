@@ -21,7 +21,7 @@ func (tt *Task) SetState(state State) {
 	tt.State = &state
 }
 
-func (tt *Task) SetAccountable(accountable *user.User) {
+func (tt *Task) SetAccountable(accountable user.Email) {
 	if tt == nil {
 		return
 	}
@@ -58,7 +58,7 @@ func (sr *SitRep) SetDateTime(dateTime time.Time) {
 	sr.DateTime = dateTime
 }
 
-func (sr *SitRep) SetBy(by *user.User) {
+func (sr *SitRep) SetBy(by user.Email) {
 	if sr == nil {
 		return
 	}

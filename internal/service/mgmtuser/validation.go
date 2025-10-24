@@ -59,20 +59,24 @@ func ValidateGetUserByIDRequest(req *request.GetUserByIDRequest) errwrap.Error {
 	return nil
 }
 
-func ValidateGetUsersRequest(*request.GetUsersRequest) errwrap.Error {
-	return nil
-}
-
-func ValidateGetUserSubOrdinatesRequest(req *request.GetUserSubOrdinatesRequest) errwrap.Error {
-	if req == nil || len(req.GetID()) == 0 {
+func ValidateGetUsersRequest(req *request.GetUsersRequest) errwrap.Error {
+	if req == nil {
 		return errwrap.NewError(http.StatusBadRequest, "empty request")
 	}
-
-	err := validation.ValidateID(req.GetID())
-	if err != nil {
-		return err
+	if len(req.GetEmails()) > 0 {
+		for _, em := range req.GetEmails() {
+			err := validation.ValidateEmail(em)
+			if err != nil {
+				return errwrap.NewError(http.StatusBadRequest, "%s", err.GetStatusMessage())
+			}
+		}
 	}
-
+	if len(req.GetSupervisor()) > 0 {
+		err := validation.ValidateEmail(req.GetSupervisor())
+		if err != nil {
+			return errwrap.NewError(http.StatusBadRequest, "%s", err.GetStatusMessage())
+		}
+	}
 	return nil
 }
 

@@ -9,6 +9,7 @@ import (
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
+	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/internal/middleware"
 )
 
@@ -34,7 +35,9 @@ func handlePostUser(w http.ResponseWriter, r *http.Request) {
 		resp, err = mgmtusersvc.PostUser(ctx, &req)
 	}
 
-	w.Header().Set("HX-Redirect", fmt.Sprintf("/user/%v", resp.GetUser().GetID()))
+	if err == nil {
+		w.Header().Set("HX-Redirect", fmt.Sprintf("/user/%v", resp.GetUser().GetID()))
+	}
 	writeResponse(ctx, w, resp, err, http.StatusCreated)
 }
 
@@ -66,29 +69,17 @@ func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 	middleware.SpanStart(ctx, "getUsers")
 	defer middleware.SpanStop(ctx, "getUsers")
 
-	req := &request.GetUsersRequest{}
+	queryEmails := r.URL.Query()["emails"]
+	emails := make([]user.Email, len(queryEmails))
+	for i, em := range queryEmails {
+		emails[i] = user.Email(em)
+	}
+	req := &request.GetUsersRequest{
+		Emails:     emails,
+		Supervisor: user.Email(r.URL.Query().Get("supervisor")),
+	}
 	middleware.SpanLog(ctx, "GetUsersRequest", req)
 	resp, err := mgmtusersvc.GetUsers(ctx, req)
-	writeResponse(ctx, w, resp, err, http.StatusOK)
-}
-
-func handleGetUserSubOrdinates(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
-	defer func() { go middleware.SpanFlushTrace(ctx) }()
-
-	middleware.SpanStart(ctx, "getUserSubOrdinates")
-	defer middleware.SpanStop(ctx, "getUserSubOrdinates")
-
-	req := &request.GetUserSubOrdinatesRequest{
-		ID: meta.ID(r.PathValue(userID)),
-	}
-	middleware.SpanLog(ctx, "GetUserSubOrdinatesRequest", req)
-	resp, err := mgmtusersvc.GetUserSubOrdinates(ctx, req)
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 

@@ -19,6 +19,7 @@ var (
 	delegatedTaskID = "delegated_task_id"
 	sitrepID        = "sitrep_id"
 	userID          = "user_id"
+	userEmail       = "user_email"
 )
 
 var (
@@ -94,7 +95,6 @@ func RouteOrder(svc mgmtorder.ServiceMgmtOrderAPI) *http.ServeMux {
 		http.HandleFunc("POST /v1/mgmt/order", postOrder)
 		http.HandleFunc(fmt.Sprintf("GET /v1/mgmt/order/{%v}", orderID), getOrderByID)
 		http.HandleFunc("GET /v1/mgmt/orders", getOrders)
-		http.HandleFunc(fmt.Sprintf("GET /v1/mgmt/order/{%v}/suborders", orderID), getOrderSubOrders)
 		http.HandleFunc("PATCH /v1/mgmt/order", patchOrder)
 		http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/order/{%v}", orderID), deleteOrder)
 
@@ -108,7 +108,6 @@ func RouteOrder(svc mgmtorder.ServiceMgmtOrderAPI) *http.ServeMux {
 
 		// NOTE: handle empty ids
 		http.HandleFunc("GET /v1/mgmt/order/", getOrderByID)
-		http.HandleFunc("GET /v1/mgmt/order/suborders", getOrderSubOrders)
 		http.HandleFunc("DELETE /v1/mgmt/order/", deleteOrder)
 
 		http.HandleFunc("PUT /v1/mgmt/order/delegated_task", putDelegatedTasks)
@@ -134,13 +133,11 @@ func RouteUser(svc mgmtuser.ServiceMgmtUserAPI) *http.ServeMux {
 		http.HandleFunc("POST /v1/mgmt/user", handlePostUser)
 		http.HandleFunc(fmt.Sprintf("GET /v1/mgmt/user/{%v}", userID), handleGetUserByID)
 		http.HandleFunc("GET /v1/mgmt/users", handleGetUsers)
-		http.HandleFunc(fmt.Sprintf("GET /v1/mgmt/user/{%v}/subordinates", userID), handleGetUserSubOrdinates)
 		http.HandleFunc("PATCH /v1/mgmt/user", handlePatchUser)
 		http.HandleFunc(fmt.Sprintf("DELETE /v1/mgmt/user/{%v}", userID), handleDeleteUser)
 
 		// NOTE: handle empty ids
 		http.HandleFunc("GET /v1/mgmt/user/", handleGetUserByID)
-		http.HandleFunc("GET /v1/mgmt/user/subordinates", handleGetUserSubOrdinates)
 		http.HandleFunc("DELETE /v1/mgmt/user/", handleDeleteUser)
 	})
 

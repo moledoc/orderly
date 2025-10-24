@@ -15,7 +15,7 @@
 <body>
     {{ template "header" .}}
     <div class="container">
-        <details class="card">
+        <details class="card" open>
             <summary>Info</summary>
 
             <b>ID:</b> {{.User.ID}}<br>
@@ -24,27 +24,31 @@
             <div>
                 <label for="user-name">Name:</label>
                 <input type="text" class="text-input" id="user-name" name="name" value="{{.User.Name}}" required
-                    hx-patch="/v1/mgmt/user" hx-trigger="change"
-                    hx-headers='{"Content-Type": "application/json"}' hx-vals='js:{
+                    hx-patch="/v1/mgmt/user" hx-trigger="keyup[key=='Enter']"
+                    hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc" hx-vals='js:{
                         user: {
                             id: "{{.User.ID}}",
-                            name: document.getElementById("name")?.value,
+                            name: document.getElementById("user-name")?.value,
                         }  
                     }'>
             </div>
 
             <div>
-                <label for="user-supervisor">Supervisor:</label>
+                <label for="user-supervisor">
+                    <span id="supervisor-link">
+                        <a href="/user/{{.SupervisorID}}">Supervisor:</a>
+                    </span>
+                </label>
                 <input list="users" class="text-input" id="user-supervisor" name="supervisor"
-                    value="{{.User.Supervisor}}" hx-patch="/v1/mgmt/user/{{.ID}}" hx-trigger="change"
-                    hx-headers='{"Content-Type": "application/json"}' hx-vals='js:{
+                    value="{{.User.Supervisor}}" hx-patch="/v1/mgmt/user" hx-trigger="keyup[key=='Enter']"
+                    hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc" hx-vals='js:{
                         user: {
                             id: "{{.User.ID}}",
-                            supervisor: document.getElementById("supervisor")?.value,
+                            supervisor: document.getElementById("user-supervisor")?.value,
                         }  
-                    }'>
+                    }' hx-on="htmx:afterRequest: updateSupervisorLink(event.detail.xhr.responseText)">
                 <datalist id="users">
-                    {{range UserEmails}}
+                    {{range .Emails}}
                     <option value="{{.}}">{{.}}</option>
                     {{end}}
                 </datalist>
@@ -75,7 +79,7 @@
                             <td><a href="/order/{{.Task.ID}}">{{.Task.ID}}</a></td>
                             <td>{{.Task.Objective}}</td>
                             <td>{{.Task.State}}</td>
-                            <td><input type="date" value="{{formatToDate .Task.Deadline}}" disabled></td>
+                            <td>{{formatToDate .Task.Deadline}}</td>
                         </tr>
                         {{end}}
                     </tbody>
@@ -83,7 +87,7 @@
             </div>
         </details>
 
-        <details>
+        <details open>
             <summary>Sub-Ordinates</summary>
             <div class="scroll-container">
                 <table class="styled-table" id="datatable">
@@ -109,9 +113,26 @@
 
         {{ template "footer" .}}
 
-        <script src="/static/scripts/search_table.js"></script>
+        <script src="/static/scripts/table_utils.js"></script>
+        <script>
+            function updateSupervisorLink(responseText) {
+                const data = JSON.parse(responseText);
+                const params = new URLSearchParams({
+                    emails: [data.user?.supervisor],
+                });
+                fetch(`/v1/mgmt/users?${params.toString()}`)
+                    .then(response => response.json())
+                    .then(resp => {
+                        if (resp?.users?.length >= 1) {
+                            const linkContainer = document.getElementById("supervisor-link");
+                            linkContainer.innerHTML = `<a href="/user/${resp?.users[0]?.id}">Supervisor:</a>`;
+                        }
+                    })
+                    .catch(err => console.error("Error:", err));
+            }
 
-    </body>
+        </script>
+</body>
 
 </html>
 {{end}}

@@ -31,15 +31,6 @@ func (r *GetUsersResponse) GetUsers() []*user.User {
 
 ////////////////
 
-func (r *GetUserSubOrdinatesResponse) GetSubOrdinates() []*user.User {
-	if r == nil {
-		return nil
-	}
-	return r.SubOrdinates
-}
-
-////////////////
-
 func (r *PatchUserResponse) GetUser() *user.User {
 	if r == nil {
 		return nil

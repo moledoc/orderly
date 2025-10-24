@@ -31,15 +31,6 @@ func (r *GetOrdersResponse) GetOrders() []*order.Order {
 
 ////////////////
 
-func (r *GetOrderSubOrdersResponse) GetSubOrders() []*order.Order {
-	if r == nil {
-		return nil
-	}
-	return r.SubOrders
-}
-
-////////////////
-
 func (r *PatchOrderResponse) GetOrder() *order.Order {
 	if r == nil {
 		return nil

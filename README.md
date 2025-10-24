@@ -7,6 +7,7 @@
 - [] initial UI
     - use errr-s
     - when creating an order, delegated task id parent ids should point to the new order we create. Need to change some validations etc and how orders are created.
+- [] optimize getting users/emails/orders in orderly
 - [] split Write method to specific methods
 - [] add necessary new endpoints
     - [] getting orders a user is accountable for
@@ -14,6 +15,7 @@
 - [] fix testcases
     - task.accountable went from id to user obj
     - task.state went from str to *str
+- [] split Makefiles
 - [] MAYBE: login
 - [] authorization
 - [] integrate with postgres

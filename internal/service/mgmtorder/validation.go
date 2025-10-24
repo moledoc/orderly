@@ -8,7 +8,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/order"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/service/common/validation"
-	"github.com/moledoc/orderly/internal/service/mgmtuser"
 )
 
 func ValidateTask(task *order.Task, ignore validation.IgnoreField) errwrap.Error {
@@ -25,7 +24,7 @@ func ValidateTask(task *order.Task, ignore validation.IgnoreField) errwrap.Error
 		return errwrap.NewError(http.StatusBadRequest, "invalid task.state")
 	}
 
-	err = mgmtuser.ValidateUser(task.GetAccountable(), ignore)
+	err = validation.ValidateEmail(task.GetAccountable())
 	if !validation.IsIgnoreEmpty(task.GetAccountable(), ignore) && err != nil {
 		return err
 	}
@@ -56,7 +55,7 @@ func ValidateSitRep(sitrep *order.SitRep, ignore validation.IgnoreField) errwrap
 		return errwrap.NewError(http.StatusBadRequest, "invalid sitrep.datetime")
 	}
 
-	err = mgmtuser.ValidateUser(sitrep.GetBy(), ignore)
+	err = validation.ValidateEmail(sitrep.GetBy())
 	if !validation.IsIgnoreEmpty(sitrep.GetBy(), ignore) && err != nil {
 		return errwrap.NewError(http.StatusBadRequest, "invalid sitrep.by: %s", err.GetStatusMessage())
 	}
@@ -151,15 +150,21 @@ func ValidateGetOrderByIDRequest(req *request.GetOrderByIDRequest) errwrap.Error
 }
 
 func ValidateGetOrdersRequest(req *request.GetOrdersRequest) errwrap.Error {
-	return nil
-}
 
-func ValidateGetOrderSubOrdersRequest(req *request.GetOrderSubOrdersRequest) errwrap.Error {
-
-	err := validation.ValidateID(req.GetID())
-	if err != nil {
-		return errwrap.NewError(http.StatusBadRequest, "invalid order_id: %s", err.GetStatusMessage())
+	if len(req.GetParentOrderID()) > 0 {
+		err := validation.ValidateID(req.GetParentOrderID())
+		if err != nil {
+			return errwrap.NewError(http.StatusBadRequest, "invalid parent_order_id: %s", err.GetStatusMessage())
+		}
 	}
+
+	if len(req.GetAccountable()) > 0 {
+		err := validation.ValidateEmail(req.GetAccountable())
+		if err != nil {
+			return errwrap.NewError(http.StatusBadRequest, "invalid accountable: %s", err.GetStatusMessage())
+		}
+	}
+
 	return nil
 }
 

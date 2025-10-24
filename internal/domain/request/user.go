@@ -6,23 +6,22 @@ import (
 )
 
 type PostUserRequest struct {
-	User *user.User `json:"user"`
+	User *user.User `json:"user,omitempty"`
 }
 
 type GetUserByIDRequest struct {
-	ID meta.ID `json:"id"`
+	ID meta.ID `json:"id,omitempty"`
 }
 
-type GetUsersRequest struct{}
-
-type GetUserSubOrdinatesRequest struct {
-	ID meta.ID `json:"id"`
+type GetUsersRequest struct {
+	Emails     []user.Email `json:"emails,omitempty"`
+	Supervisor user.Email   `json:"supervisor,omitempty"`
 }
 
 type PatchUserRequest struct {
-	User *user.User `json:"user"`
+	User *user.User `json:"user,omitempty"`
 }
 
 type DeleteUserRequest struct {
-	ID meta.ID `json:"id"`
+	ID meta.ID `json:"id,omitempty"`
 }

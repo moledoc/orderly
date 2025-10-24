@@ -20,7 +20,7 @@
         <div>
             <a href="/order/{{.Order.ParentOrderID}}">Parent Order:</a>
             <input list="orders" class="text-input" id="parent-order-id" name="order-task"
-                value="{{.Order.ParentOrderID}}: {{firstLine (ParentOrder .Order.ParentOrderID).Task.Objective}}" />
+                value="{{.Order.ParentOrderID}}: {{firstLine .ParentOrder.Task.Objective}}" />
             <datalist id="orders">
                 {{range .Orders}}
                 <option value="{{.Task.ID}}: {{.Task.Objective}}">{{.Task.ID}}: {{.Task.Objective}}</option>
@@ -34,11 +34,11 @@
         </div>
 
         <div>
-            <a href="/user/{{.Order.Task.Accountable.ID}}">Accountable:</a>
+            <a href="/user/{{.AccountableUser.ID}}">Accountable:</a>
             <input list="users" class="text-input" id="task-accountable" name="order-task"
-                value="{{.Order.Task.Accountable.Email}}" />
+                value="{{.AccountableUser.Email}}" />
             <datalist id="users">
-                {{range UserEmails}}
+                {{range .Emails}}
                 <option value="{{.}}">{{.}}</option>
                 {{end}}
             </datalist>
@@ -77,8 +77,8 @@
                         <tr>
                             <td><a href="/order/{{.ID}}">{{.ID}}</a></td>
                             <td>{{.Objective}}</td>
-                            <td><a href="/user/{{.Accountable.ID}}">{{.Accountable.Email}}</a></td>
-                            <td><input type="date" value="{{formatToDate .Deadline}}" disabled></td>
+                            <td><a href="/user/{{$.AccountableUser.ID}}">{{$.AccountableUser.Email}}</a></td>
+                            <td>{{formatToDate .Deadline}}</td>
                         </tr>
                         {{end}}
                     </tbody>
@@ -125,7 +125,7 @@
         </details>
     </div>
 
-    <script src="/static/scripts/search_table.js"></script>
+    <script src="/static/scripts/table_utils.js"></script>
 
     {{ template "footer" .}}
 

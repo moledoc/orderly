@@ -9,6 +9,7 @@ import (
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
+	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/internal/middleware"
 )
 
@@ -29,7 +30,9 @@ func postOrder(w http.ResponseWriter, r *http.Request) {
 		resp, err = mgmtordersvc.PostOrder(ctx, &req)
 	}
 
-	w.Header().Set("HX-Redirect", fmt.Sprintf("/order/%v", resp.GetOrder().GetID()))
+	if err == nil {
+		w.Header().Set("HX-Redirect", fmt.Sprintf("/order/%v", resp.GetOrder().GetID()))
+	}
 	writeResponse(ctx, w, resp, err, http.StatusCreated)
 }
 
@@ -52,27 +55,16 @@ func getOrders(w http.ResponseWriter, r *http.Request) {
 	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
 	defer func() { go middleware.SpanFlushTrace(ctx) }()
 
-	middleware.SpanStart(ctx, "getOrderByID")
-	defer middleware.SpanStop(ctx, "getOrderByID")
+	middleware.SpanStart(ctx, "getOrders")
+	defer middleware.SpanStop(ctx, "getOrders")
 
-	req := &request.GetOrdersRequest{}
+	req := &request.GetOrdersRequest{
+		ParentOrderID: meta.ID(r.URL.Query().Get("parent_order_id")),
+		Accountable:   user.Email(r.URL.Query().Get("accountable")),
+	}
+
 	middleware.SpanLog(ctx, "GetOrdersRequest", req)
 	resp, err := mgmtordersvc.GetOrders(ctx, req)
-	writeResponse(ctx, w, resp, err, http.StatusOK)
-}
-
-func getOrderSubOrders(w http.ResponseWriter, r *http.Request) {
-	ctx := middleware.AddTraceToCtxFromWriter(context.Background(), w)
-	defer func() { go middleware.SpanFlushTrace(ctx) }()
-
-	middleware.SpanStart(ctx, "getOrderSubOrders")
-	defer middleware.SpanStop(ctx, "getOrderSubOrders")
-
-	req := &request.GetOrderSubOrdersRequest{
-		ID: meta.ID(r.PathValue(orderID)),
-	}
-	middleware.SpanLog(ctx, "GetOrderSubOrdersRequest", req)
-	resp, err := mgmtordersvc.GetOrderSubOrders(ctx, req)
 	writeResponse(ctx, w, resp, err, http.StatusOK)
 }
 

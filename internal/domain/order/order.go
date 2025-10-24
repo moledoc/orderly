@@ -71,10 +71,22 @@ const (
 	Completed
 )
 
+var (
+	ListStates func() []*State = func() func() []*State {
+		states := []*State{}
+		for i := NotStarted; i <= Completed; i++ {
+			states = append(states, &i)
+		}
+		return func() []*State {
+			return states
+		}
+	}()
+)
+
 type Task struct {
 	ID          meta.ID    `json:"id,omitempty"`
 	State       *State     `json:"state,omitempty"`
-	Accountable *user.User `json:"accountable,omitempty"`
+	Accountable user.Email `json:"accountable,omitempty"`
 	Objective   string     `json:"objective,omitempty"`
 	Deadline    time.Time  `json:"deadline,omitempty"`
 }
@@ -83,7 +95,7 @@ type SitRep struct {
 	ID meta.ID `json:"id,omitempty"`
 
 	DateTime time.Time  `json:"datetime,omitempty"`
-	By       *user.User `json:"email,omitempty"`
+	By       user.Email `json:"email,omitempty"`
 
 	Situation string `json:"situation,omitempty"`
 	Actions   string `json:"actions,omitempty"`
