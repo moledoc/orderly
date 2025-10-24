@@ -111,6 +111,19 @@ type Order struct {
 	Meta           *meta.Meta `json:"meta,omitempty"`
 }
 
+type Order2 struct {
+	ID            meta.ID    `json:"id,omitempty"`
+	Accountable   user.Email `json:"accountable,omitempty"`
+	ParentOrderID meta.ID    `json:"parent_order_id,omitempty"`
+	Objective     string     `json:"objective,omitempty"`
+	Deadline      time.Time  `json:"deadline,omitempty"`
+	State         *State     `json:"state,omitempty"`
+
+	DelegatedOrders []*Order2  `json:"delegated_orders,omitempty"`
+	SitReps         []*SitRep  `json:"sitreps,omitempty"`
+	Meta            *meta.Meta `json:"meta,omitempty"`
+}
+
 func Empty() *Order {
 	return &Order{}
 }
