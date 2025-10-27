@@ -57,17 +57,17 @@
     <!-- <a href="/users" aria-label="Users">Users</a> -->
     <!-- <a href="/user/new" aria-label="New User">New User</a> -->
 
-    <button hx-on="click: history.back()" aria-label="Go Back">&larr;</button>
+    <!-- <button hx-on="click: history.back()" aria-label="Go Back">&larr;</button> -->
     <!-- <a href="/new" aria-label="New">New</a> -->
     <select onchange="window.location.href=this.value;this.selectedIndex = 0;" style="text-align: center; text-align-last: center;">
-        <option value="">+</option>
+        <option value="">☰</option>
         <option value="/">Home</option>
         <option value="/order/new">New Order</option>
         <option value="/user/new">New User</option>
         <option value="/orders">Orders</option>
         <option value="/users">Users</option>
     </select>
-    <button hx-on="click: history.forward()" aria-label="Go Forward">&rarr;</button>
+    <!-- <button hx-on="click: history.forward()" aria-label="Go Forward">&rarr;</button> -->
 
     <!-- <a href="/order/new" aria-label="New Order">New Order</a> -->
     <!-- <a href="/orders" aria-label="Orders">Orders</a> -->
