@@ -3,7 +3,6 @@ package request
 import (
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/order"
-	"github.com/moledoc/orderly/internal/domain/user"
 )
 
 type PostOrderRequest struct {
@@ -15,8 +14,8 @@ type GetOrderByIDRequest struct {
 }
 
 type GetOrdersRequest struct {
-	ParentOrderID meta.ID    `json:"parent_order_id,omitempty"`
-	Accountable   user.Email `json:"accountable,omitempty"`
+	ParentOrderID meta.ID `json:"parent_order_id,omitempty"`
+	AccountableID meta.ID `json:"accountable_id,omitempty"`
 }
 
 type PatchOrderRequest struct {

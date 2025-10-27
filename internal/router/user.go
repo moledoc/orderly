@@ -75,8 +75,8 @@ func handleGetUsers(w http.ResponseWriter, r *http.Request) {
 		emails[i] = user.Email(em)
 	}
 	req := &request.GetUsersRequest{
-		Emails:     emails,
-		Supervisor: user.Email(r.URL.Query().Get("supervisor")),
+		Emails:       emails,
+		SupervisorID: meta.ID(r.URL.Query().Get("supervisor_id")),
 	}
 	middleware.SpanLog(ctx, "GetUsersRequest", req)
 	resp, err := mgmtusersvc.GetUsers(ctx, req)

@@ -19,9 +19,9 @@ import (
 func UserObj(extra ...string) *user.User {
 	ee := strings.Join(append([]string{""}, extra...), ".")
 	return &user.User{
-		Name:       fmt.Sprintf("name%v", ee),
-		Email:      user.Email(fmt.Sprintf("example%v@example.com", ee)),
-		Supervisor: user.Email(fmt.Sprintf("example.supervisor%v@example.com", ee)),
+		Name:         fmt.Sprintf("name%v", ee),
+		Email:        user.Email(fmt.Sprintf("example%v@example.com", ee)),
+		SupervisorID: user.Email(fmt.Sprintf("example.supervisor%v@example.com", ee)),
 		Meta: &meta.Meta{
 			Version: 1,
 			Created: time.Now().UTC(),

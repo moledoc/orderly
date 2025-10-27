@@ -224,8 +224,8 @@ func patchOrder(reqOrder *order.Order, patchedOrder *order.Order) bool {
 		patchedOrder.SetState(reqOrder.GetState())
 		hasChanges = true
 	}
-	if !utils.IsZeroValue(reqOrder.GetAccountable()) && reqOrder.GetAccountable() != patchedOrder.GetAccountable() {
-		patchedOrder.SetAccountable(reqOrder.GetAccountable())
+	if !utils.IsZeroValue(reqOrder.GetAccountableID()) && reqOrder.GetAccountableID() != patchedOrder.GetAccountableID() {
+		patchedOrder.SetAccountableID(reqOrder.GetAccountableID())
 		hasChanges = true
 	}
 	if !utils.IsZeroValue(reqOrder.GetObjective()) && reqOrder.GetObjective() != patchedOrder.GetObjective() {

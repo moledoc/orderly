@@ -20,9 +20,9 @@ func (s *UserSuite) TestPatchUser() {
 	tt := s.T()
 
 	u := setup.MustCreateUserWithCleanup(tt, context.Background(), s.API, &user.User{
-		Name:       "name",
-		Email:      user.Email("example@example.com"),
-		Supervisor: user.Email("example.supervisor@example.com"),
+		Name:         "name",
+		Email:        user.Email("example@example.com"),
+		SupervisorID: user.Email("example.supervisor@example.com"),
 	})
 
 	changes := []struct {
@@ -65,8 +65,8 @@ func (s *UserSuite) TestPatchUser() {
 
 				return &request.PatchUserRequest{
 					User: &user.User{
-						ID:         u.GetID(),
-						Supervisor: u.GetSupervisor(),
+						ID:           u.GetID(),
+						SupervisorID: u.GetSupervisor(),
 					},
 				}
 			},
@@ -125,10 +125,10 @@ func (s *UserSuite) TestPatchUser_Failed() {
 		_, err := s.API.PatchUser(t, context.Background(), &request.PatchUserRequest{
 
 			User: &user.User{
-				ID:         meta.NewID(),
-				Name:       "name",
-				Email:      user.Email("example@example.com"),
-				Supervisor: user.Email("example.supervisor@example.com"),
+				ID:           meta.NewID(),
+				Name:         "name",
+				Email:        user.Email("example@example.com"),
+				SupervisorID: user.Email("example.supervisor@example.com"),
 			},
 		})
 		require.Error(t, err)

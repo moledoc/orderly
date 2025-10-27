@@ -59,8 +59,8 @@ func ValidateOrder(o *order.Order, ignore validation.IgnoreField) errwrap.Error 
 		return errwrap.NewError(http.StatusBadRequest, "invalid order.state")
 	}
 
-	err = validation.ValidateEmail(o.GetAccountable())
-	if !validation.IsIgnoreEmpty(o.GetAccountable(), ignore) && err != nil {
+	err = validation.ValidateID(o.GetAccountableID())
+	if !validation.IsIgnoreEmpty(o.GetAccountableID(), ignore) && err != nil {
 		return errwrap.NewError(http.StatusBadRequest, "invalid order.accountable: %s", err.GetStatusMessage())
 	}
 
@@ -137,8 +137,8 @@ func ValidateGetOrdersRequest(req *request.GetOrdersRequest) errwrap.Error {
 		}
 	}
 
-	if len(req.GetAccountable()) > 0 {
-		err := validation.ValidateEmail(req.GetAccountable())
+	if len(req.GetAccountableID()) > 0 {
+		err := validation.ValidateID(req.GetAccountableID())
 		if err != nil {
 			return errwrap.NewError(http.StatusBadRequest, "invalid accountable: %s", err.GetStatusMessage())
 		}

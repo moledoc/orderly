@@ -65,11 +65,11 @@ func (o *Order) GetID() meta.ID {
 	return o.ID
 }
 
-func (o *Order) GetAccountable() user.Email {
+func (o *Order) GetAccountableID() meta.ID {
 	if o == nil {
 		return ""
 	}
-	return o.Accountable
+	return o.AccountableID
 }
 
 func (o *Order) GetParentOrderID() meta.ID {

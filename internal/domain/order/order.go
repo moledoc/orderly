@@ -111,12 +111,12 @@ type SitRep struct {
 }
 
 type Order struct {
-	ID            meta.ID    `json:"id,omitempty"`
-	Accountable   user.Email `json:"accountable,omitempty"`
-	ParentOrderID meta.ID    `json:"parent_order_id,omitempty"`
-	Objective     string     `json:"objective,omitempty"`
-	Deadline      time.Time  `json:"deadline,omitempty"`
-	State         *State     `json:"state,omitempty"`
+	ID            meta.ID   `json:"id,omitempty"`
+	AccountableID meta.ID   `json:"accountable_id,omitempty"`
+	ParentOrderID meta.ID   `json:"parent_order_id,omitempty"`
+	Objective     string    `json:"objective,omitempty"`
+	Deadline      time.Time `json:"deadline,omitempty"`
+	State         *State    `json:"state,omitempty"`
 
 	DelegatedOrders []*Order  `json:"delegated_orders,omitempty"`
 	SitReps         []*SitRep `json:"sitreps,omitempty"`
@@ -135,7 +135,7 @@ func (o *Order) Clone() *Order {
 	var clone Order = Order{
 		ID:              o.GetID(),
 		State:           utils.Ptr(o.GetState()),
-		Accountable:     o.GetAccountable(),
+		AccountableID:   o.GetAccountableID(),
 		ParentOrderID:   o.GetParentOrderID(),
 		Objective:       o.GetObjective(),
 		Deadline:        o.GetDeadline(),
@@ -146,11 +146,11 @@ func (o *Order) Clone() *Order {
 
 	for i, delegatedOrder := range o.GetDelegatedOrders() {
 		clone.DelegatedOrders[i] = &Order{
-			ID:          delegatedOrder.GetID(),
-			State:       utils.Ptr(delegatedOrder.GetState()),
-			Accountable: delegatedOrder.GetAccountable(),
-			Objective:   delegatedOrder.GetObjective(),
-			Deadline:    delegatedOrder.GetDeadline(),
+			ID:            delegatedOrder.GetID(),
+			State:         utils.Ptr(delegatedOrder.GetState()),
+			AccountableID: delegatedOrder.GetAccountableID(),
+			Objective:     delegatedOrder.GetObjective(),
+			Deadline:      delegatedOrder.GetDeadline(),
 		}
 	}
 

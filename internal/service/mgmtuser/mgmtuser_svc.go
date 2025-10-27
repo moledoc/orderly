@@ -33,13 +33,17 @@ var (
 	svc ServiceMgmtUserAPI = nil
 )
 
+var (
+	RootUserID    = meta.NewID()
+	RootUserEmail = user.Email("root@root.com")
+)
+
 func postRootUser(ctx context.Context, repo repository.RepositoryUserAPI) (*user.User, errwrap.Error) {
 	now := time.Now().UTC()
 	u := &user.User{
-		ID:         meta.NewID(),
-		Name:       "Root",
-		Email:      "root@root.com",
-		Supervisor: "root@root.com",
+		ID:           RootUserID,
+		Email:        RootUserEmail,
+		SupervisorID: RootUserID,
 		Meta: &meta.Meta{
 			Version: 1,
 			Created: now,

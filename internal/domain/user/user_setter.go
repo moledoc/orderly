@@ -9,13 +9,6 @@ func (u *User) SetID(id meta.ID) {
 	u.ID = id
 }
 
-func (u *User) SetName(name string) {
-	if u == nil {
-		return
-	}
-	u.Name = name
-}
-
 func (u *User) SetEmail(email Email) {
 	if u == nil {
 		return
@@ -23,11 +16,11 @@ func (u *User) SetEmail(email Email) {
 	u.Email = email
 }
 
-func (u *User) SetSupervisor(supervisor Email) {
+func (u *User) SetSupervisor(supervisorID meta.ID) {
 	if u == nil {
 		return
 	}
-	u.Supervisor = supervisor
+	u.SupervisorID = supervisorID
 }
 
 func (u *User) SetMeta(meta *meta.Meta) {

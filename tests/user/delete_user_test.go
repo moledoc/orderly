@@ -17,9 +17,9 @@ func (s *UserSuite) TestDeleteUser() {
 
 	tt.Run("Existing", func(t *testing.T) {
 		userObj := &user.User{
-			Name:       "name",
-			Email:      user.Email("example@example.com"),
-			Supervisor: user.Email("example.supervisor@example.com"),
+			Name:         "name",
+			Email:        user.Email("example@example.com"),
+			SupervisorID: user.Email("example.supervisor@example.com"),
 		}
 
 		user := setup.MustCreateUserWithCleanup(t, context.Background(), s.API, userObj)

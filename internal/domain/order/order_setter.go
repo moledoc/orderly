@@ -65,11 +65,11 @@ func (o *Order) SetID(id meta.ID) {
 	o.ID = id
 }
 
-func (o *Order) SetAccountable(email user.Email) {
+func (o *Order) SetAccountableID(id meta.ID) {
 	if o == nil {
 		return
 	}
-	o.Accountable = email
+	o.AccountableID = id
 }
 
 func (o *Order) SetParentOrderID(id meta.ID) {

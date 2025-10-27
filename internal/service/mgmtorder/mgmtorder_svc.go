@@ -9,9 +9,9 @@ import (
 	"github.com/moledoc/orderly/internal/domain/order"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
-	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/internal/middleware"
 	"github.com/moledoc/orderly/internal/repository"
+	"github.com/moledoc/orderly/internal/service/mgmtuser"
 	"github.com/moledoc/orderly/pkg/utils"
 )
 
@@ -49,7 +49,7 @@ func postRootOrder(ctx context.Context, repo repository.RepositoryOrderAPI) (*or
 	order := &order.Order{
 		ID:            id,
 		ParentOrderID: id,
-		Accountable:   user.Email("root@root.com"),
+		AccountableID: mgmtuser.RootUserID,
 		Objective:     "Root Order",
 		State:         utils.Ptr(order.InProgress),
 		Deadline:      time.Now().UTC().Add(100 * 365 * 24 * time.Hour),

@@ -52,6 +52,7 @@ details summary {
 }
 
 .card {
+    position: relative;
     background-color: #f9f9f9;
     padding: 1rem;
     border: 1px solid #ccc;
@@ -97,4 +98,20 @@ a:hover {
     border-color: #007BFF;
     outline: none;
     box-shadow: 0 0 5px rgba(0, 123, 255, 0.25);
+}
+
+.delete-btn {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    border: none;
+    background: transparent;
+    font-size: 18px;
+    color: #999;
+    cursor: pointer;
+    line-height: 1;
+}
+
+.delete-btn:hover {
+    color: red;
 }

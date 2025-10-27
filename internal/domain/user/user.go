@@ -7,11 +7,10 @@ import (
 type Email string
 
 type User struct {
-	ID         meta.ID    `json:"id,omitempty"`
-	Name       string     `json:"name,omitempty"` // TODO: maybe remove
-	Email      Email      `json:"email,omitempty"`
-	Supervisor Email      `json:"supervisor,omitempty"`
-	Meta       *meta.Meta `json:"meta,omitempty"`
+	ID           meta.ID    `json:"id,omitempty"`
+	Email        Email      `json:"email,omitempty"`
+	SupervisorID meta.ID    `json:"supervisor_id,omitempty"`
+	Meta         *meta.Meta `json:"meta,omitempty"`
 }
 
 func (u *User) Clone() *User {
@@ -20,11 +19,10 @@ func (u *User) Clone() *User {
 	}
 
 	var clone User = User{
-		ID:         u.GetID(),
-		Name:       u.GetName(),
-		Email:      u.GetEmail(),
-		Supervisor: u.GetSupervisor(),
-		Meta:       u.GetMeta().Clone(),
+		ID:           u.GetID(),
+		Email:        u.GetEmail(),
+		SupervisorID: u.GetSupervisorID(),
+		Meta:         u.GetMeta().Clone(),
 	}
 
 	return &clone

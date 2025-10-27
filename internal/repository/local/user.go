@@ -2,6 +2,7 @@ package local
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"slices"
 	"sync"
@@ -80,10 +81,10 @@ func (r *LocalRepositoryUser) ReadBy(ctx context.Context, req *request.GetUsersR
 
 	var users []*user.User
 	emails := req.GetEmails()
-	supervisor := req.GetSupervisor()
+	supervisor := req.GetSupervisorID()
 	for _, u := range r.db {
 		if (len(emails) == 0 || slices.Contains(emails, u.GetEmail())) &&
-			(len(supervisor) == 0 || supervisor == u.GetSupervisor()) {
+			(len(supervisor) == 0 || supervisor == u.GetSupervisorID()) {
 			users = append(users, u)
 		}
 	}
@@ -114,8 +115,28 @@ func (r *LocalRepositoryUser) Delete(ctx context.Context, id meta.ID) errwrap.Er
 	if r == nil {
 		return errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
 	}
+
 	r.mu.Lock()
-	defer r.mu.Unlock()
+	u, ok := r.db[id]
+	if !ok {
+		return nil
+	}
+	r.mu.Unlock()
+
+	subOrdinates, err := r.ReadBy(ctx, &request.GetUsersRequest{
+		SupervisorID: u.GetID(),
+	})
+	if err != nil {
+		middleware.SpanLog(ctx, "LocalStorageUser:Delete:GetSubOrdinates", err)
+		return err
+	}
+	for _, subordinate := range subOrdinates {
+		subordinate.SetSupervisor(u.GetSupervisorID())
+		_, err := r.Write(ctx, subordinate)
+		if err != nil {
+			middleware.SpanLog(ctx, "LocalStorageUser:Delete:GetSubOrdinates", fmt.Sprintf("[WARNING]: updating user %q supervisor failed: %s", subordinate.GetID(), err))
+		}
+	}
 
 	delete(r.db, id)
 

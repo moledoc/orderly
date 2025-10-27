@@ -23,7 +23,6 @@
             <thead>
                 <tr>
                     <th>ID</th>
-                    <th>Name</th>
                     <th>Email</th>
                 </tr>
             </thead>
@@ -32,7 +31,6 @@
                 {{range .}}
                 <tr>
                     <td><a href="/user/{{.ID}}">{{.ID}}</a></td>
-                    <td>{{.Name}}</td>
                     <td>{{.Email}}</td>
                 </tr>
                 {{end}}

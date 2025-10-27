@@ -73,11 +73,11 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{range .Order.DelegatedOrders}}
+                        {{range .DelegatedOrders}}
                         <tr>
-                            <td><a href="/order/{{.ID}}">{{.ID}}</a></td>
+                            <td><a href="/order/{{.Order.ID}}">{{.Order.ID}}</a></td>
                             <td>{{.Objective}}</td>
-                            <td><a href="/user/{{$.AccountableUser.ID}}">{{$.AccountableUser.Email}}</a></td>
+                            <td><a href="/user/{{.AccountableUser.ID}}">{{.AccountableUser.Email}}</a></td>
                             <td>{{formatToDate .Deadline}}</td>
                         </tr>
                         {{end}}

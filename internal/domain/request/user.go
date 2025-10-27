@@ -14,8 +14,8 @@ type GetUserByIDRequest struct {
 }
 
 type GetUsersRequest struct {
-	Emails     []user.Email `json:"emails,omitempty"`
-	Supervisor user.Email   `json:"supervisor,omitempty"`
+	Emails       []user.Email `json:"emails,omitempty"`
+	SupervisorID meta.ID      `json:"supervisor_id,omitempty"`
 }
 
 type PatchUserRequest struct {

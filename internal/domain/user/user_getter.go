@@ -9,13 +9,6 @@ func (u *User) GetID() meta.ID {
 	return u.ID
 }
 
-func (u *User) GetName() string {
-	if u == nil {
-		return ""
-	}
-	return u.Name
-}
-
 func (u *User) GetEmail() Email {
 	if u == nil {
 		return ""
@@ -23,11 +16,11 @@ func (u *User) GetEmail() Email {
 	return u.Email
 }
 
-func (u *User) GetSupervisor() Email {
+func (u *User) GetSupervisorID() meta.ID {
 	if u == nil {
 		return ""
 	}
-	return u.Supervisor
+	return u.SupervisorID
 }
 
 func (u *User) GetMeta() *meta.Meta {

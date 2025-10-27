@@ -30,11 +30,11 @@ func (r *GetUsersRequest) GetEmails() []user.Email {
 	return r.Emails
 }
 
-func (r *GetUsersRequest) GetSupervisor() user.Email {
+func (r *GetUsersRequest) GetSupervisorID() meta.ID {
 	if r == nil {
 		return ""
 	}
-	return r.Supervisor
+	return r.SupervisorID
 }
 
 ////////////////

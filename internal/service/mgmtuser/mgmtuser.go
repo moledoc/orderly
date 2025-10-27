@@ -109,16 +109,12 @@ func (s *serviceMgmtUser) PatchUser(ctx context.Context, req *request.PatchUserR
 	reqUser := req.GetUser()
 	hasChanges := false
 
-	if !utils.IsZeroValue(reqUser.GetName()) && reqUser.GetName() != patchedUser.GetName() {
-		patchedUser.SetName(reqUser.GetName())
-		hasChanges = true
-	}
 	if !utils.IsZeroValue(reqUser.GetEmail()) && reqUser.GetEmail() != patchedUser.GetEmail() {
 		patchedUser.SetEmail(reqUser.GetEmail())
 		hasChanges = true
 	}
-	if !utils.IsZeroValue(reqUser.GetSupervisor()) && reqUser.GetSupervisor() != patchedUser.GetSupervisor() {
-		patchedUser.SetSupervisor(reqUser.GetSupervisor())
+	if !utils.IsZeroValue(reqUser.GetSupervisorID()) && reqUser.GetSupervisorID() != patchedUser.GetSupervisorID() {
+		patchedUser.SetSupervisor(reqUser.GetSupervisorID())
 		hasChanges = true
 	}
 

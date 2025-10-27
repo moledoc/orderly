@@ -23,9 +23,9 @@ func (s *UserSuite) TestGetUsers() {
 		users := make([]*user.User, count)
 		for i := 1; i <= count; i++ {
 			userObj := &user.User{
-				Name:       fmt.Sprintf("name-%d", count),
-				Email:      user.Email(fmt.Sprintf("example.%s.%d.%d@example.com", t.Name(), count, i)),
-				Supervisor: user.Email(fmt.Sprintf("example.supervisor.%d@example.com", count)),
+				Name:         fmt.Sprintf("name-%d", count),
+				Email:        user.Email(fmt.Sprintf("example.%s.%d.%d@example.com", t.Name(), count, i)),
+				SupervisorID: user.Email(fmt.Sprintf("example.supervisor.%d@example.com", count)),
 			}
 
 			user := setup.MustCreateUserWithCleanup(t, context.Background(), s.API, userObj)

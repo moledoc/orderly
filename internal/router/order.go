@@ -9,7 +9,6 @@ import (
 	"github.com/moledoc/orderly/internal/domain/meta"
 	"github.com/moledoc/orderly/internal/domain/request"
 	"github.com/moledoc/orderly/internal/domain/response"
-	"github.com/moledoc/orderly/internal/domain/user"
 	"github.com/moledoc/orderly/internal/middleware"
 )
 
@@ -60,7 +59,7 @@ func getOrders(w http.ResponseWriter, r *http.Request) {
 
 	req := &request.GetOrdersRequest{
 		ParentOrderID: meta.ID(r.URL.Query().Get("parent_order_id")),
-		Accountable:   user.Email(r.URL.Query().Get("accountable")),
+		AccountableID: meta.ID(r.URL.Query().Get("accountable_id")),
 	}
 
 	middleware.SpanLog(ctx, "GetOrdersRequest", req)

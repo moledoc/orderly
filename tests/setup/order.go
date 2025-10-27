@@ -21,10 +21,10 @@ import (
 func OrderObj(extra ...string) *order.Order {
 	ee := strings.Join(append([]string{""}, extra...), ".")
 	return &order.Order{
-		State:       utils.Ptr(order.NotStarted),
-		Accountable: user.Email(fmt.Sprintf("example%v@example.com", ee)),
-		Objective:   "objective description",
-		Deadline:    time.Now().UTC(),
+		State:         utils.Ptr(order.NotStarted),
+		AccountableID: user.Email(fmt.Sprintf("example%v@example.com", ee)),
+		Objective:     "objective description",
+		Deadline:      time.Now().UTC(),
 	}
 }
 func OrderObjWithID(extra ...string) *order.Order {

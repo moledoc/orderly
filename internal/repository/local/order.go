@@ -165,7 +165,7 @@ func (r *LocalRepositoryOrder) ReadBy(ctx context.Context, req *request.GetOrder
 	defer r.mu.Unlock()
 
 	parentOrderID := req.GetParentOrderID()
-	accountable := req.GetAccountable()
+	accountable := req.GetAccountableID()
 
 	var orders []*order.Order
 	var curDepth []*order.Order
@@ -178,7 +178,7 @@ func (r *LocalRepositoryOrder) ReadBy(ctx context.Context, req *request.GetOrder
 			if parentOrderID == do.GetID() {
 				return do.GetDelegatedOrders(), nil
 			}
-			if len(accountable) == 0 || accountable == do.GetAccountable() {
+			if len(accountable) == 0 || accountable == do.GetAccountableID() {
 				orders = append(orders, do)
 			}
 			nextDepth = append(nextDepth, do.GetDelegatedOrders()...)
