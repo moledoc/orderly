@@ -24,7 +24,7 @@ func RePtr[T any](t *T) *T {
 }
 
 const (
-	RandAlphanumLen = 32
+	RandAlphanumLen = 6
 )
 
 func RandAlphanum() string {
@@ -32,7 +32,7 @@ func RandAlphanum() string {
 	for len(v) < RandAlphanumLen {
 		v = fmt.Sprintf("%v%v", v, strconv.FormatInt(rand.Int63(), 16))
 	}
-	v = v[:32]
+	v = v[:RandAlphanumLen]
 	return v
 }
 
