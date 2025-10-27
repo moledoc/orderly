@@ -171,12 +171,14 @@ func (r *LocalRepositoryOrder) ReadBy(ctx context.Context, req *request.GetOrder
 	var curDepth []*order.Order
 	var nextDepth []*order.Order
 
-	curDepth = append(curDepth, r.OrderHierarchy.GetDelegatedOrders()...)
+	curDepth = append(curDepth, r.OrderHierarchy)
 
 	for len(curDepth) != 0 {
 		for _, do := range curDepth {
-			if (len(parentOrderID) == 0 || parentOrderID == do.GetParentOrderID()) &&
-				(len(accountable) == 0 || accountable == do.GetAccountable()) {
+			if parentOrderID == do.GetID() {
+				return do.GetDelegatedOrders(), nil
+			}
+			if len(accountable) == 0 || accountable == do.GetAccountable() {
 				orders = append(orders, do)
 			}
 			nextDepth = append(nextDepth, do.GetDelegatedOrders()...)
@@ -195,8 +197,6 @@ func (r *LocalRepositoryOrder) Write(ctx context.Context, order *order.Order) (*
 	if r == nil {
 		return nil, errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
 	}
-	r.mu.Lock()
-	defer r.mu.Unlock()
 
 	if r.OrderHierarchy == nil {
 		r.OrderHierarchy = order
@@ -206,6 +206,10 @@ func (r *LocalRepositoryOrder) Write(ctx context.Context, order *order.Order) (*
 	if err != nil {
 		return nil, err
 	}
+
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	found := false
 	for i, do := range parent.GetDelegatedOrders() {
 		if do.GetID() == order.GetID() {
@@ -228,8 +232,10 @@ func (r *LocalRepositoryOrder) DeleteOrder(ctx context.Context, id meta.ID) errw
 	if r == nil {
 		return errwrap.NewError(http.StatusInternalServerError, "local repository uninitialized")
 	}
+
 	r.mu.Lock()
 	defer r.mu.Unlock()
+
 	type opp struct {
 		Parent *order.Order
 		Order  *order.Order
