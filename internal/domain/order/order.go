@@ -11,23 +11,42 @@ import (
 
 type State int
 
+const (
+	notStartedStr   string = "Not Started"
+	inProgressStr   string = "In Progress"
+	havingIssuesStr string = "Having Issues"
+	blockedStr      string = "Blocked"
+	cancelledStr    string = "Cancelled"
+	completedStr    string = "Completed"
+	unknownStr      string = "Unknown"
+)
+
+const (
+	NotStarted State = iota + 1
+	InProgress
+	HavingIssues
+	Blocked
+	Cancelled
+	Completed
+)
+
 func (s State) String() string {
 
 	switch s {
 	case NotStarted:
-		return "Not Started"
+		return notStartedStr
 	case InProgress:
-		return "In Progress"
+		return inProgressStr
 	case HavingIssues:
-		return "Having Issues"
+		return havingIssuesStr
 	case Blocked:
-		return "Blocked"
+		return blockedStr
 	case Cancelled:
-		return "Cancelled"
+		return cancelledStr
 	case Completed:
-		return "Completed"
+		return completedStr
 	default:
-		return "Unknown"
+		return unknownStr
 	}
 }
 
@@ -44,17 +63,17 @@ func (s *State) UnmarshalJSON(data []byte) error {
 	}
 
 	switch str {
-	case "Not Started":
+	case notStartedStr:
 		*s = NotStarted
-	case "In Progress":
+	case inProgressStr:
 		*s = InProgress
-	case "Having Issues":
+	case havingIssuesStr:
 		*s = HavingIssues
-	case "Blocked":
+	case blockedStr:
 		*s = Blocked
-	case "Cancelled":
+	case cancelledStr:
 		*s = Cancelled
-	case "Completed":
+	case completedStr:
 		*s = Completed
 	default:
 		*s = NotStarted
@@ -66,15 +85,6 @@ func (s *State) UnmarshalJSON(data []byte) error {
 func (s *State) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s.String())
 }
-
-const (
-	NotStarted State = iota + 1
-	InProgress
-	HavingIssues
-	Blocked
-	Cancelled
-	Completed
-)
 
 var (
 	ListStates func() []*State = func() func() []*State {
