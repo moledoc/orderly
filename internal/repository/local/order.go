@@ -210,16 +210,22 @@ func (r *LocalRepositoryOrder) Write(ctx context.Context, order *order.Order) (*
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	found := false
+	foundDelegatedOrder := false
 	for i, do := range parent.GetDelegatedOrders() {
 		if do.GetID() == order.GetID() {
-			found = true
+			foundDelegatedOrder = true
 			parent.GetDelegatedOrders()[i] = order
 			break
 		}
 	}
-	if !found {
+	if !foundDelegatedOrder {
 		parent.SetDelegatedOrders(append(parent.GetDelegatedOrders(), order))
+	} else {
+		for i, o := range parent.GetDelegatedOrders() {
+			if o.GetID() == order.GetID() {
+				parent.DelegatedOrders[i] = order
+			}
+		}
 	}
 
 	return order, nil

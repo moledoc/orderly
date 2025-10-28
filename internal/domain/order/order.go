@@ -108,7 +108,7 @@ type SitRep struct {
 	ID meta.ID `json:"id,omitempty"`
 
 	DateTime time.Time  `json:"datetime,omitempty"`
-	By       user.Email `json:"email,omitempty"`
+	By       user.Email `json:"by,omitempty"`
 
 	Situation string `json:"situation,omitempty"`
 	Actions   string `json:"actions,omitempty"`

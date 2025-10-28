@@ -81,41 +81,49 @@
         </details>
 
         <details open>
-            <summary>SitReps</summary>
-            {{range .Order.SitReps}}
-            <details class="card" open>
-                <summary id="sitrep-{{.ID}}-summary"
-                    style="font-size: 0.9em; font-weight: 300; cursor: pointer; color: #555;">{{.DateTime}} by <a
-                        href="/user/{{.By.ID}}">{{.By.Email}}</a></summary>
+            <summary>
+                SitReps
+                <button id="addSitRepFormBtn" style="margin-left: 10px;">+</button>
+                <div id="sitrepFormContainer"></div>
+            </summary>
+            <div id="sitreps">
+                {{range .Order.SitReps}}
+                <div>
+                    <details class="card" open>
+                        <summary id="sitrep-{{.ID}}-summary"
+                            style="font-size: 0.9em; font-weight: 300; cursor: pointer; color: #555;">{{.DateTime}} by
+                            <a href="/user/{{.By}}">{{.By}}</a></summary> <!-- TODO: get user info-->
 
-                <div id="sitrep-{{.ID}}-body">
-                    <div>
-                        <label for="sitrep-situation-{{.ID}}">Situation:</label>
-                        <textarea class="text-input" id="sitrep-situation-{{.ID}}" name="order-sitrep"
-                            placeholder="Situation to date...">{{.Situation}}</textarea>
-                    </div>
+                        <div id="sitrep-{{.ID}}-body">
+                            <div>
+                                <label for="sitrep-situation-{{.ID}}">Situation:</label>
+                                <textarea class="text-input" id="sitrep-situation-{{.ID}}" name="order-sitrep"
+                                    placeholder="Situation to date...">{{.Situation}}</textarea>
+                            </div>
 
-                    <div>
-                        <label for="sitrep-actions-{{.ID}}">Actions:</label>
-                        <textarea class="text-input" id="sitrep-actions-{{.ID}}" name="order-sitrep"
-                            placeholder="Actions to date...">{{.Actions}}</textarea>
-                    </div>
+                            <div>
+                                <label for="sitrep-actions-{{.ID}}">Actions:</label>
+                                <textarea class="text-input" id="sitrep-actions-{{.ID}}" name="order-sitrep"
+                                    placeholder="Actions to date...">{{.Actions}}</textarea>
+                            </div>
 
-                    <div>
-                        <label for="sitrep-tbd-{{.ID}}">TODO:</label>
-                        <textarea class="text-input" id="sitrep-tbd-{{.ID}}" name="order-sitrep"
-                            placeholder="Things to do...">{{.TODO}}</textarea>
-                    </div>
+                            <div>
+                                <label for="sitrep-todo-{{.ID}}">TODO:</label>
+                                <textarea class="text-input" id="sitrep-todo-{{.ID}}" name="order-sitrep"
+                                    placeholder="Things to do...">{{.TODO}}</textarea>
+                            </div>
 
-                    <div>
-                        <label for="sitrep-issues-{{.ID}}">Issues:</label>
-                        <textarea class="text-input" id="sitrep-issues-{{.ID}}" name="order-sitrep"
-                            placeholder="Issues...">{{.Issues}}</textarea>
-                    </div>
+                            <div>
+                                <label for="sitrep-issues-{{.ID}}">Issues:</label>
+                                <textarea class="text-input" id="sitrep-issues-{{.ID}}" name="order-sitrep"
+                                    placeholder="Issues...">{{.Issues}}</textarea>
+                            </div>
 
+                        </div>
+                    </details>
                 </div>
-            </details>
-            {{end}}
+                {{end}}
+            </div>
         </details>
     </div>
 
@@ -192,7 +200,6 @@
                     }
 
                     const respPostOrder = await response.json();
-                    console.log("HERE", respPostOrder)
 
                     const tableBody = document.querySelectorAll('#datatable tbody')[0];
                     const newRow = document.createElement('tr');
@@ -213,6 +220,137 @@
 
             // Cancel/delete button
             form.querySelector('#cancelDelegatedOrderBtn').addEventListener('click', function () {
+                form.remove();
+            });
+        });
+
+
+        document.getElementById('addSitRepFormBtn').addEventListener('click', async function () {
+            const formContainer = document.getElementById('sitrepFormContainer');
+
+            if (formContainer.querySelector('div')) return;
+
+            // Create the form
+            const form = document.createElement('div');
+
+            form.innerHTML = `
+    <hr />
+    <div>
+        <label for="new-sitrep-situation">Situation:</label>
+        <textarea class="text-input" id="new-sitrep-situation" required placeholder="Situation to date/What has happened"></textarea>
+    </div>
+
+    <div>
+        <label for="new-sitrep-actions">Actions:</label>
+        <textarea class="text-input" id="new-sitrep-actions" required placeholder="Actions to date/What has been done"></textarea>
+    </div>
+
+    <div>
+        <label for="new-sitrep-todo">TODO:</label>
+        <textarea class="text-input" id="new-sitrep-todo" required placeholder="Actions to be completed/What will be done"></textarea>
+    </div>
+
+    <div>
+        <label for="new-sitrep-issues">Issues:</label>
+        <textarea class="text-input" id="new-sitrep-issues" required placeholder="Encountered issues"></textarea>
+    </div>
+
+    <button type="button" id="saveSitRepBtn">✓</button>
+    <button type="button" id="cancelSitRepBtn">×</button>
+    <hr />`;
+            formContainer.appendChild(form);
+
+            form.querySelector('#saveSitRepBtn').addEventListener('click', async function () {
+                const situation = document.getElementById('new-sitrep-situation')?.value?.trim();
+                const actions = document.getElementById('new-sitrep-actions')?.value?.trim();
+                const todo = document.getElementById('new-sitrep-todo')?.value?.trim();
+                const issues = document.getElementById('new-sitrep-issues')?.value?.trim();
+                const by = "todo@email.com"
+                const datetime = new Date().toISOString();
+
+
+                if (!situation && !actions && !todo && !issues) {
+                    alert('Please fill at least 1 field.');
+                    return;
+                }
+                try {
+
+                    let response = await fetch('/v1/mgmt/order/{{.Order.ID}}/sitrep', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            sitreps: [
+                                {
+                                    by: by,
+                                    datetime: datetime,
+                                    situation: situation,
+                                    actions: actions,
+                                    todo: todo,
+                                    issues: issues,
+                                }
+                            ]
+                        })
+                    });
+
+                    if (!response.ok) {
+                        console.log("HERE")
+                        throw new Error('Server error: ' + response.statusText);
+                    }
+
+                    const respPutSitrep = await response.json();
+                    const sitrep = respPutSitrep?.order?.sitreps.at(-1);
+                    if (!sitrep) {
+                        throw new Error('Unexpected sitreps length');
+                    }
+
+                    const cardsList = document.querySelector('#sitreps');
+                    const newCard = document.createElement('div');
+                    newCard.innerHTML = `
+                <details class="card" open>
+                    <summary id="sitrep-${sitrep?.id || ""}-summary"
+                        style="font-size: 0.9em; font-weight: 300; cursor: pointer; color: #555;">${datetime} by <a
+                            href="/user/${by}">${by}</a></summary> <!-- TODO: correct by user -->
+    
+                    <div id="sitrep-${sitrep?.id || ""}-body">
+                        <div>
+                            <label for="sitrep-situation-${sitrep?.id || ""}">Situation:</label>
+                            <textarea class="text-input" id="sitrep-situation-${sitrep?.id || ""}" name="order-sitrep"
+                                placeholder="Situation to date...">${sitrep?.situation || ""}</textarea>
+                        </div>
+    
+                        <div>
+                            <label for="sitrep-actions-${sitrep?.id || ""}">Actions:</label>
+                            <textarea class="text-input" id="sitrep-actions-${sitrep?.id || ""}" name="order-sitrep"
+                                placeholder="Actions to date...">${sitrep?.actions || ""}</textarea>
+                        </div>
+    
+                        <div>
+                            <label for="sitrep-todo-${sitrep?.id || ""}">TODO:</label>
+                            <textarea class="text-input" id="sitrep-todo-${sitrep?.id || ""}" name="order-sitrep"
+                                placeholder="Things to do...">${sitrep?.todo || ""}</textarea>
+                        </div>
+    
+                        <div>
+                            <label for="sitrep-issues-${sitrep?.id || ""}">Issues:</label>
+                            <textarea class="text-input" id="sitrep-issues-${sitrep?.id || ""}" name="order-sitrep"
+                                placeholder="Issues...">${sitrep?.issues || ""}</textarea>
+                        </div>
+                    </div>
+                </details>
+    `;
+                    cardsList.appendChild(newCard);
+
+                    form.remove();
+                } catch (err) {
+                    alert('Creating sitrep failed:', err);
+                }
+            });
+
+
+            // Cancel/delete button
+            form.querySelector('#cancelSitRepBtn').addEventListener('click', function () {
                 form.remove();
             });
         });
