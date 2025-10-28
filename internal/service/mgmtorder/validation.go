@@ -55,7 +55,7 @@ func ValidateOrder(o *order.Order, ignore validation.IgnoreField) errwrap.Error 
 		return errwrap.NewError(http.StatusBadRequest, "invalid order.id: %s", err.GetStatusMessage())
 	}
 
-	if !validation.IsIgnoreEmpty(o.GetState(), ignore) && o.GetState() < order.NotStarted || order.Completed < o.GetState() {
+	if !validation.IsIgnoreEmpty(o.GetState(), ignore) && o.GetState() < 0 || order.Done < o.GetState() {
 		return errwrap.NewError(http.StatusBadRequest, "invalid order.state")
 	}
 

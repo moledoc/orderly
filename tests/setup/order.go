@@ -21,7 +21,7 @@ import (
 func OrderObj(extra ...string) *order.Order {
 	ee := strings.Join(append([]string{""}, extra...), ".")
 	return &order.Order{
-		State:         utils.Ptr(order.NotStarted),
+		State:         utils.Ptr(order.State(0)),
 		AccountableID: user.Email(fmt.Sprintf("example%v@example.com", ee)),
 		Objective:     "objective description",
 		Deadline:      time.Now().UTC(),

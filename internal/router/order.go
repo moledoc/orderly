@@ -2,7 +2,6 @@ package router
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 
 	"github.com/moledoc/orderly/internal/domain/errwrap"
@@ -29,9 +28,6 @@ func postOrder(w http.ResponseWriter, r *http.Request) {
 		resp, err = mgmtordersvc.PostOrder(ctx, &req)
 	}
 
-	if err == nil {
-		w.Header().Set("HX-Redirect", fmt.Sprintf("/order/%v", resp.GetOrder().GetID()))
-	}
 	writeResponse(ctx, w, resp, err, http.StatusCreated)
 }
 

@@ -18,14 +18,9 @@
         <h1>{{.Order.ID}}: {{firstLine .Order.Objective}}</h1>
 
         <div>
-            <a href="/order/{{.Order.ParentOrderID}}">Parent Order:</a>
-            <input list="orders" class="text-input" id="parent-order-id" name="order-task"
+            <a href="/order/{{.ParentOrder.ID}}">Parent Order:</a>
+            <input type="text" class="text-input" id="parent-order-id" name="order-task"
                 value="{{.Order.ParentOrderID}}: {{firstLine .ParentOrder.Objective}}" />
-            <datalist id="orders">
-                {{range .Orders}}
-                <option value="{{.ID}}: {{.Objective}}">{{.ID}}: {{.Objective}}</option>
-                {{end}}
-            </datalist>
         </div>
 
         <div>
@@ -35,13 +30,8 @@
 
         <div>
             <a href="/user/{{.AccountableUser.ID}}">Accountable:</a>
-            <input list="users" class="text-input" id="task-accountable" name="order-task"
+            <input type="text" class="text-input" id="task-accountable" name="order-task"
                 value="{{.AccountableUser.Email}}" />
-            <datalist id="users">
-                {{range .Emails}}
-                <option value="{{.}}">{{.}}</option>
-                {{end}}
-            </datalist>
         </div>
 
         <div>
@@ -59,7 +49,11 @@
         </div>
 
         <details open>
-            <summary>Delegated Orders</summary>
+            <summary>
+                Delegated Orders
+                <button id="addDelegatedOrderFormBtn" style="margin-left: 10px;">+</button>
+                <div id="delegatedOrderFormContainer"></div>
+            </summary>
             <input class="searchbar" type="text" id="searchInput" placeholder="Search...">
 
             <div class="scroll-container">
@@ -73,12 +67,12 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{range .DelegatedOrders}}
+                        {{range .DelegatedOA}}
                         <tr>
                             <td><a href="/order/{{.Order.ID}}">{{.Order.ID}}</a></td>
-                            <td>{{.Objective}}</td>
+                            <td>{{.Order.Objective}}</td>
                             <td><a href="/user/{{.AccountableUser.ID}}">{{.AccountableUser.Email}}</a></td>
-                            <td>{{formatToDate .Deadline}}</td>
+                            <td>{{formatToDate .Order.Deadline}}</td>
                         </tr>
                         {{end}}
                     </tbody>
@@ -126,6 +120,103 @@
     </div>
 
     <script src="/static/scripts/table_utils.js"></script>
+    <script>
+        document.getElementById('addDelegatedOrderFormBtn').addEventListener('click', async function () {
+            const formContainer = document.getElementById('delegatedOrderFormContainer');
+
+            if (formContainer.querySelector('div')) return;
+
+            // Create the form
+            const form = document.createElement('div');
+
+            form.innerHTML = `
+    <hr />
+    <div>
+        <label for="new-delegated-order-objective">Objective:</label>
+        <textarea class="text-input" id="new-delegated-order-objective" required></textarea>
+    </div>
+
+    <div>
+        <label for="new-delegated-order-accountable">Accountable:</label>
+        <input type="text" id="new-delegated-order-accountable"/>
+    </div>
+
+    <div>
+        <label for="new-delegated-order-deadline">Deadline:</label>
+        <input type="date" id="new-delegated-order-deadline" required>
+    </div>
+
+    <button type="button" id="saveDelegatedOrderBtn">✓</button>
+    <button type="button" id="cancelDelegatedOrderBtn">×</button>
+    <hr />`;
+            formContainer.appendChild(form);
+
+            form.querySelector('#saveDelegatedOrderBtn').addEventListener('click', async function () {
+                const objective = document.getElementById('new-delegated-order-objective')?.value?.trim();
+                const accountable = document.getElementById('new-delegated-order-accountable')?.value?.trim();
+                const deadline = document.getElementById('new-delegated-order-deadline')?.value?.trim();
+
+                if (!objective || !accountable || !deadline) {
+                    alert('Please fill all fields.');
+                    return;
+                }
+                try {
+
+                    const getResponse = await fetch(`/v1/mgmt/users?emails=${encodeURIComponent(accountable)}`);
+                    const respGetSupervisorList = await getResponse.json();
+                    if (!getResponse.ok || respGetSupervisorList?.users && respGetSupervisorList?.users.length == 0) {
+                        alert(`user with email "${accountable}" doesn't exist`)
+                        return
+                    }
+
+                    let user = respGetSupervisorList?.users[0];
+
+                    let response = await fetch('/v1/mgmt/order', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            order: {
+                                parent_order_id: "{{.Order.ID}}",
+                                objective: objective,
+                                accountable_id: user?.id,
+                                state: "Delegated",
+                                deadline: deadline + "T00:00:00Z",
+                            }
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('Server error: ' + response.statusText);
+                    }
+
+                    const respPostOrder = await response.json();
+                    console.log("HERE", respPostOrder)
+
+                    const tableBody = document.querySelectorAll('#datatable tbody')[0];
+                    const newRow = document.createElement('tr');
+                    newRow.innerHTML = `
+        <td><a href="/order/${respPostOrder?.order?.id}">${respPostOrder?.order?.id}</a></td>
+        <td>${respPostOrder?.order?.objective}</td>
+        <td><a href="/user/${user?.id}">${user?.email}</a></td>
+        <td>${deadline}</td>
+    `;
+                    tableBody.appendChild(newRow);
+
+                    form.remove();
+                } catch (err) {
+                    alert('Creating new delegated order failed:', err);
+                }
+            });
+
+
+            // Cancel/delete button
+            form.querySelector('#cancelDelegatedOrderBtn').addEventListener('click', function () {
+                form.remove();
+            });
+        });
+    </script>
 
     {{ template "footer" .}}
 

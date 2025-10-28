@@ -51,7 +51,7 @@ func postRootOrder(ctx context.Context, repo repository.RepositoryOrderAPI) (*or
 		ParentOrderID: id,
 		AccountableID: mgmtuser.RootUserID,
 		Objective:     "Root Order",
-		State:         utils.Ptr(order.InProgress),
+		State:         utils.Ptr(order.Executing),
 		Deadline:      time.Now().UTC().Add(100 * 365 * 24 * time.Hour),
 		Meta: &meta.Meta{
 			Version: 1,

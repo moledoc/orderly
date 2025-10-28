@@ -21,12 +21,6 @@ import (
 	"github.com/moledoc/orderly/internal/service/mgmtuser"
 )
 
-// MAYBE: cache result
-func getUsers() []*user.User {
-	resp, _ := mgmtuser.GetServiceMgmtUser().GetUsers(context.Background(), &request.GetUsersRequest{}) // TODO: handle error
-	return resp.GetUsers()
-}
-
 func formatToDate(t time.Time) string {
 	return t.Format("2006-01-02")
 }
@@ -109,47 +103,6 @@ var (
 	))
 )
 
-func serveOrders(w http.ResponseWriter, r *http.Request) {
-	resp, errr := mgmtorder.GetServiceMgmtOrder().GetOrders(context.Background(), &request.GetOrdersRequest{})
-	if errr != nil {
-		somethingWentWrong(w, errr)
-		return
-	}
-	type extendedOrder struct {
-		Order           *order.Order
-		AccountableUser *user.User
-	}
-
-	chanEO := make(chan *extendedOrder)
-	defer close(chanEO)
-
-	for _, o := range resp.GetOrders() {
-		go func(oo *order.Order) {
-			respOrderAccountable, errr := mgmtuser.GetServiceMgmtUser().GetUserByID(context.Background(), &request.GetUserByIDRequest{
-				ID: oo.GetID(),
-			})
-			if errr != nil {
-				log.Printf("[WARNING]: didn't find user %q for order %q: %s", o.GetAccountableID(), o.GetID(), errr)
-			}
-			chanEO <- &extendedOrder{
-				Order:           oo,
-				AccountableUser: respOrderAccountable.GetUser(),
-			}
-		}(o)
-	}
-
-	eos := make([]*extendedOrder, len(resp.GetOrders()))
-	for i := 0; len(eos) < cap(eos); i++ {
-		eos[i] = <-chanEO
-	}
-
-	w.Header().Set("Content-Type", "text/html")
-	err := templOrders.Execute(w, eos)
-	if err != nil {
-		log.Printf("[ERROR]: executing orders html tmpl failed: %s\n", err)
-	}
-}
-
 func serveHome(w http.ResponseWriter, _ *http.Request) {
 	err := templHome.Execute(w, nil)
 	if err != nil {
@@ -168,8 +121,14 @@ func serveRootUser(w http.ResponseWriter, r *http.Request) {
 }
 
 func serveUsers(w http.ResponseWriter, r *http.Request) {
+	respGetUsers, errr := mgmtuser.GetServiceMgmtUser().GetUsers(context.Background(), &request.GetUsersRequest{})
+	if errr != nil {
+		somethingWentWrong(w, errr)
+		return
+	}
+
 	w.Header().Set("Content-Type", "text/html")
-	err := templUsers.Execute(w, getUsers())
+	err := templUsers.Execute(w, respGetUsers.GetUsers())
 	if err != nil {
 		log.Printf("[ERROR]: executing html tmpl failed: %s\n", err)
 	}
@@ -247,7 +206,6 @@ func serveUser(w http.ResponseWriter, r *http.Request) {
 		Supervisor     *user.User
 		SubOrdinates   []*user.User
 		AccountableFor []*order.Order
-		Emails         []user.Email
 	}
 
 	ue := &userExtended{
@@ -261,6 +219,47 @@ func serveUser(w http.ResponseWriter, r *http.Request) {
 	err := templUser.Execute(w, ue)
 	if err != nil {
 		log.Printf("[ERROR]: executing html tmpl failed: %s\n", err)
+	}
+}
+
+func serveOrders(w http.ResponseWriter, r *http.Request) {
+	resp, errr := mgmtorder.GetServiceMgmtOrder().GetOrders(context.Background(), &request.GetOrdersRequest{})
+	if errr != nil {
+		somethingWentWrong(w, errr)
+		return
+	}
+	type extendedOrder struct {
+		Order           *order.Order
+		AccountableUser *user.User
+	}
+
+	chanEO := make(chan *extendedOrder)
+	defer close(chanEO)
+
+	for _, o := range resp.GetOrders() {
+		go func(oo *order.Order) {
+			respOrderAccountable, errr := mgmtuser.GetServiceMgmtUser().GetUserByID(context.Background(), &request.GetUserByIDRequest{
+				ID: oo.GetAccountableID(),
+			})
+			if errr != nil {
+				log.Printf("[WARNING]: didn't find user %q for order %q: %s", o.GetAccountableID(), o.GetID(), errr)
+			}
+			chanEO <- &extendedOrder{
+				Order:           oo,
+				AccountableUser: respOrderAccountable.GetUser(),
+			}
+		}(o)
+	}
+
+	eos := make([]*extendedOrder, len(resp.GetOrders()))
+	for i := 0; i < len(resp.GetOrders()); i++ {
+		eos[i] = <-chanEO
+	}
+
+	w.Header().Set("Content-Type", "text/html")
+	err := templOrders.Execute(w, eos)
+	if err != nil {
+		log.Printf("[ERROR]: executing orders html tmpl failed: %s\n", err)
 	}
 }
 
@@ -287,7 +286,7 @@ func serveOrder(w http.ResponseWriter, r *http.Request) {
 	for _, o := range extendOrders {
 		go func(oo *order.Order) {
 			respOrderAccountable, errr := mgmtuser.GetServiceMgmtUser().GetUserByID(context.Background(), &request.GetUserByIDRequest{
-				ID: oo.GetID(),
+				ID: oo.GetAccountableID(),
 			})
 			if errr != nil {
 				log.Printf("[WARNING]: didn't find user %q for order %q: %s", o.GetAccountableID(), o.GetID(), errr)
@@ -300,7 +299,7 @@ func serveOrder(w http.ResponseWriter, r *http.Request) {
 	}
 
 	eos := make([]*oa, len(extendOrders))
-	for i := 0; len(eos) < cap(eos); i++ {
+	for i := 0; i < len(extendOrders); i++ {
 		eos[i] = <-chanEO
 	}
 
@@ -311,84 +310,19 @@ func serveOrder(w http.ResponseWriter, r *http.Request) {
 		somethingWentWrong(w, errr)
 		return
 	}
-	// var wg sync.WaitGroup
-	// var accountable *user.User
-	// var orders []*order.Order
-	// var parentOrder *order.Order
-	// var emails []user.Email
-	// cherr := make(chan errwrap.Error, 5)
-	// defer close(cherr)
-
-	// wg.Add(1)
-	// go func() {
-	// 	defer wg.Done()
-	// 	respOrderAccountable, errr := mgmtuser.GetServiceMgmtUser().GetUsers(context.Background(), &request.GetUsersRequest{
-	// 		Emails: []user.Email{respGetOrderByID.GetOrder().GetAccountable()},
-	// 	})
-	// 	if errr != nil {
-	// 		cherr <- errr
-
-	// 	} else {
-	// 		if len(respOrderAccountable.GetUsers()) > 1 {
-	// 			log.Printf("[WARNING]: multiple users with same email: %s", respGetOrderByID.GetOrder().GetAccountable())
-	// 		}
-	// 		if len(respOrderAccountable.GetUsers()) > 0 {
-	// 			accountable = respOrderAccountable.GetUsers()[0]
-	// 		}
-	// 	}
-	// }()
-	// wg.Add(1)
-	// go func() {
-	// 	defer wg.Done()
-	// 	respGetOrders, errr := mgmtorder.GetServiceMgmtOrder().GetOrders(context.Background(), &request.GetOrdersRequest{})
-	// 	if errr != nil {
-	// 		cherr <- errr
-	// 	} else {
-	// 		orders = respGetOrders.GetOrders()
-	// 	}
-	// }()
-	// wg.Add(1)
-	// go func() {
-	// 	defer wg.Done()
-	// 	respGetParentOrder, errr := mgmtorder.GetServiceMgmtOrder().GetOrderByID(context.Background(), &request.GetOrderByIDRequest{
-	// 		ID: respGetOrderByID.GetOrder().GetParentOrderID(),
-	// 	})
-	// 	if errr != nil {
-	// 		cherr <- errr
-	// 	} else {
-	// 		parentOrder = respGetParentOrder.GetOrder()
-	// 	}
-	// }()
-	// wg.Add(1)
-	// go func() {
-	// 	defer wg.Done()
-	// 	respGetEmails, errr := mgmtuser.GetServiceMgmtUser().GetUsers(context.Background(), &request.GetUsersRequest{
-	// 		Supervisor: mgmtuser.GetServiceMgmtUser().GetRootUser(context.Background()).GetEmail(),
-	// 	})
-	// 	if errr != nil {
-	// 		cherr <- errr
-	// 	} else {
-	// 		for _, u := range respGetEmails.GetUsers() {
-	// 			emails = append(emails, u.GetEmail())
-	// 		}
-	// 	}
-	// }()
-	// wg.Wait()
 
 	type extendedOrder struct {
 		Order           *order.Order
 		AccountableUser *user.User
-		Orders          []*order.Order
+		DelegatedOA     []*oa
 		ParentOrder     *order.Order
-		Emails          []user.Email
-		DelegatedOrders []*oa
 	}
 
 	eo := &extendedOrder{
 		Order:           eos[0].Order,
 		AccountableUser: eos[0].AccountableUser,
+		DelegatedOA:     eos[1:],
 		ParentOrder:     respGetParentOrderByID.GetOrder(),
-		DelegatedOrders: eos[1:],
 	}
 
 	w.Header().Set("Content-Type", "text/html")

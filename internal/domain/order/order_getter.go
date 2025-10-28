@@ -88,7 +88,7 @@ func (o *Order) GetObjective() string {
 
 func (o *Order) GetState() State {
 	if o == nil || o.State == nil {
-		return NotStarted
+		return 0
 	}
 	return *(o.State)
 }

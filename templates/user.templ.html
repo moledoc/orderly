@@ -22,8 +22,7 @@
 
                 <button class="delete-btn" hx-delete="/v1/mgmt/user/{{.User.ID}}"
                     hx-confirm="Are you sure you want to delete this user?"
-                    hx-on="htmx:afterRequest: if (event.detail.xhr.status === 200) window.location.href = '/user/{{.User.SupervisorID}}';"
-                    >
+                    hx-on="htmx:afterRequest: if (event.detail.xhr.status === 200) window.location.href = '/user/{{.User.SupervisorID}}';">
                     ×
                 </button>
             </summary>
@@ -31,26 +30,6 @@
             <b>ID: </b>{{.User.ID}}<br>
             <b>Email:</b> {{.User.Email}}<br>
 
-            <!-- <div>
-                <label for="user-supervisor">
-                    <span id="supervisor-link">
-                        <a href="/user/{{.Supervisor.ID}}">Supervisor:</a>
-                    </span>
-                </label>
-                <input type="text" class="text-input" id="user-supervisor" name="supervisor"
-                    value="{{.Supervisor.Email}}" hx-patch="/v1/mgmt/user" hx-trigger="keyup[key=='Enter']"
-                    hx-headers='{"Content-Type": "application/json"}' hx-ext="json-enc" hx-vals='js:{
-                        user: {
-                            id: "{{.User.ID}}",
-                            supervisor: document.getElementById("user-supervisor")?.value,
-                        }  
-                    }' hx-on="htmx:afterRequest: updateSupervisorLink(event.detail.xhr.responseText)">
-                <!-- <datalist id="users">
-                    {{range .Emails}}
-                    <option value="{{.}}">{{.}}</option>
-                    {{end}}
-                </datalist>
-    </div> -->
             <div>
                 <label for="user-supervisor">
                     <span id="supervisor-link">
@@ -148,8 +127,7 @@
             document.getElementById('addFormBtn').addEventListener('click', function () {
                 const formContainer = document.getElementById('emailFormContainer');
 
-                // Prevent multiple forms from being created
-                if (formContainer.querySelector('form')) return;
+                if (formContainer.querySelector('div')) return;
 
                 // Create the form
                 const form = document.createElement('div');

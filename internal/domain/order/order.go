@@ -12,48 +12,51 @@ import (
 type State int
 
 const (
-	notStartedStr   string = "Not Started"
-	inProgressStr   string = "In Progress"
-	havingIssuesStr string = "Having Issues"
-	blockedStr      string = "Blocked"
-	cancelledStr    string = "Cancelled"
-	completedStr    string = "Completed"
-	unknownStr      string = "Unknown"
+	delegatedStr  string = "Delegated"
+	receivedStr   string = "Received"
+	planningStr   string = "Planning"
+	executingStr  string = "Executing"
+	problemsStr   string = "Problems"
+	cancelleddStr string = "Cancelledd"
+	doneStr       string = "Done"
 )
 
 const (
-	NotStarted State = iota + 1
-	InProgress
-	HavingIssues
-	Blocked
+	Delegated State = iota
+	Received
+	Planning
+	Executing
+	Problems
 	Cancelled
-	Completed
+	Done
 )
 
 func (s State) String() string {
 
 	switch s {
-	case NotStarted:
-		return notStartedStr
-	case InProgress:
-		return inProgressStr
-	case HavingIssues:
-		return havingIssuesStr
-	case Blocked:
-		return blockedStr
+	case Delegated:
+		return delegatedStr
+	case Received:
+		return receivedStr
+	case Planning:
+		return planningStr
+	case Executing:
+		return executingStr
+	case Problems:
+		return problemsStr
 	case Cancelled:
-		return cancelledStr
-	case Completed:
-		return completedStr
+		return cancelleddStr
+	case Done:
+		return doneStr
 	default:
-		return unknownStr
+		return delegatedStr
 	}
 }
 
 func (s *State) UnmarshalJSON(data []byte) error {
 
 	var nr int
-	if err := json.Unmarshal(data, &nr); err == nil && NotStarted <= State(nr) && State(nr) <= Completed {
+	if err := json.Unmarshal(data, &nr); err == nil && 0 <= State(nr) && State(nr) <= Done {
 		*s = State(nr)
 		return nil
 	}
@@ -63,20 +66,23 @@ func (s *State) UnmarshalJSON(data []byte) error {
 	}
 
 	switch str {
-	case notStartedStr:
-		*s = NotStarted
-	case inProgressStr:
-		*s = InProgress
-	case havingIssuesStr:
-		*s = HavingIssues
-	case blockedStr:
-		*s = Blocked
-	case cancelledStr:
+
+	case delegatedStr:
+		*s = Delegated
+	case receivedStr:
+		*s = Received
+	case planningStr:
+		*s = Planning
+	case executingStr:
+		*s = Executing
+	case problemsStr:
+		*s = Problems
+	case cancelleddStr:
 		*s = Cancelled
-	case completedStr:
-		*s = Completed
+	case doneStr:
+		*s = Done
 	default:
-		*s = NotStarted
+		*s = 0
 	}
 
 	return nil
@@ -89,7 +95,7 @@ func (s *State) MarshalJSON() ([]byte, error) {
 var (
 	ListStates func() []*State = func() func() []*State {
 		states := []*State{}
-		for i := NotStarted; i <= Completed; i++ {
+		for i := State(0); i <= Done; i++ {
 			states = append(states, &i)
 		}
 		return func() []*State {
